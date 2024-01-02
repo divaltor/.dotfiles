@@ -46,6 +46,10 @@ return {
             fallback()
           end
         end, { "i", "s" }),
+        ["<CR>"] = cmp.mapping(function(fallback)
+          cmp.abort()
+          fallback()
+        end, { "i", "s" }),
       })
     end,
   },
