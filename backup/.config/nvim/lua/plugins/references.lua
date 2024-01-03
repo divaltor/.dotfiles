@@ -58,6 +58,7 @@ return {
       return {
         implementation = { enabled = true },
         text_format = text_format,
+        disable = { lsp = { "pyright" } },
       }
     end,
   },
