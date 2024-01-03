@@ -22,3 +22,7 @@ vim.keymap.set("n", "<leader>qa", "<cmd>qa!<CR>", { desc = "Quit all without sav
 vim.keymap.del("n", "[b")
 vim.keymap.del("n", "]b")
 vim.keymap.del("n", "<leader>bb")
+
+-- Tabbing visual blocks
+vim.keymap.set("v", "<Tab>", ">gv")
+vim.keymap.set("v", "<S-Tab>", "<gv")
