@@ -12,8 +12,8 @@ vim.keymap.set("n", "<C-f>", "<C-f>zz")
 -- vim.keymap.set("x", "<leader>p", '"_dP')
 
 -- Delete to black hole register
--- vim.keymap.set("n", "<leader>d", '"_d')
--- vim.keymap.set("v", "<leader>d", '"_d')
+vim.keymap.set("n", "<leader>D", '"_d', { desc = "Delete to black hole register" })
+vim.keymap.set("v", "<leader>D", '"_d', { desc = "Delete to black hole register" })
 
 -- Quit all without saving
 vim.keymap.set("n", "<leader>qa", "<cmd>qa!<CR>", { desc = "Quit all without saving" })
