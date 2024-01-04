@@ -6,11 +6,13 @@ return {
         pyright = {
           settings = {
             python = {
+              disableOrganizeImports = true,
               analysis = {
                 autoSearchPaths = true,
                 useLibraryCodeForTypes = true,
-                diagnosticMode = "workspace",
+                diagnosticMode = "openFilesOnly",
                 typeCheckingMode = "basic",
+                logLevel = "error",
               },
             },
           },
