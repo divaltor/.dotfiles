@@ -26,3 +26,6 @@ vim.keymap.del("n", "<leader>bb")
 -- Tabbing visual blocks
 vim.keymap.set("v", "<Tab>", ">gv")
 vim.keymap.set("v", "<S-Tab>", "<gv")
+
+-- Useless python documentation mapping
+vim.keymap.del("n", "<leader>K")
