@@ -29,3 +29,23 @@ vim.keymap.set("v", "<S-Tab>", "<gv")
 
 -- Useless python documentation mapping
 vim.keymap.del("n", "<leader>K")
+
+-- Disable terminal keymaps
+vim.keymap.del("n", "<leader>ft")
+vim.keymap.del("n", "<leader>fT")
+vim.keymap.del("n", "<c-/>")
+vim.keymap.del("n", "<c-_>")
+
+vim.keymap.del("t", "<esc><esc>")
+vim.keymap.del("t", "<C-h>")
+vim.keymap.del("t", "<C-j>")
+vim.keymap.del("t", "<C-k>")
+vim.keymap.del("t", "<C-l>")
+vim.keymap.del("t", "<C-/>")
+vim.keymap.del("t", "<C-_>")
+
+-- Disable LazyVim changelog
+vim.keymap.del("n", "<leader>L")
+
+-- Disable highlight under cursor
+vim.keymap.del("n", "<leader>ui")
