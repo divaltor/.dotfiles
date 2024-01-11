@@ -1,4 +1,8 @@
 live_config_reload = true
+import = ["~/.config/alacritty/catppuccin-latte.toml"]
+
+[env]
+TERM = "xterm-256color"
 
 [window]
 dynamic_padding = false
@@ -11,44 +15,3 @@ padding = { x = 5, y = 2 }
 normal = { family = "JetBrainsMono Nerd Font Propo", style = "Light" }
 size = 13.5
 offset = { x = 0, y = 1 }
-
-
-[colors.primary]
-background = "#FFFCF0"
-foreground = "#100F0F"
-dim_foreground = "#100F0F"
-bright_foreground = "#100F0F"
-
-[colors.cursor]
-text = "#FFFCF0"
-cursor = "#100F0F"
-
-[colors.normal]
-black = "#100F0F"
-red = "#D14D41"
-green = "#879A39"
-yellow = "#D0A215"
-blue = "#4385BE"
-magenta = "#CE5D97"
-cyan = "#3AA99F"
-white = "#FFFCF0"
-
-[colors.bright]
-black = "#100F0F"
-red = "#D14D41"
-green = "#879A39"
-yellow = "#D0A215"
-blue = "#4385BE"
-magenta = "#CE5D97"
-cyan = "#3AA99F"
-white = "#FFFCF0"
-
-[colors.dim]
-black = "#100F0F"
-red = "#D14D41"
-green = "#879A39"
-yellow = "#D0A215"
-blue = "#4385BE"
-magenta = "#CE5D97"
-cyan = "#3AA99F"
-white = "#FFFCF0"
