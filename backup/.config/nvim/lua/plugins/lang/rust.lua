@@ -52,6 +52,18 @@ return {
               end,
               "Rust debuggables",
             },
+            ["<leader>cE"] = {
+              function()
+                vim.cmd.RustLsp("runnables")
+              end,
+              "Rust runnables",
+            },
+            ["<leader>ce"] = {
+              function()
+                vim.cmd.RustLsp("explainError")
+              end,
+              "Explain error",
+            },
           }, { mode = "n", buffer = bufnr })
         end,
         settings = {
