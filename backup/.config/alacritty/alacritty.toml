@@ -12,6 +12,6 @@ option_as_alt = "Both"
 padding = { x = 5, y = 2 }
 
 [font]
-normal = { family = "JetBrainsMono Nerd Font Propo", style = "Light" }
+normal = { family = "JetBrainsMono Nerd Font Propo", style = "Regular" }
 size = 13.5
 offset = { x = 0, y = 1 }
