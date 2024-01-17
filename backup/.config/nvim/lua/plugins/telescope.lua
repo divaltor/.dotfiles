@@ -20,6 +20,11 @@ return {
           follow = true,
           hidden = true,
         },
+        live_grep = {
+          additional_args = function(args)
+            return { "--hidden" }
+          end,
+        },
       },
     },
   },
