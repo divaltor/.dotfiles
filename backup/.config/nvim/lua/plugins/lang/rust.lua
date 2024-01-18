@@ -36,6 +36,9 @@ return {
     version = "^3", -- Recommended
     ft = { "rust" },
     opts = {
+      dap = {
+        autoload_configurations = false,
+      },
       server = {
         on_attach = function(client, bufnr)
           local wk = require("which-key")
