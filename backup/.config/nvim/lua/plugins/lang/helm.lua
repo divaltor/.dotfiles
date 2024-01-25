@@ -9,7 +9,7 @@ require("lazyvim.util.lsp").on_attach(function(client, buffer)
 end)
 
 return {
-  "towolf/vim-helm",
+  { "towolf/vim-helm", ft = { "helm" } },
   {
     "neovim/nvim-lspconfig",
     opts = {

@@ -8,8 +8,12 @@ vim.keymap.set("n", "<C-d>", "<C-d>zz")
 vim.keymap.set("n", "<C-b>", "<C-b>zz")
 vim.keymap.set("n", "<C-f>", "<C-f>zz")
 
+vim.keymap.set("n", "<leader>xe", function()
+  vim.diagnostic.open_float()
+end, { desc = "Open float window with diagnostics" })
+
 -- Move yanked text to black hole register
--- vim.keymap.set("x", "<leader>p", '"_dP')
+-- vim.keymap.set("x", "<leader>p", )
 
 -- Delete to black hole register
 vim.keymap.set("n", "<leader>D", '"_d', { desc = "Delete to black hole register" })
@@ -49,3 +53,7 @@ vim.keymap.del("n", "<leader>L")
 
 -- Disable highlight under cursor
 vim.keymap.del("n", "<leader>ui")
+
+-- Disable useless Trouble keymaps
+vim.keymap.del("n", "<leader>xl")
+vim.keymap.del("n", "<leader>xq")

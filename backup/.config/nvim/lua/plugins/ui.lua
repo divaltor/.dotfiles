@@ -43,6 +43,7 @@ return {
   },
   {
     "mawkler/modicator.nvim",
+    event = "LazyFile",
     dependencies = "catppuccin", -- Add your colorscheme plugin here
     init = function()
       -- These are required for Modicator to work
@@ -51,5 +52,9 @@ return {
       vim.o.termguicolors = true
     end,
     opts = {},
+  },
+  {
+    "echasnovski/mini.indentscope",
+    enabled = false,
   },
 }

@@ -5,6 +5,11 @@ return {
       inlay_hints = {
         enabled = true,
       },
+      diagnostics = {
+        virtual_text = {
+          prefix = "icons",
+        },
+      },
     },
   },
   {
@@ -70,14 +75,11 @@ return {
       }
     end,
   },
-  -- {
-  --   "antosha417/nvim-lsp-file-operations",
-  --   dependencies = {
-  --     "nvim-lua/plenary.nvim",
-  --     "nvim-neo-tree/neo-tree.nvim",
-  --   },
-  --   config = function()
-  --     require("lsp-file-operations").setup()
-  --   end,
-  -- },
+  {
+    "folke/trouble.nvim",
+    keys = {
+      { "<leader>xL", false },
+      { "<leader>xQ", false },
+    },
+  },
 }
