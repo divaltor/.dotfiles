@@ -1,6 +1,6 @@
 return {
   { "catppuccin", opts = { flavour = "latte" } },
-  -- { "kepano/flexoki-neovim", name = "flexoki" },
+  { "folke/tokyonight.nvim", enabled = false },
   {
     "LazyVim/LazyVim",
     opts = {
