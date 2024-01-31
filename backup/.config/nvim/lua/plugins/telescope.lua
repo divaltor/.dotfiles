@@ -8,6 +8,16 @@ return {
         require("telescope").load_extension("fzf")
       end,
     },
+    keys = {
+      { "<leader>sp", "<cmd>Telescope pickers<CR>", desc = "Pickers" },
+      {
+        "<leader>.",
+        function()
+          require("telescope.builtin").find_files({ cwd = vim.fn.expand("%:p:h") })
+        end,
+        desc = "Search Siblings",
+      },
+    },
     opts = {
       defaults = {
         layout_strategy = "horizontal",
@@ -17,12 +27,11 @@ return {
       },
       pickers = {
         find_files = {
-          follow = true,
-          hidden = true,
+          find_command = { "rg", "--files", "-L", "--hidden", "--glob", "!**/.git/*" },
         },
         live_grep = {
-          additional_args = function(args)
-            return { "--hidden" }
+          additional_args = function(_)
+            return { "--hidden", "--glob", "!**/.git/*" }
           end,
         },
       },
