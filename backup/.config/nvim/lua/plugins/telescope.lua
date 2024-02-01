@@ -17,6 +17,16 @@ return {
         end,
         desc = "Search Siblings",
       },
+      { "<leader>sb", false }, -- Buffers
+      { "<leader>sM", false }, -- Man pages
+      { "<leader>sm", false }, -- marks
+      { "<leader>sT", false }, -- TODO without FIXME and so on
+      { "<leader>sH", false }, -- Treesitter highlight groups
+      { "<leader>so", false }, -- vim options
+      { "<leader>sh", false }, -- help pages
+      { "<leader>sa", false }, -- auto commands
+      { "<leader>sC", false }, -- commands
+      { '<leader>s"', false }, -- registers
     },
     opts = {
       defaults = {

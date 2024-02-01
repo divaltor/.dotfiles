@@ -41,7 +41,6 @@ return {
   },
   {
     "nvim-neotest/neotest",
-    optional = true,
     dependencies = {
       "nvim-neotest/neotest-python",
     },
@@ -53,7 +52,6 @@ return {
   },
   {
     "mfussenegger/nvim-dap",
-    optional = true,
     dependencies = {
       "mfussenegger/nvim-dap-python",
       config = function()
