@@ -10,13 +10,6 @@ return {
     },
     keys = {
       { "<leader>sp", "<cmd>Telescope pickers<CR>", desc = "Pickers" },
-      {
-        "<leader>.",
-        function()
-          require("telescope.builtin").find_files({ cwd = vim.fn.expand("%:p:h") })
-        end,
-        desc = "Search Siblings",
-      },
       { "<leader>sb", false }, -- Buffers
       { "<leader>sM", false }, -- Man pages
       { "<leader>sm", false }, -- marks
