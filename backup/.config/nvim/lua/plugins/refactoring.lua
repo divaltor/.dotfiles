@@ -67,4 +67,20 @@ return {
       use_default_keymap = false,
     },
   },
+  {
+    "echasnovski/mini.move",
+    event = "LazyFile",
+    version = false,
+    config = function()
+      require("mini.move").setup()
+    end,
+  },
+  {
+    "echasnovski/mini.splitjoin",
+    event = "LazyFile",
+    version = false,
+    config = function()
+      require("mini.splitjoin").setup()
+    end,
+  },
 }

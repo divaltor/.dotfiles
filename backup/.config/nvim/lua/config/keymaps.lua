@@ -28,8 +28,8 @@ vim.keymap.del("n", "]b")
 vim.keymap.del("n", "<leader>bb")
 
 -- Tabbing visual blocks
-vim.keymap.set("v", "<Tab>", ">gv")
-vim.keymap.set("v", "<S-Tab>", "<gv")
+-- vim.keymap.set("v", "<Tab>", ">gv")
+-- vim.keymap.set("v", "<S-Tab>", "<gv")
 
 -- Useless python documentation mapping
 vim.keymap.del("n", "<leader>K")
@@ -57,3 +57,6 @@ vim.keymap.del("n", "<leader>ui")
 -- Disable useless Trouble keymaps
 vim.keymap.del("n", "<leader>xl")
 vim.keymap.del("n", "<leader>xq")
+
+vim.keymap.del({ "n", "i", "v" }, "<A-j>")
+vim.keymap.del({ "n", "i", "v" }, "<A-k>")
