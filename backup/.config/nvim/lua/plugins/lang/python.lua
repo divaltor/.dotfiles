@@ -19,7 +19,7 @@ return {
                 autoSearchPaths = true,
                 useLibraryCodeForTypes = true,
                 diagnosticMode = "openFilesOnly",
-                typeCheckingMode = "basic",
+                typeCheckingMode = "strict",
                 logLevel = "error",
               },
             },
