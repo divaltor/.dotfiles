@@ -71,7 +71,10 @@ return {
       return {
         implementation = { enabled = true },
         text_format = text_format,
-        disable = { lsp = { "pyright", "tsserver", "rust-analyzer", "lua_ls" }, filetypes = { "dockerfile" } },
+        disable = {
+          lsp = { "pyright", "basedpyright", "tsserver", "rust-analyzer", "lua_ls" },
+          filetypes = { "dockerfile" },
+        },
       }
     end,
   },
