@@ -1,2 +1,11 @@
+gui:
+  nerdFontsVersion: "3"
+  filterMode: "fuzzy"
 git:
   overrideGpg: true
+  commitPrefixes:
+    "avatar-backend":
+      pattern: "(ST-\\d+).+"
+      replace: "$1: "
+os:
+  editPreset: "nvim"
