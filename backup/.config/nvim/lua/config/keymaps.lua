@@ -54,9 +54,5 @@ vim.keymap.del("n", "<leader>L")
 -- Disable highlight under cursor
 vim.keymap.del("n", "<leader>ui")
 
--- Disable useless Trouble keymaps
-vim.keymap.del("n", "<leader>xl")
-vim.keymap.del("n", "<leader>xq")
-
 vim.keymap.del({ "n", "i", "v" }, "<A-j>")
 vim.keymap.del({ "n", "i", "v" }, "<A-k>")

@@ -18,6 +18,18 @@ return {
       local luasnip = require("luasnip")
       local cmp = require("cmp")
 
+      opts.enabled = function()
+        local buftype = vim.api.nvim_get_option_value("buftype", { buf = 0 })
+
+        if buftype == "prompt" then
+          return false
+        end
+
+        local context = require("cmp.config.context")
+
+        return not context.in_treesitter_capture("comment") and not context.in_syntax_group("Comment")
+      end
+
       opts.mapping = vim.tbl_extend("force", opts.mapping, {
         ["<Tab>"] = cmp.mapping(function(fallback)
           if cmp.visible() then

@@ -1,33 +1,5 @@
 return {
   {
-    "folke/which-key.nvim",
-    opts = {
-      defaults = {
-        ["<leader>r"] = { name = "+refactoring" },
-      },
-    },
-  },
-  {
-    "ThePrimeagen/refactoring.nvim",
-    dependencies = {
-      "nvim-lua/plenary.nvim",
-      "nvim-treesitter/nvim-treesitter",
-    },
-    event = "BufRead",
-    keys = {
-      {
-        "<leader>rr",
-        function()
-          require("refactoring").select_refactor()
-        end,
-        desc = "Select refactoring",
-      },
-    },
-    config = function(opts, _)
-      require("refactoring").setup(opts)
-    end,
-  },
-  {
     "Wansmer/sibling-swap.nvim",
     dependencies = { "nvim-treesitter/nvim-treesitter" },
     config = function(_, opts)
@@ -66,14 +38,6 @@ return {
     opts = {
       use_default_keymap = false,
     },
-  },
-  {
-    "echasnovski/mini.move",
-    event = "LazyFile",
-    version = false,
-    config = function()
-      require("mini.move").setup()
-    end,
   },
   {
     "echasnovski/mini.splitjoin",
