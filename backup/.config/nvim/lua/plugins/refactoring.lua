@@ -40,6 +40,14 @@ return {
     },
   },
   {
+    "echasnovski/mini.move",
+    event = "LazyFile",
+    version = false,
+    config = function()
+      require("mini.move").setup()
+    end,
+  },
+  {
     "echasnovski/mini.splitjoin",
     event = "LazyFile",
     version = false,
