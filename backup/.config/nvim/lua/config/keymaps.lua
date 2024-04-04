@@ -22,6 +22,10 @@ vim.keymap.set("v", "<leader>D", '"_d', { desc = "Delete to black hole register"
 -- Quit all without saving
 vim.keymap.set("n", "<leader>qa", "<cmd>qa!<CR>", { desc = "Quit all without saving" })
 
+-- Delete into Vim buffer
+vim.keymap.set("n", "d", '"dd')
+vim.keymap.set("x", "d", '"dd')
+
 -- Remove useless mapping for buffer switching because there are already 2 shortucts with <S-H\L>
 vim.keymap.del("n", "[b")
 vim.keymap.del("n", "]b")
