@@ -7,6 +7,9 @@ return {
         delay = 1000,
       },
       current_line_blame_formatter = " 󰞗 <author>  <author_time:%R>  <summary>",
+      preview_config = {
+        border = "rounded",
+      },
     },
   },
 }

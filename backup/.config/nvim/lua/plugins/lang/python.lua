@@ -30,12 +30,15 @@ return {
         },
       },
     },
-  },
-  {
-    "mfussenegger/nvim-dap-python",
-    keys = function()
-      return {}
-    end,
+    keys = {
+      {
+        "<leader>tr",
+        function()
+          require("neotest").run.run()
+        end,
+        desc = "Run Nearest",
+      },
+    },
   },
   {
     "stevearc/conform.nvim",

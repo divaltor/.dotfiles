@@ -1,5 +1,15 @@
 return {
-  { "catppuccin", opts = { flavour = "latte" } },
+  {
+    "catppuccin",
+    opts = {
+      flavour = "latte",
+      integrations = {
+        neotree = true,
+        lsp_trouble = true,
+        mason = true,
+      },
+    },
+  },
   {
     "LazyVim/LazyVim",
     opts = {
