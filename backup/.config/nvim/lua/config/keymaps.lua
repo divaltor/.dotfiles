@@ -15,10 +15,6 @@ end, { desc = "Open float window with diagnostics" })
 -- Move yanked text to black hole register
 -- vim.keymap.set("x", "<leader>p", )
 
--- Delete to black hole register
-vim.keymap.set("n", "<leader>D", '"_d', { desc = "Delete to black hole register" })
-vim.keymap.set("v", "<leader>D", '"_d', { desc = "Delete to black hole register" })
-
 -- Quit all without saving
 vim.keymap.set("n", "<leader>qa", "<cmd>qa!<CR>", { desc = "Quit all without saving" })
 
@@ -57,6 +53,3 @@ vim.keymap.del("n", "<leader>L")
 
 -- Disable highlight under cursor
 vim.keymap.del("n", "<leader>ui")
-
-vim.keymap.del({ "n", "i", "v" }, "<A-j>")
-vim.keymap.del({ "n", "i", "v" }, "<A-k>")

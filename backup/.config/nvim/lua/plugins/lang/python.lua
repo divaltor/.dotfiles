@@ -18,6 +18,7 @@ return {
           },
         },
         ruff_lsp = {},
+        ruff = { autostart = false },
       },
     },
   },
@@ -28,15 +29,6 @@ return {
         ["neotest-python"] = {
           args = { "-v" },
         },
-      },
-    },
-    keys = {
-      {
-        "<leader>tr",
-        function()
-          require("neotest").run.run()
-        end,
-        desc = "Run Nearest",
       },
     },
   },

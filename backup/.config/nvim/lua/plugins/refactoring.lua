@@ -2,9 +2,6 @@ return {
   {
     "Wansmer/sibling-swap.nvim",
     dependencies = { "nvim-treesitter/nvim-treesitter" },
-    config = function(_, opts)
-      require("sibling-swap").setup(opts)
-    end,
     keys = {
       {
         "<leader>sh",
@@ -40,16 +37,8 @@ return {
     },
   },
   {
-    "echasnovski/mini.move",
-    event = "LazyFile",
-    opts = {},
-  },
-  {
     "echasnovski/mini.splitjoin",
     event = "LazyFile",
-    version = false,
-    config = function()
-      require("mini.splitjoin").setup()
-    end,
+    opts = {},
   },
 }
