@@ -3,3 +3,4 @@
 -- Add any additional options here
 vim.g.lazygit_config = false
 vim.g.lazyvim_python_lsp = "basedpyright"
+vim.g.lazyvim_python_ruff = "ruff"

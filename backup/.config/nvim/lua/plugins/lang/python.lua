@@ -4,9 +4,9 @@ return {
     opts = {
       servers = {
         basedpyright = {
+          disableOrganizeImports = true,
           settings = {
             python = {
-              disableOrganizeImports = true,
               analysis = {
                 autoSearchPaths = true,
                 useLibraryCodeForTypes = true,
@@ -17,8 +17,6 @@ return {
             },
           },
         },
-        ruff_lsp = {},
-        ruff = { autostart = false },
       },
     },
   },
@@ -29,6 +27,15 @@ return {
         ["neotest-python"] = {
           args = { "-v" },
         },
+      },
+    },
+    keys = {
+      {
+        "<leader>tr",
+        function()
+          require("neotest").run.run()
+        end,
+        desc = "Run Nearest",
       },
     },
   },
