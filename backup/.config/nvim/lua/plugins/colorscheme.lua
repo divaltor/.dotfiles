@@ -1,16 +1,5 @@
 return {
   {
-    "catppuccin",
-    opts = {
-      flavour = "latte",
-      integrations = {
-        neotree = true,
-        lsp_trouble = true,
-        mason = true,
-      },
-    },
-  },
-  {
     "rose-pine/neovim",
     name = "rose-pine",
     opts = {
@@ -25,9 +14,13 @@ return {
         ["@constant"] = { fg = "foam" },
         ["@constant.builtin"] = { fg = "rose", bold = true },
         ["@constant.macro"] = { fg = "foam" },
+        -- ["@property"] = { fg = "rose", italic = true },
+        -- ["@attribute"] = { fg = "rose" },
+        -- ["@attribute.builtin"] = { fg = "rose" },
       },
     },
   },
+  { "folke/tokyonight.nvim", enabled = false },
   {
     "LazyVim/LazyVim",
     opts = {
