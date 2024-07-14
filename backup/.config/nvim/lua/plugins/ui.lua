@@ -8,6 +8,24 @@ return {
     },
   },
   {
+    "folke/which-key.nvim",
+    opts = {
+      preset = "helix",
+      delay = 0,
+      plugins = {
+        spelling = {
+          enabled = false,
+        },
+      },
+      icons = {
+        colors = false,
+        rules = false,
+        separator = "",
+      },
+      show_help = false,
+    },
+  },
+  {
     "echasnovski/mini.indentscope",
     enabled = false,
   },
