@@ -21,6 +21,7 @@ return {
         colors = false,
         rules = false,
         separator = "",
+        mappings = false,
       },
       show_help = false,
     },
@@ -43,7 +44,7 @@ return {
           never_show = {
             ".DS_Store",
           },
-          always_show = { ".env" },
+          always_show = { ".env", "devlog.md" },
         },
       },
       default_component_configs = {
