@@ -2,6 +2,7 @@ return {
   {
     "Wansmer/sibling-swap.nvim",
     dependencies = { "nvim-treesitter/nvim-treesitter" },
+    vscode = true,
     keys = {
       {
         "<leader>sh",
@@ -40,5 +41,36 @@ return {
     "echasnovski/mini.splitjoin",
     event = "LazyFile",
     opts = {},
+    vscode = true,
+  },
+  {
+    "folke/flash.nvim",
+    vscode = true,
+  },
+  {
+    "echasnovski/mini.move",
+    vscode = true,
+    opts = function(opts)
+      if vim.g.vscode then
+        return {
+          mappings = {
+            left = "˙",
+            right = "¬",
+            down = "∆",
+            up = "˚",
+
+            line_left = "˙",
+            line_right = "¬",
+            line_down = "∆",
+            line_up = "˚",
+          },
+          options = {
+            reindent_linewise = true,
+          },
+        }
+      end
+
+      return opts
+    end,
   },
 }
