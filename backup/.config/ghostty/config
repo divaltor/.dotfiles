@@ -1,0 +1,18 @@
+font-size = 14
+font-family = "JetBrainsMono NFM Regular"
+font-thicken = true
+# Disable ligatures
+font-feature = -calt
+adjust-cell-height = 10%
+
+theme = rose-pine-dawn
+cursor-style = block
+cursor-style-blink = false
+mouse-hide-while-typing = true
+
+window-padding-y = 2
+window-padding-x = 5
+window-padding-balance = true
+window-save-state = always
+
+macos-option-as-alt = true
