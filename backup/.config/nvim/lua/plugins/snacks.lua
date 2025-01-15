@@ -3,9 +3,20 @@ return {
     "folke/snacks.nvim",
     opts = {
       picker = {
-        files = {
-          hidden = true,
-          follow = true,
+        formatters = {
+          file = {
+            filename_first = true,
+          },
+        },
+        sources = {
+          files = {
+            hidden = true,
+            follow = true,
+          },
+          grep = {
+            glob = { "workflow/**" },
+            follow = true,
+          },
         },
       },
     },
