@@ -1,15 +1,9 @@
 [[language]]
 name = "python"
 language-servers = ["ruff", "pyright"]
+formatter = { command = "bash", args = ["-c", "ruff check --fix - | ruff format -"]}
 auto-format = true
-scope = "source.python"
-injection-regex = "py(thon)?"
-file-types = ["py", "pyi", "py3", "pyw", "ptl", "rpy", "cpy", "ipy", "pyt", { glob = ".python_history" }, { glob = ".pythonstartup" }, { glob = ".pythonrc" }, { glob = "SConstruct" }, { glob = "SConscript" }]
-shebangs = ["python"]
-roots = ["pyproject.toml", "setup.py", "poetry.lock", "pyrightconfig.json"]
-indent = { tab-width = 4, unit = "    " }
 
-comment-token = "#"
 [language-server.ruff]
 command = "ruff"
 args = ["server"]

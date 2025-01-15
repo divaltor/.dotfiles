@@ -24,25 +24,6 @@ return {
     },
   },
   {
-    "nvim-neotest/neotest",
-    opts = {
-      adapters = {
-        ["neotest-python"] = {
-          args = { "-v" },
-        },
-      },
-    },
-    keys = {
-      {
-        "<leader>tr",
-        function()
-          require("neotest").run.run()
-        end,
-        desc = "Run Nearest",
-      },
-    },
-  },
-  {
     "stevearc/conform.nvim",
     opts = {
       formatters_by_ft = {
