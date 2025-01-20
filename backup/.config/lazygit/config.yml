@@ -4,6 +4,8 @@ gui:
   showBottomLine: false
   filterMode: "fuzzy"
   commandLogSize: 3
+  showRandomTip: false
+
   theme:
     activeBorderColor:
       - "#d7827e"
@@ -29,9 +31,8 @@ gui:
     "*": "#907aa9"
 git:
   overrideGpg: true
-  commitPrefixes:
-    "avatar-backend":
-      pattern: "(ST-\\d+).+"
-      replace: "$1: "
+  commitPrefix:
+    pattern: "^(\\w+-\\d+).*"
+    replace: "$1: "
 os:
   editPreset: "nvim"
