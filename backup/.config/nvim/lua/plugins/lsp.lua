@@ -9,8 +9,10 @@ return {
         enabled = true,
       },
       diagnostics = {
-        virtual_text = {
-          prefix = "icons",
+        virtual_text = false,
+        virtual_lines = { only_current_line = true, highlight_whole_line = false },
+        virtual_improved = {
+          current_line = "hide",
         },
       },
     },
@@ -90,5 +92,16 @@ return {
       { "<leader>xl", false }, -- Lsp references
       { "<leader>xq", false }, -- Lsp diagnostics
     },
+  },
+  {
+    "luozhiya/lsp-virtual-improved.nvim",
+    event = { "LspAttach" },
+    opts = {},
+  },
+  {
+    "divaltor/lsp_lines.nvim",
+    event = { "LspAttach" },
+    opts = {},
+    branch = "cursor-hold",
   },
 }
