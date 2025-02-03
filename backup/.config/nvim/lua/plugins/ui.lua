@@ -64,4 +64,17 @@ return {
       },
     },
   },
+  {
+    "echasnovski/mini.files",
+    opts = {
+      options = {
+        use_as_default_explorer = true,
+      },
+      windows = {
+        preview = true,
+        width_focus = 60,
+        width_preview = 70,
+      },
+    },
+  },
 }
