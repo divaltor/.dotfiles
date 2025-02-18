@@ -12,4 +12,29 @@ return {
       },
     },
   },
+  {
+    "divaltor/tsugit.nvim",
+    keys = {
+      {
+        "<leader>gg",
+        function()
+          require("tsugit").toggle()
+        end,
+        desc = "Open LazyGit (cwd)",
+      },
+      {
+        "<leader>gG",
+        function()
+          require("tsugit").toggle_for_file(LazyVim.root.git())
+        end,
+        desc = "Open LazyGit (root)",
+      },
+    },
+    opts = {
+      keys = {
+        toggle = "q",
+        force_quit = "<C-c>",
+      },
+    },
+  },
 }
