@@ -32,8 +32,8 @@ return {
     },
     opts = {
       keys = {
-        toggle = "q",
-        force_quit = "<C-c>",
+        toggle = "<C-q>",
+        force_quit = "<C-z>",
       },
     },
   },
