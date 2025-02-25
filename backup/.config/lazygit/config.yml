@@ -5,7 +5,6 @@ gui:
   filterMode: "fuzzy"
   commandLogSize: 3
   showRandomTip: false
-
   theme:
     activeBorderColor:
       - "#d7827e"
@@ -26,13 +25,14 @@ gui:
       - "#575279"
     searchingActiveBorderColor:
       - "#ea9d34"
-
   authorColors:
     "*": "#907aa9"
 git:
   overrideGpg: true
   commitPrefix:
-    pattern: "^(\\w+-\\d+).*"
-    replace: "$1: "
+    - pattern: "^(\\w+-\\d+).*"
+      replace: "$1: "
+    - pattern: "^(\\w+)-.*"
+      replace: "$1: "
 os:
   editPreset: "nvim"

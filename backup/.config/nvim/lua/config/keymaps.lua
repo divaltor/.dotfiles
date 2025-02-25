@@ -41,3 +41,6 @@ vim.keymap.del("n", "<leader>L")
 
 -- Disable highlight under cursor
 vim.keymap.del("n", "<leader>ui")
+
+-- Save without formatting
+vim.keymap.set("n", "<leader>S", "<cmd>noa w<CR>", { desc = "Save without formatting" })

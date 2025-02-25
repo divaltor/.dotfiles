@@ -13,7 +13,7 @@ return {
     },
   },
   {
-    "divaltor/tsugit.nvim",
+    "mikavilpas/tsugit.nvim",
     keys = {
       {
         "<leader>gg",
@@ -25,7 +25,7 @@ return {
       {
         "<leader>gG",
         function()
-          require("tsugit").toggle_for_file(LazyVim.root.git())
+          require("tsugit").toggle({}, { cwd = LazyVim.root.git() })
         end,
         desc = "Open LazyGit (root)",
       },

@@ -84,7 +84,6 @@ return {
   },
   {
     "mikavilpas/yazi.nvim",
-    event = "VeryLazy",
     keys = {
       {
         "<leader>fm",
@@ -104,11 +103,26 @@ return {
       },
     },
     opts = {
+      floating_window_scaling_factor = {
+        width = 0.95,
+        height = 0.95,
+      },
       open_multiple_tabs = true,
       open_for_directories = true,
       integrations = {
         grep_in_directory = "snacks.picker",
         grep_in_selected_files = "snacks.picker",
+      },
+    },
+  },
+  {
+    "folke/snacks.nvim",
+    opts = {
+      picker = {
+        matcher = {
+          frecency = true,
+          cwd_bonus = true,
+        },
       },
     },
   },

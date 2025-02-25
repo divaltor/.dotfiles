@@ -8,4 +8,13 @@ return {
       },
     },
   },
+  {
+    "pteroctopus/faster.nvim",
+  },
+  {
+    "snacks.nvim",
+    opts = {
+      bigfile = { enabled = false },
+    },
+  },
 }
