@@ -1,0 +1,41 @@
+// Place your key bindings in this file to override the defaults
+[
+    {
+        "command": "vscode-neovim.send",
+        "key": "ctrl+d",
+        "when": "editorTextFocus && neovim.mode != insert",
+        "args": "<C-d>"
+    },
+    {
+        "command": "vscode-neovim.send",
+        "key": "ctrl+u",
+        "when": "editorTextFocus && neovim.mode != insert",
+        "args": "<C-u>"
+    },
+    {
+        "command": "workbench.action.files.save",
+        "key": "ctrl+s",
+        "when": "editorTextFocus"
+    },
+    {
+        "key": "shift shift",
+        "command": "workbench.action.quickOpen",
+        "when": "neovim.mode != insert"
+    },
+    {
+        "key": "cmd+shift+i",
+        "command": "toggle",
+        "when": "neovim.mode != insert",
+        "args": {
+            "id": "search.useIgnoreFiles",
+            "value": [
+                {
+                    "search.useIgnoreFiles": true
+                },
+                {
+                    "search.useIgnoreFiles": false
+                }
+            ]
+        }
+    }
+]

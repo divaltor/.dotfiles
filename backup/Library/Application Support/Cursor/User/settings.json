@@ -1,0 +1,107 @@
+{
+    "workbench.colorTheme": "Rosé Pine Dawn",
+    "workbench.iconTheme": "catppuccin-latte",
+    "editor.fontSize": 14,
+    "editor.fontFamily": "'JetBrainsMono Nerd Font Propo', Menlo, Monaco, 'Courier New', monospace",
+    "redhat.telemetry.enabled": false,
+    "files.autoSave": "onFocusChange",
+    "python.analysis.inlayHints.pytestParameters": true,
+    "python.analysis.inlayHints.variableTypes": true,
+    "python.analysis.inlayHints.functionReturnTypes": true,
+    "python.analysis.inlayHints.callArgumentNames": "partial",
+    "python.analysis.typeEvaluation.enableExperimentalFeatures": true,
+    "python.analysis.typeCheckingMode": "strict",
+    "python.analysis.diagnosticMode": "workspace",
+    "editor.minimap.enabled": false,
+    "extensions.experimental.affinity": {
+        "asvetliakov.vscode-neovim": 1
+    },
+    "git.autofetch": true,
+    "editor.lineNumbers": "relative",
+    "errorLens.gutterIconSet": "circle",
+    "errorLens.fontStyleItalic": true,
+    "errorLens.gutterIconsEnabled": true,
+    "errorLens.messageBackgroundMode": "message",
+    "errorLens.messageTemplate": "$message ($code)",
+    "errorLens.problemRangeDecorationEnabled": true,
+    "search.useParentIgnoreFiles": true,
+    "[python]": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "charliermarsh.ruff",
+        "editor.codeActionsOnSave": {
+            "source.fixAll": "explicit",
+            "source.organizeImports": "explicit"
+        }
+    },
+    "cursor.cpp.enablePartialAccepts": true,
+    "cursor.composer.collapsePaneInputBoxPills": true,
+    "cursor.cmdk.useThemedDiffBackground": true,
+    "cursor.general.enableShadowWorkspace": true,
+    "python.analysis.autoFormatStrings": true,
+    "python.testing.pytestEnabled": true,
+    "python.analysis.supportRestructuredText": true,
+    "python.analysis.autoImportCompletions": true,
+    "python.languageServer": "Pylance",
+    "terminal.external.osxExec": "Ghostty.app",
+    "terminal.explorerKind": "external",
+    "terminal.integrated.enableImages": true,
+    "python.analysis.typeEvaluation.enableReachabilityAnalysis": true,
+    "python.analysis.cacheLSPData": true,
+    "python.analysis.generateWithTypeAnnotation": true,
+    "python.analysis.supportDocstringTemplate": true,
+    "python.analysis.typeEvaluation.deprecateTypingAliases": true,
+    "python.analysis.userFileIndexingLimit": 3000,
+    "search.exclude": {
+        "**/workflow/dags": false
+    },
+    "files.exclude": {
+        "**/workflow/dags": false
+    },
+    "search.useIgnoreFiles": false,
+    "search.quickOpen.includeSymbols": true,
+    "search.quickOpen.history.filterSortOrder": "recency",
+    "workbench.editor.enablePreviewFromQuickOpen": true,
+    "python.analysis.packageIndexDepths": [
+
+        {
+            "name": "sklearn",
+            "depth": 2
+        },
+        {
+            "name": "matplotlib",
+            "depth": 2
+        },
+        {
+            "name": "scipy",
+            "depth": 2
+        },
+        {
+            "name": "django",
+            "depth": 2
+        },
+        {
+            "name": "flask",
+            "depth": 2
+        },
+        {
+            "name": "fastapi",
+            "depth": 2
+        },
+        {
+            "name": "airflow",
+            "depth": 10,
+            "includeAllSymbols": true
+        }
+    ],
+    "catppuccin-icons.associations.folders": {
+        ".flox": "folder_nix"
+    },
+    "cursor.cpp.disabledLanguages": [
+        "markdown",
+        "plaintext",
+        "csv"
+    ],
+    "[sql]": {
+        
+    }
+}
