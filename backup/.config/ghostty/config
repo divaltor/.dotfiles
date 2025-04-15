@@ -5,7 +5,7 @@ font-thicken = true
 font-feature = -calt
 adjust-cell-height = 10%
 
-theme = rose-pine-dawn
+theme = dark:rose-pine,light:rose-pine-dawn
 cursor-style = block
 cursor-style-blink = false
 mouse-hide-while-typing = true
