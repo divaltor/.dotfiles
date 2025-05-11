@@ -18,24 +18,25 @@
         "when": "editorTextFocus"
     },
     {
-        "key": "shift shift",
-        "command": "workbench.action.quickOpen",
-        "when": "neovim.mode != insert"
+        "key": "cmd+k cmd+p",
+        "command": "git.clean"
     },
     {
-        "key": "cmd+shift+i",
-        "command": "toggle",
-        "when": "neovim.mode != insert",
-        "args": {
-            "id": "search.useIgnoreFiles",
-            "value": [
-                {
-                    "search.useIgnoreFiles": true
-                },
-                {
-                    "search.useIgnoreFiles": false
-                }
-            ]
-        }
+        "key": "cmd+j h",
+        "command": "workbench.action.closeEditorsToTheLeft"
+    },
+    {
+        "key": "cmd+j l",
+        "command": "workbench.action.closeEditorsToTheRight"
+    },
+    {
+        "key": "cmd+k",
+        "command": "aipopup.action.modal.generate",
+        "when": "editorFocus && !composerBarIsVisible"
+    },
+    {
+        "key": "shift+cmd+k",
+        "command": "-aipopup.action.modal.generate",
+        "when": "editorFocus && !composerBarIsVisible"
     }
 ]

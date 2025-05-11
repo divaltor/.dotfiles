@@ -9,7 +9,6 @@
     "python.analysis.inlayHints.variableTypes": true,
     "python.analysis.inlayHints.functionReturnTypes": true,
     "python.analysis.inlayHints.callArgumentNames": "partial",
-    "python.analysis.typeEvaluation.enableExperimentalFeatures": true,
     "python.analysis.typeCheckingMode": "strict",
     "python.analysis.diagnosticMode": "workspace",
     "editor.minimap.enabled": false,
@@ -35,7 +34,6 @@
     },
     "cursor.cpp.enablePartialAccepts": true,
     "cursor.composer.collapsePaneInputBoxPills": true,
-    "cursor.cmdk.useThemedDiffBackground": true,
     "cursor.general.enableShadowWorkspace": true,
     "python.analysis.autoFormatStrings": true,
     "python.testing.pytestEnabled": true,
@@ -45,24 +43,16 @@
     "terminal.external.osxExec": "Ghostty.app",
     "terminal.explorerKind": "external",
     "terminal.integrated.enableImages": true,
-    "python.analysis.typeEvaluation.enableReachabilityAnalysis": true,
     "python.analysis.cacheLSPData": true,
-    "python.analysis.generateWithTypeAnnotation": true,
-    "python.analysis.supportDocstringTemplate": true,
-    "python.analysis.typeEvaluation.deprecateTypingAliases": true,
-    "python.analysis.userFileIndexingLimit": 3000,
-    "search.exclude": {
-        "**/workflow/dags": false
-    },
-    "files.exclude": {
-        "**/workflow/dags": false
-    },
     "search.useIgnoreFiles": false,
     "search.quickOpen.includeSymbols": true,
     "search.quickOpen.history.filterSortOrder": "recency",
     "workbench.editor.enablePreviewFromQuickOpen": true,
     "python.analysis.packageIndexDepths": [
-
+        {
+            "name": "aiogram",
+            "depth": 5
+        },
         {
             "name": "sklearn",
             "depth": 2
@@ -101,7 +91,33 @@
         "plaintext",
         "csv"
     ],
-    "[sql]": {
-        
-    }
+    "cursor.composer.shouldAllowCustomModes": true,
+    "terminal.integrated.defaultProfile.osx": "fish",
+    "terminal.integrated.hideOnStartup": "whenEmpty",
+    "terminal.integrated.shellIntegration.enabled": false,
+    "terminal.integrated.env.osx": {
+        "SHELL": "/opt/homebrew/bin/fish"
+    },
+    "workbench.sideBar.location": "right",
+    "crashReporting.enabled": "off",
+    "explorer.confirmPasteNative": false,
+    "explorer.confirmDelete": false,
+    "rust-analyzer.inlayHints.closureStyle": "rust_analyzer",
+    "rust-analyzer.inlayHints.expressionAdjustmentHints.enable": "reborrow",
+    "rust-analyzer.inlayHints.expressionAdjustmentHints.hideOutsideUnsafe": true,
+    "todo-tree.general.tags": [
+        "BUG",
+        "HACK",
+        "FIXME",
+        "TODO",
+        "PERF"
+    ],
+    "todo-tree.highlights.backgroundColourScheme": [
+        "firebrick",
+        "coral",
+        "orange",
+        "darkseagreen",
+        "lightcoral"
+    ],
+    "todo-tree.highlights.useColourScheme": true,
 }
