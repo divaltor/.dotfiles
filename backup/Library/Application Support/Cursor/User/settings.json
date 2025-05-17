@@ -9,7 +9,6 @@
     "python.analysis.inlayHints.variableTypes": true,
     "python.analysis.inlayHints.functionReturnTypes": true,
     "python.analysis.inlayHints.callArgumentNames": "partial",
-    "python.analysis.typeCheckingMode": "strict",
     "python.analysis.diagnosticMode": "workspace",
     "editor.minimap.enabled": false,
     "extensions.experimental.affinity": {
@@ -113,11 +112,21 @@
         "PERF"
     ],
     "todo-tree.highlights.backgroundColourScheme": [
-        "firebrick",
-        "coral",
-        "orange",
-        "darkseagreen",
-        "lightcoral"
+        "indianred",
+        "lightsteelblue",
+        "lightsalmon",
+        "lightsteelblue",
+        "darkseagreen"
     ],
     "todo-tree.highlights.useColourScheme": true,
+    "python.analysis.typeCheckingMode": "strict",
+    "todo-tree.highlights.foregroundColourScheme": [
+        "white",
+        "black",
+        "black",
+        "black",
+        "black",
+        "white",
+        "black"
+    ],
 }
