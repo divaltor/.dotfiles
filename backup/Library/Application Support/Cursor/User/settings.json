@@ -38,7 +38,6 @@
     "python.testing.pytestEnabled": true,
     "python.analysis.supportRestructuredText": true,
     "python.analysis.autoImportCompletions": true,
-    "python.languageServer": "Pylance",
     "terminal.external.osxExec": "Ghostty.app",
     "terminal.explorerKind": "external",
     "terminal.integrated.enableImages": true,
@@ -113,13 +112,12 @@
     ],
     "todo-tree.highlights.backgroundColourScheme": [
         "indianred",
-        "lightsteelblue",
+        "mediumaquamarine",
         "lightsalmon",
         "lightsteelblue",
-        "darkseagreen"
+        "peachpuff"
     ],
     "todo-tree.highlights.useColourScheme": true,
-    "python.analysis.typeCheckingMode": "strict",
     "todo-tree.highlights.foregroundColourScheme": [
         "white",
         "black",
@@ -129,4 +127,36 @@
         "white",
         "black"
     ],
+    "editor.formatOnSave": true,
+    "cursor.diffs.useCharacterLevelDiffs": true,
+    "ruff.configurationPreference": "filesystemFirst",
+    "python.locator": "native",
+    "python.languageServer": "Pylance",
+    "python.analysis.typeCheckingMode": "strict",
+    "editor.formatOnSaveMode": "modifications",
+    "editor.codeActionsOnSave": {
+        "source.fixAll.biome": "explicit",
+        "source.organizeImports.biome": "explicit"
+    },
+    "[json]": {
+        "editor.defaultFormatter": "biomejs.biome"
+    },
+    "[typescriptreact]": {
+        "editor.defaultFormatter": "biomejs.biome"
+    },
+    "[typescript]": {
+        "editor.defaultFormatter": "biomejs.biome"
+    },
+    "[javascript]": {
+        "editor.defaultFormatter": "biomejs.biome"
+    },
+    "[javascriptreact]": {
+        "editor.defaultFormatter": "biomejs.biome"
+    },
+    "typescript.updateImportsOnFileMove.enabled": "always",
+    "explorer.confirmDragAndDrop": false,
+    "typescript.implementationsCodeLens.enabled": true,
+    "typescript.implementationsCodeLens.showOnInterfaceMethods": true,
+    "typescript.preferences.importModuleSpecifier": "non-relative",
+    "typescript.preferences.includePackageJsonAutoImports": "on",
 }
