@@ -133,7 +133,7 @@
     "python.locator": "native",
     "python.languageServer": "Pylance",
     "python.analysis.typeCheckingMode": "strict",
-    "editor.formatOnSaveMode": "modifications",
+    "editor.formatOnSaveMode": "file",
     "editor.codeActionsOnSave": {
         "source.fixAll.biome": "explicit",
         "source.organizeImports.biome": "explicit"
@@ -159,4 +159,9 @@
     "typescript.implementationsCodeLens.showOnInterfaceMethods": true,
     "typescript.preferences.importModuleSpecifier": "non-relative",
     "typescript.preferences.includePackageJsonAutoImports": "on",
+    "[prisma]": {
+        "editor.defaultFormatter": "Prisma.prisma"
+    },
+    "javascript.updateImportsOnFileMove.enabled": "always",
+    "zig.zls.enabled": "on",
 }
