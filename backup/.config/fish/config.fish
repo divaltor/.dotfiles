@@ -4,23 +4,30 @@ end
 
 set fish_greeting ""
 
-function fish
-    source ~/.config/fish/config.fish
-end
+set -U -x HOMEBREW_NO_AUTO_UPDATE ""
+set -U -x XDG_CONFIG_HOME $HOME/.config
+set -U -x nvm_default_version lts
 
-fish_add_path /opt/homebrew/bin/
+eval "$(/opt/homebrew/bin/brew shellenv)"
+
+devbox global shellenv --init-hook | source
+
+set -U -x PKG_CONFIG_PATH $DEVBOX_PACKAGES_DIR/lib/pkgconfig
+
+# uv
+fish_add_path "/Users/divaltor/.local/bin"
 
 if type -q bat
     alias cat bat
 end
 
-if type -q nvim
-    alias vim nvim
-end
-
 if type -q eza
     alias ls 'eza --long --icons --classify --all --header --git --no-user --tree --level 1'
     alias ll ls
+end
+
+if type -q nvim
+    alias vim nvim
 end
 
 if type -q lazygit
@@ -35,16 +42,20 @@ if type -q helix
     alias hx helix
 end
 
-set -U nvm_default_version lts
-set -U -x EDITOR /opt/homebrew/bin/nvim
-set -U -x HOMEBREW_NO_AUTO_UPDATE ""
-set -U -x XDG_CONFIG_HOME $HOME/.config
+if type -q starship
+    starship init fish | source
+end
 
-starship init fish | source
-zoxide init fish | source
+if type -q zoxide
+    zoxide init fish | source
+end
 
 if type -q z
     alias cd z
+end
+
+if type -q yt-dlp
+    alias mp4 "yt-dlp -t mp4 --sponsorblock-remove sponsor"
 end
 
 function y
@@ -56,8 +67,8 @@ function y
     rm -f -- "$tmp"
 end
 
-export PKG_CONFIG_PATH="$(brew --prefix)/opt/mysql-client/lib/pkgconfig"
-
 # Added by OrbStack: command-line tools and integration
 # This won't be added again if you remove it.
 source ~/.orbstack/shell/init2.fish 2>/dev/null || :
+
+fish_add_path "/Users/divaltor/.bun/bin"
