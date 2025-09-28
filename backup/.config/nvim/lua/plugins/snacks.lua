@@ -13,10 +13,6 @@ return {
             hidden = true,
             follow = true,
           },
-          grep = {
-            glob = { "workflow/**" },
-            follow = true,
-          },
         },
       },
     },

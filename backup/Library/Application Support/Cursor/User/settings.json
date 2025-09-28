@@ -90,7 +90,6 @@
         "csv"
     ],
     "cursor.composer.shouldAllowCustomModes": true,
-    "terminal.integrated.defaultProfile.osx": "fish",
     "terminal.integrated.hideOnStartup": "whenEmpty",
     "terminal.integrated.shellIntegration.enabled": false,
     "terminal.integrated.env.osx": {
@@ -164,4 +163,9 @@
     },
     "javascript.updateImportsOnFileMove.enabled": "always",
     "zig.zls.enabled": "on",
+    "window.autoDetectColorScheme": true,
+    "workbench.preferredLightColorTheme": "Rosé Pine Dawn",
+    "workbench.preferredHighContrastLightColorTheme": "Rosé Pine Dawn",
+    "workbench.preferredDarkColorTheme": "Rosé Pine",
+    "workbench.preferredHighContrastColorTheme": "Rosé Pine",
 }

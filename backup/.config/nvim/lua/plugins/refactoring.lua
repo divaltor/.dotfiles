@@ -38,7 +38,7 @@ return {
     },
   },
   {
-    "echasnovski/mini.splitjoin",
+    "nvim-mini/mini.splitjoin",
     event = "LazyFile",
     opts = {},
     vscode = true,
@@ -48,7 +48,7 @@ return {
     vscode = true,
   },
   {
-    "echasnovski/mini.move",
+    "nvim-mini/mini.move",
     vscode = true,
     opts = function(opts)
       if vim.g.vscode then

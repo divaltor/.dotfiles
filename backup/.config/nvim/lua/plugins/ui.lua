@@ -27,7 +27,7 @@ return {
     },
   },
   {
-    "echasnovski/mini.indentscope",
+    "nvim-mini/mini.indentscope",
     enabled = false,
   },
   {
@@ -65,7 +65,7 @@ return {
     },
   },
   {
-    "echasnovski/mini.files",
+    "nvim-mini/mini.files",
     enabled = false,
     opts = {
       options = {
