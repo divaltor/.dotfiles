@@ -2,7 +2,7 @@
     "workbench.colorTheme": "Rosé Pine Dawn",
     "workbench.iconTheme": "catppuccin-latte",
     "editor.fontSize": 14,
-    "editor.fontFamily": "'JetBrainsMono Nerd Font Propo', Menlo, Monaco, 'Courier New', monospace",
+    "editor.fontFamily": "'JetBrainsMono Nerd Font Mono', Menlo, Monaco, 'Courier New', monospace",
     "redhat.telemetry.enabled": false,
     "files.autoSave": "onFocusChange",
     "python.analysis.inlayHints.pytestParameters": true,
@@ -168,4 +168,6 @@
     "workbench.preferredHighContrastLightColorTheme": "Rosé Pine Dawn",
     "workbench.preferredDarkColorTheme": "Rosé Pine",
     "workbench.preferredHighContrastColorTheme": "Rosé Pine",
+    "terminal.integrated.fontLigatures.enabled": true,
+    "editor.fontLigatures": true,
 }

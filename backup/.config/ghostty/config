@@ -1,8 +1,6 @@
 font-size = 14
-font-family = "JetBrainsMono Nerd Font Mono"
+font-family = "JetBrainsMono Nerd Font Propo"
 font-thicken = true
-# Disable ligatures
-font-feature = -calt
 adjust-cell-height = 10%
 
 theme = dark:Rose Pine,light:Rose Pine Dawn
