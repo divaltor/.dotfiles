@@ -6,6 +6,7 @@ return {
       styles = {
         italic = false,
       },
+      variant = "auto",
       highlight_groups = {
         EndOfBuffer = { fg = "base" },
         Constant = { fg = "rose" },
@@ -23,7 +24,7 @@ return {
   {
     "LazyVim/LazyVim",
     opts = {
-      colorscheme = "rose-pine-dawn",
+      colorscheme = "rose-pine",
     },
   },
 }
