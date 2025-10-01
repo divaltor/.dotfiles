@@ -55,7 +55,7 @@ if type -q z
 end
 
 if type -q yt-dlp
-    alias mp4 "yt-dlp -t mp4 --sponsorblock-remove sponsor"
+    alias mp4 'yt-dlp -t mp4 --sponsorblock-remove sponsor --extractor-args "youtube:player-client=default,-tv_simply"'
 end
 
 function y
