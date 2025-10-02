@@ -31,7 +31,7 @@ git:
   overrideGpg: true
   paging:
     colorArg: always
-    pager: delta --paging=never --features="arctic-fox" --syntax-theme="rose-pine-dawn"
+    pager: delta --paging=never --features="hoopoe" --syntax-theme="GitHub"
   commitPrefix:
     - pattern: "^(\\w+-\\d+).*"
       replace: "$1: "
