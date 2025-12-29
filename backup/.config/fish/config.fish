@@ -1,7 +1,3 @@
-if status is-interactive
-    # Commands to run in interactive sessions can go here
-end
-
 set fish_greeting ""
 
 set -U -x HOMEBREW_NO_AUTO_UPDATE ""
@@ -72,3 +68,7 @@ end
 source ~/.orbstack/shell/init2.fish 2>/dev/null || :
 
 fish_add_path "/Users/divaltor/.bun/bin"
+fish_add_path $HOME/.local/bin
+
+set -U -x OPENCODE_EXPERIMENTAL true
+set -U -x OPENCODE_EXPERIMENTAL_LSP_TY true

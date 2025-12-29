@@ -29,9 +29,9 @@ gui:
     "*": "#907aa9"
 git:
   overrideGpg: true
-  paging:
-    colorArg: always
-    pager: delta --paging=never --features="hoopoe" --syntax-theme="GitHub"
+  pagers:
+    - colorArg: always
+      pager: delta --paging=never --features="hoopoe" --syntax-theme="GitHub"
   commitPrefix:
     - pattern: "^(\\w+-\\d+).*"
       replace: "$1: "
