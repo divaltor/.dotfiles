@@ -1,7 +1,6 @@
 {
   "plugin": [
-    "oh-my-opencode",
-    "opencode-antigravity-auth"
+    "opencode-antigravity-auth",
   ],
   "agent": {
     "build": {
@@ -9,7 +8,19 @@
     },
     "plan": {
       "disable": true
+    }
+  },
+  "mcp": {
+    "grep": {
+      "type": "remote",
+      "url": "https://mcp.grep.app",
+      "enabled": true
     },
+    "context7": {
+      "type": "remote",
+      "url": "https://mcp.context7.com/mcp",
+      "enabled": true
+    }
   },
   "provider": {
     "google": {
@@ -19,6 +30,40 @@
           "limit": {
             "context": 200000,
             "output": 64000
+          },
+          "modalities": {
+            "input": [
+              "text",
+              "image",
+              "pdf"
+            ],
+            "output": [
+              "text"
+            ]
+          }
+        },
+        "gemini-3-flash": {
+          "name": "Gemini 3 Flash (Antigravity)",
+          "limit": {
+            "context": 1048576,
+            "output": 65536
+          },
+          "modalities": {
+            "input": [
+              "text",
+              "image",
+              "pdf"
+            ],
+            "output": [
+              "text"
+            ]
+          }
+        },
+        "gemini-3-pro-high": {
+          "name": "Gemini 3 Pro High (Antigravity)",
+          "limit": {
+            "context": 1048576,
+            "output": 65535
           },
           "modalities": {
             "input": [

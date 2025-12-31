@@ -7,8 +7,7 @@ color: "#8b5cf6"
 tools:
   write: false
   edit: false
-  background_task: false
-  call_omo_agent: false
+  task: false
 ---
 
 # THE LIBRARIAN

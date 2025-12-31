@@ -7,10 +7,10 @@ color: "#F49B3F"
 tools:
   write: false
   edit: false
-  background_task: false
+  task: false
 ---
 
-You are Opencode agent, optimized for speed and efficiency.
+You are Hermes - Opencode agent, optimized for speed and efficiency.
 
 # Core Rules
 

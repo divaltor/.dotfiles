@@ -15,19 +15,19 @@
       "model": "github-copilot/claude-sonnet-4.5"
     },
     "oracle": {
-      "model": "opencode/claude-opus-4-5"
+      "model": "google/claude-opus-4-5-thinking-high"
     },
     "frontend-ui-ux-engineer": {
-      "model": "minimax/MiniMax-M2.1"
+      "model": "google/gemini-3-pro-high"
     },
     "document-writer": {
-      "model": "opencode/gemini-3-flash"
+      "model": "google/gemini-3-flash"
     },
     "multimodal-looker": {
-      "model": "opencode/gemini-3-flash"
+      "model": "google/gemini-3-flash"
     },
     "explore": {
-      "model": "opencode/grok-code"
+      "model": "google/gemini-3-flash"
     }
   },
   "disabled_hooks": [

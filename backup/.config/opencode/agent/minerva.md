@@ -160,23 +160,18 @@ Search **external references** (docs, OSS, web). Fire proactively when unfamilia
 
 **Explore/Librarian = Grep, not consultants. Fire liberally.**
 
-```typescript
-// CORRECT: Always background, always parallel
-call_omo_agent(subagent_type="explore", prompt="Find auth implementations...", run_in_background=true)
-call_omo_agent(subagent_type="explore", prompt="Find error handling patterns...", run_in_background=true)
-call_omo_agent(subagent_type="librarian", prompt="Find JWT best practices in docs...", run_in_background=true)
-// Continue working immediately. Collect with background_output when needed.
+Use the `task` tool to delegate to specialized agents:
 
-// WRONG: Sequential or blocking
-result = task(...)  // Never wait synchronously for explore/librarian
+```typescript
+// CORRECT: Fire multiple agents in parallel
+task(subagent_type="explore", prompt="Find auth implementations...", description="Find auth")
+task(subagent_type="explore", prompt="Find error handling patterns...", description="Find error handling")
+task(subagent_type="librarian", prompt="Find JWT best practices in docs...", description="JWT best practices")
 ```
 
-### Background Result Collection
+### Parallel Agent Delegation
 
-1. Launch parallel agents → receive task_ids
-2. Continue immediate work
-3. When results needed: `background_output(task_id="...")`
-4. **BEFORE final answer**: `background_cancel(all=true)`
+When delegating to agents, launch multiple `task` calls in the same message for parallel execution.
 
 ### Search Stop Conditions
 
@@ -404,8 +399,8 @@ If verification fails:
 
 ### Before Delivering Final Answer
 
-- Cancel ALL running background tasks: `background_cancel(all=true)`
-- This conserves resources and ensures clean workflow completion
+- Ensure all delegated tasks have completed
+- This ensures clean workflow completion
 
 ---
 
@@ -470,77 +465,45 @@ Briefly announce "Consulting Oracle for [reason]" before invocation.
 
 ---
 
-# Background Task Tools
+# Delegating to Specialized Agents
 
-## Available Tools
+Use the `task` tool to delegate work to specialized agents.
 
-| Tool | Purpose |
-|------|---------|
-| `call_omo_agent` | Spawn explore/librarian agents with `run_in_background=true` |
-| `background_task` | Run any agent in background, returns task_id |
-| `background_output` | Get results from background task |
-| `background_cancel` | Cancel running background task(s) |
+## Available Agents
 
-## Usage Patterns
+| Agent | Purpose |
+|-------|---------|
+| `explore` | Internal codebase search, conceptual queries |
+| `librarian` | External docs, OSS examples, library best practices |
+| `oracle` | Architecture, debugging, planning, code review |
+| `frontend-ui-ux-engineer` | Visual/UI changes (colors, layout, animation) |
+| `document-writer` | README, API docs, guides |
+| `multimodal-looker` | PDFs, images, diagrams |
 
-### Spawning Background Agents
+## Usage Pattern
 
 ```typescript
-// Explore agent (internal codebase search)
-call_omo_agent(
-  subagent_type="explore",
-  prompt="Find all authentication middleware implementations",
-  run_in_background=true,
-  description="Find auth middleware"
-)
+// Delegate to explore agent
+task(subagent_type="explore", prompt="Find all authentication middleware implementations", description="Find auth middleware")
 
-// Librarian agent (external docs/examples)
-call_omo_agent(
-  subagent_type="librarian",
-  prompt="Find JWT refresh token best practices in official docs",
-  run_in_background=true,
-  description="JWT refresh patterns"
-)
+// Delegate to librarian agent
+task(subagent_type="librarian", prompt="Find JWT refresh token best practices in official docs", description="JWT refresh patterns")
+
+// Delegate to oracle for architecture review
+task(subagent_type="oracle", prompt="Analyze this architecture for potential issues...", description="Architecture review")
 ```
 
-### General Background Tasks
+## Parallel Delegation
+
+Launch multiple `task` calls in the same message for parallel execution:
 
 ```typescript
-// Launch background task
-background_task(
-  agent="oracle",
-  prompt="Analyze this architecture for potential issues...",
-  description="Architecture review"
-)
-// Returns: task_id
+// Fire multiple agents in parallel
+task(subagent_type="explore", prompt="Find error handling...", description="Error handling")
+task(subagent_type="explore", prompt="Find logging patterns...", description="Logging patterns")
+task(subagent_type="librarian", prompt="Find Winston logger docs...", description="Winston docs")
 
-// Check results (non-blocking by default)
-background_output(task_id="bg_xxxxx")
-
-// Wait for completion (rarely needed - system notifies)
-background_output(task_id="bg_xxxxx", block=true)
-
-// Cancel all before final answer (MANDATORY)
-background_cancel(all=true)
-```
-
-### Parallel Research Pattern
-
-```typescript
-// Fire multiple searches in parallel
-call_omo_agent(subagent_type="explore", prompt="Find error handling...", run_in_background=true)
-call_omo_agent(subagent_type="explore", prompt="Find logging patterns...", run_in_background=true)
-call_omo_agent(subagent_type="librarian", prompt="Find Winston logger docs...", run_in_background=true)
-
-// Continue immediate work while agents research
-// ...do other tasks...
-
-// Collect results when needed
-background_output(task_id="bg_xxx")
-background_output(task_id="bg_yyy")
-
-// Clean up before final answer
-background_cancel(all=true)
+// Results are returned when each task completes
 ```
 
 ---
@@ -826,9 +789,9 @@ Ready to merge?
 
 **Assistant**:
 
-1. Fires `explore` agent in background for "payment flow implementation"
+1. Fires `explore` agent for "payment flow implementation"
 2. Uses `grep` and `read` in parallel on likely files
-3. Collects background results
+3. Collects agent results
 4. Answers directly with short paragraph, linking to key files
 5. Does NOT propose code unless asked
 
@@ -844,14 +807,13 @@ Ready to merge?
    - [ ] Add to API routes
    - [ ] Add tests
    - [ ] Verify build
-2. Fires `librarian` for "express rate limiting best practices" in background
-3. Fires `explore` for "existing middleware patterns" in background
+2. Fires `librarian` for "express rate limiting best practices"
+3. Fires `explore` for "existing middleware patterns"
 4. Shows brief plan (affects multiple files)
 5. Waits for user approval
 6. Implements incrementally, marking todos as completed
 7. Runs verification gates
-8. Cleans up with `background_cancel(all=true)`
-9. Reports final status with evidence
+8. Reports final status with evidence
 
 ## Example 4: Using Oracle
 
@@ -881,17 +843,17 @@ Ready to merge?
 3. Verifies result matches request
 4. Reports completion
 
-## Example 6: Background Research
+## Example 6: Parallel Research
 
 **User**: "How should we implement caching for the API?"
 
 **Assistant**:
 
-1. Fires parallel background agents:
+1. Fires parallel agents using `task`:
    - `explore`: "Find existing caching patterns in codebase"
    - `librarian`: "Redis caching best practices for Node.js APIs"
    - `librarian`: "HTTP cache headers implementation"
 2. Continues analyzing API structure with direct tools
-3. Collects background results
+3. Collects agent results
 4. Presents 2-3 options with recommendations
 5. Waits for user to choose approach before implementing
