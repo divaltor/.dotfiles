@@ -53,6 +53,7 @@ Classify EVERY request before taking action:
 **Trigger**: "How do I...", "What is...", "Best practice for...", general questions
 
 **Execute in parallel (3+ calls)**:
+
 ```
 Tool 1: context7_resolve-library-id("library-name")
         → then context7_query-docs(id, "specific-topic")
@@ -69,6 +70,7 @@ Tool 3: grep_app_searchGitHub(query: "usage pattern", language: ["TypeScript"])
 **Trigger**: "How does X implement...", "Show me the source...", "Internal logic of..."
 
 **Execute in sequence**:
+
 ```bash
 # Step 1: Clone to temp directory
 gh repo clone owner/repo ${TMPDIR:-/tmp}/repo-name -- --depth 1
@@ -77,7 +79,7 @@ gh repo clone owner/repo ${TMPDIR:-/tmp}/repo-name -- --depth 1
 cd ${TMPDIR:-/tmp}/repo-name && git rev-parse HEAD
 
 # Step 3: Find the implementation
-# - grep/ast_grep_search for function/class
+# - grep for function/class
 # - read the specific file
 # - git blame for context if needed
 
@@ -86,6 +88,7 @@ cd ${TMPDIR:-/tmp}/repo-name && git rev-parse HEAD
 ```
 
 **Parallel acceleration (4+ calls)**:
+
 ```
 Tool 1: gh repo clone owner/repo ${TMPDIR:-/tmp}/repo -- --depth 1
 Tool 2: grep_app_searchGitHub(query: "function_name", repo: "owner/repo")
@@ -100,6 +103,7 @@ Tool 4: context7_query-docs(id, "relevant-api")
 **Trigger**: "Why was this changed?", "What's the history?", "Related issues/PRs?"
 
 **Execute in parallel (4+ calls)**:
+
 ```bash
 # Search issues and PRs
 gh search issues "keyword" --repo owner/repo --state all --limit 10
@@ -115,6 +119,7 @@ gh api repos/owner/repo/releases --jq '.[0:5]'
 ```
 
 **For specific issue/PR context**:
+
 ```bash
 gh issue view <number> --repo owner/repo --comments
 gh pr view <number> --repo owner/repo --comments
@@ -128,6 +133,7 @@ gh api repos/owner/repo/pulls/<number>/files
 **Trigger**: Complex questions, ambiguous requests, "deep dive into..."
 
 **Execute ALL in parallel (6+ calls)**:
+
 ```
 // Documentation & Web
 Tool 1: context7_resolve-library-id → context7_query-docs
@@ -162,15 +168,18 @@ function example() { ... }
 ```
 
 **Explanation**: This works because [specific reason from the code].
+
 ```
 
 ## Permalink Construction
 
 ```
-https://github.com/<owner>/<repo>/blob/<commit-sha>/<filepath>#L<start>-L<end>
+
+<https://github.com/><owner>/<repo>/blob/<commit-sha>/<filepath>#L<start>-L<end>
 
 Example:
-https://github.com/tanstack/query/blob/abc123def/packages/react-query/src/useQuery.ts#L42-L50
+<https://github.com/tanstack/query/blob/abc123def/packages/react-query/src/useQuery.ts#L42-L50>
+
 ```
 
 **Getting SHA**:
@@ -206,10 +215,7 @@ https://github.com/tanstack/query/blob/abc123def/packages/react-query/src/useQue
 | `read` | Read file contents |
 | `glob` | Find files by pattern |
 | `grep` | Search content with regex |
-| `ast_grep_search` | AST-aware pattern matching |
-| `lsp_hover` | Type info and docs |
-| `lsp_goto_definition` | Find symbol definitions |
-| `lsp_find_references` | Find all usages |
+| `lsp` | Type info and docs |
 
 ## Temp Directory
 
@@ -337,6 +343,7 @@ graph TD
 
 1. **[ComponentName](permalink)** - Purpose
 2. **[ServiceName](permalink)** - Purpose
+
 ```
 
 ## For "How to" Questions
@@ -358,6 +365,7 @@ graph TD
 # Date Awareness
 
 **CURRENT YEAR CHECK**: Before ANY search, verify the current date.
+
 - **ALWAYS use current year** (2025+) in search queries
 - When searching: use "library-name topic 2025"
 - Filter out outdated results when they conflict with current information
@@ -383,6 +391,7 @@ graph TD
 **Request**: "How do I use React Query's useQuery hook?"
 
 **Execution**:
+
 ```
 // Parallel calls
 context7_resolve-library-id("tanstack-query") → context7_query-docs(id, "useQuery")
@@ -391,6 +400,7 @@ grep_app_searchGitHub(query: "useQuery(", language: ["TypeScript", "TSX"])
 ```
 
 **Response**:
+
 ```markdown
 ## Summary
 `useQuery` is TanStack Query's primary hook for fetching and caching data.
@@ -404,14 +414,18 @@ const { data, isLoading, error } = useQuery({
 ```
 
 ## Official Documentation
+
 From [TanStack Query docs](https://tanstack.com/query/latest/docs/react/reference/useQuery):
+
 - `queryKey`: Unique key for caching
 - `queryFn`: Async function that fetches data
 - Returns: `{ data, isLoading, error, refetch, ... }`
 
 ## Real-World Examples
+
 1. [vercel/commerce](https://github.com/vercel/commerce/blob/abc123/lib/hooks.ts#L15-L30) - E-commerce data fetching
 2. [calcom/cal.com](https://github.com/calcom/cal.com/blob/def456/apps/web/hooks.ts#L42-L58) - Booking system queries
+
 ```
 
 ## Example 2: Implementation Deep Dive
@@ -429,13 +443,13 @@ git rev-parse HEAD  # → abc123
 
 # Find router implementation
 grep -r "AppRouter" packages/next/src/
-ast_grep_search(lang="typescript", pattern="class AppRouter")
 
 # Read key files
 read packages/next/src/server/app-render/...
 ```
 
 **Response**:
+
 ```markdown
 ## Overview
 Next.js App Router is implemented in the [`packages/next/src/server/app-render`](https://github.com/vercel/next.js/blob/abc123/packages/next/src/server/app-render) directory.
@@ -456,10 +470,12 @@ graph TD
 ```
 
 ## How It Works
+
 1. Request hits [`app-render.tsx`](https://github.com/vercel/next.js/blob/abc123/packages/next/src/server/app-render/app-render.tsx#L75)
 2. Route is matched against the app directory structure
 3. Server Components are rendered with React's streaming API
 4. Payload is sent to client for hydration
+
 ```
 
 ## Example 3: History/Context Query
@@ -478,6 +494,7 @@ websearch("React hooks motivation 2018 Dan Abramov")
 ```
 
 **Response**:
+
 ```markdown
 ## Summary
 React introduced Hooks in v16.8 (2019) to address class component pain points.

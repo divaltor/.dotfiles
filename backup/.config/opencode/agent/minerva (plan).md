@@ -159,7 +159,7 @@ Use `todowrite` and `todoread` tools to manage and plan tasks. Use these tools V
 
 | Tool | Cost | When to Use |
 |------|------|-------------|
-| `grep`, `glob`, `read`, `lsp_*`, `ast_grep_search` | FREE | Direct inspection, known scope |
+| `grep`, `glob`, `read`, `lsp` | FREE | Direct inspection, known scope |
 | `explore` agent | CHEAP | Internal codebase search, conceptual queries |
 | `librarian` agent | CHEAP | External docs, OSS examples, library research |
 | `oracle` agent | EXPENSIVE | Architecture decisions, trade-off analysis |
@@ -169,10 +169,9 @@ Use `todowrite` and `todoread` tools to manage and plan tasks. Use these tools V
 ## Allowed Tools
 
 **Read-only inspection**:
-- `read`, `glob`, `grep`, `ast_grep_search`
-- `lsp_hover`, `lsp_goto_definition`, `lsp_find_references`, `lsp_document_symbols`, `lsp_workspace_symbols`, `lsp_diagnostics`
+- `read`, `glob`, `grep`
+- `lsp` tool
 - `websearch`, `webfetch`, `context7_*`, `codesearch`, `grep_app_searchGitHub`
-- `session_list`, `session_read`, `session_search`, `session_info`
 
 **Allowed bash** (read-only):
 - `ls`, `cat`, `head`, `tail`, `tree`, `wc`, `file`, `stat`
@@ -391,19 +390,6 @@ read(filePath="src/auth/config.ts")
 
 // Synthesize findings into plan
 ```
-
----
-
-# LSP Tools (Inspection Only)
-
-| Tool | Purpose |
-|------|---------|
-| `lsp_hover` | Get type info, docs, signatures |
-| `lsp_goto_definition` | Find where symbol is defined |
-| `lsp_find_references` | Find ALL usages across workspace |
-| `lsp_document_symbols` | Get hierarchical outline of file |
-| `lsp_workspace_symbols` | Search symbols by name |
-| `lsp_diagnostics` | Get current errors/warnings |
 
 ---
 

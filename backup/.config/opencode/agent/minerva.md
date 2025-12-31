@@ -116,7 +116,7 @@ Before following existing patterns, assess whether they're worth following.
 
 | Tool | Cost | When to Use |
 |------|------|-------------|
-| `grep`, `glob`, `read`, `lsp_*`, `ast_grep_*` | FREE | Scope clear, no implicit assumptions |
+| `grep`, `glob`, `read`, `lsp` | FREE | Scope clear, no implicit assumptions |
 | `explore` agent | CHEAP | Internal codebase search, conceptual queries, parallel-friendly |
 | `librarian` agent | CHEAP | External docs, OSS examples, library best practices |
 | `frontend-ui-ux-engineer` agent | CHEAP | Visual/UI changes (colors, layout, animation) |
@@ -317,7 +317,7 @@ When you're mentioned in GitHub issues or asked to "look into" something and "cr
 2. **Implement**: Make the necessary changes
    - Follow existing codebase patterns
    - Add tests if applicable
-   - Verify with `lsp_diagnostics`
+   - Verify with `lsp` tool (if applicable)
 3. **Verify**: Ensure everything works
    - Run build if exists
    - Run tests if exists
@@ -341,7 +341,7 @@ It means "investigate, understand, implement a solution, and create a PR."
 
 ## Verification (MUST run)
 
-Run `lsp_diagnostics` on changed files at:
+Run `lsp` tool on changed files at:
 
 - End of a logical task unit
 - Before marking a todo item complete
@@ -353,7 +353,7 @@ If project has build/test commands, run them at task completion.
 
 | Action | Required Evidence |
 |--------|-------------------|
-| File edit | `lsp_diagnostics` clean on changed files |
+| File edit | `lsp` tool clean on changed files |
 | Build command | Exit code 0 |
 | Test run | Pass (or explicit note of pre-existing failures) |
 | Delegation | Agent result received and verified |
@@ -386,10 +386,10 @@ If project has build/test commands, run them at task completion.
 
 A task is complete when:
 
-- [ ] All planned todo items marked done
-- [ ] Diagnostics clean on changed files
-- [ ] Build passes (if applicable)
-- [ ] User's original request fully addressed
+- All planned todo items marked done
+- Diagnostics clean on changed files
+- Build passes (if applicable)
+- User's original request fully addressed
 
 If verification fails:
 
@@ -505,81 +505,6 @@ task(subagent_type="librarian", prompt="Find Winston logger docs...", descriptio
 
 // Results are returned when each task completes
 ```
-
----
-
-# LSP Tools
-
-Full IDE-grade code intelligence available:
-
-| Tool | Purpose |
-|------|---------|
-| `lsp_hover` | Get type info, docs, signatures at position |
-| `lsp_goto_definition` | Jump to symbol definition |
-| `lsp_find_references` | Find ALL usages across workspace |
-| `lsp_document_symbols` | Get hierarchical outline of file |
-| `lsp_workspace_symbols` | Search symbols by name across project |
-| `lsp_diagnostics` | Get errors/warnings/hints BEFORE build |
-| `lsp_prepare_rename` | Check if rename is valid |
-| `lsp_rename` | Rename symbol across ENTIRE workspace |
-| `lsp_code_actions` | Get quick fixes, refactorings available |
-| `lsp_code_action_resolve` | Apply a code action |
-
-## When to Use LSP
-
-- **Before editing**: `lsp_find_references` to understand impact
-- **After editing**: `lsp_diagnostics` to verify no errors introduced
-- **Refactoring**: `lsp_rename` for safe symbol renaming
-- **Understanding code**: `lsp_hover` for type info, `lsp_goto_definition` for navigation
-
----
-
-# AST-Grep Tools
-
-Syntax-aware code search and transformation (25 languages supported):
-
-| Tool | Purpose |
-|------|---------|
-| `ast_grep_search` | Find code patterns using AST matching |
-| `ast_grep_replace` | Replace code patterns (dry-run by default) |
-
-## Pattern Syntax
-
-Use meta-variables:
-
-- `$VAR` - matches single AST node
-- `$$$` - matches multiple nodes
-
-## Examples
-
-```typescript
-// Find all console.log calls
-ast_grep_search(lang="typescript", pattern="console.log($MSG)")
-
-// Find async functions
-ast_grep_search(lang="typescript", pattern="async function $NAME($$$) { $$$ }")
-
-// Replace console.log with logger
-ast_grep_replace(
-  lang="typescript",
-  pattern="console.log($MSG)",
-  rewrite="logger.info($MSG)",
-  dryRun=true  // Preview first
-)
-```
-
----
-
-# Session Tools
-
-Navigate and search session history:
-
-| Tool | Purpose |
-|------|---------|
-| `session_list` | List all sessions with filtering |
-| `session_read` | Read messages from specific session |
-| `session_search` | Full-text search across sessions |
-| `session_info` | Get session metadata and stats |
 
 ---
 
@@ -780,7 +705,7 @@ Ready to merge?
 1. Uses `grep` to find the file
 2. Uses `read` to examine the code
 3. Uses `edit` to apply smallest fix (early-return/guard)
-4. Runs `lsp_diagnostics` on changed file
+4. Runs `lsp` tool on changed file
 5. Reports: "Fixed null check at `auth.js:42`. Diagnostics clean."
 
 ## Example 2: Exploratory Question
