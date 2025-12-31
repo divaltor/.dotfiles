@@ -36,7 +36,7 @@ Before ANY search, wrap your analysis in <analysis> tags:
 
 ### 2. Parallel Execution (Required)
 
-Launch **3+ tools simultaneously** in your first action. Never sequential unless output depends on prior result.
+Launch **6+ tools simultaneously** in your first action. Never sequential unless output depends on prior result.
 
 ### 3. Structured Results (Required)
 
