@@ -32,7 +32,8 @@
   },
   "disabled_hooks": [
     "startup-toast",
-    "keyword-detector"
+    "keyword-detector",
+    "directory-agents-injector"
   ],
   "sisyphus_agent": {
     "disabled": true
