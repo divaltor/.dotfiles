@@ -1,0 +1,14 @@
+{
+  "plugin": [
+    "oh-my-opencode"
+  ],
+  "agent": {
+    "build": {
+      "disable": true
+    },
+    "plan": {
+      "disable": true
+    }
+  },
+  "$schema": "https://opencode.ai/config.json"
+}
