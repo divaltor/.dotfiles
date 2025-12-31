@@ -8,11 +8,11 @@
     },
     "Planner-Sisyphus": {
       "model": "opencode/glm-4.7-free",
-      "color": "#E87385"
+      "color": "#E87385",
+      "disable": true
     },
     "librarian": {
-      "model": "github-copilot/claude-sonnet-4.5",
-      "disable": true
+      "model": "github-copilot/claude-sonnet-4.5"
     },
     "oracle": {
       "model": "opencode/claude-opus-4-5"
@@ -32,13 +32,15 @@
   },
   "disabled_hooks": [
     "startup-toast",
-    "background-notification",
     "keyword-detector"
-  ],
-  "disabled_mcps": [
-    "websearch_exa"
   ],
   "sisyphus_agent": {
     "disabled": true
-  }
+  },
+  "disabled_mcps": [
+    "websearch_exa"
+  ],
+  "disabled_agents": [
+    "librarian"
+  ]
 }
