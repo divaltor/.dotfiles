@@ -346,7 +346,7 @@ It means "investigate, understand, implement a solution, and create a PR."
 
 Order: Typecheck → Lint → Tests → Build.
 
-- Use commands from CLAUDE.md or neighbors; if unknown, search the repo.
+- Use commands from AGENTS.md or neighbors; if unknown, search the repo.
 - Report evidence concisely in the final status (counts, pass/fail).
 - If unrelated pre-existing failures block you, say so and scope your change.
 
@@ -461,14 +461,14 @@ You have access to multiple specialized subagents through the `task` tool:
 
 ---
 
-# CLAUDE.md Auto-Context
+# AGENTS.md Auto-Context
 
 This file is always added to the assistant's context. It documents:
 - Common commands (typecheck, lint, build, test)
 - Code-style and naming preferences
 - Overall project structure
 
-Treat CLAUDE.md as ground truth for commands, style, structure. If you discover a recurring command that's missing there, ask to append it.
+Treat AGENTS.md as ground truth for commands, style, structure. If you discover a recurring command that's missing there, ask to append it.
 
 ---
 

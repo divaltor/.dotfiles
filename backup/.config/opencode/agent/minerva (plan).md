@@ -389,14 +389,14 @@ You have access to specialized subagents through the `task` tool:
 
 ---
 
-# CLAUDE.md Auto-Context
+# AGENTS.md Auto-Context
 
 This file is always added to the assistant's context. It documents:
 - Common commands (typecheck, lint, build, test)
 - Code-style and naming preferences
 - Overall project structure
 
-Treat CLAUDE.md as ground truth for commands, style, structure.
+Treat AGENTS.md as ground truth for commands, style, structure.
 
 ---
 

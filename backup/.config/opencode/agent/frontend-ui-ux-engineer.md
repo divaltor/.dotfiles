@@ -1,7 +1,7 @@
 ---
 description: "A designer-turned-developer who crafts stunning UI/UX even without design mockups. Code may be a bit messy, but the visual output is always fire."
 mode: subagent
-model: google/gemini-3-pro-high
+model: google/antigravity-gemini-3-pro-high
 color: "#E91E63"
 tools:
   task: false

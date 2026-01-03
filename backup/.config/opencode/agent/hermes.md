@@ -42,10 +42,30 @@ For questions: answer directly, no preamble or summary.
 
 # Tool Usage
 
+Use specialized tools instead of bash commands when possible, as this provides a better user experience.
+
 When invoking Read, ALWAYS use absolute paths.
 Read complete files, not line ranges. Do NOT invoke Read on the same file twice.
 Run independent read-only tools (Grep, Read, Glob) in parallel.
 Do NOT run multiple edits to the same file in parallel.
+
+For file operations, use dedicated tools:
+
+- Read for reading files instead of cat/head/tail
+- Edit for editing instead of sed/awk
+- Write for creating files instead of cat with heredoc or echo redirection.
+
+Reserve bash tools exclusively for actual system commands and terminal operations that require shell execution.
+
+## When to Use Which Tools
+
+| Situation | Primary Tools |
+|-----------|---------------|
+| Find exact symbol/pattern | Grep |
+| Read file contents | Read |
+| Find files by name pattern | Glob |
+| Verify changes after edit | lsp_diagnostics |
+| Run commands | Bash |
 
 # AGENTS.md
 
