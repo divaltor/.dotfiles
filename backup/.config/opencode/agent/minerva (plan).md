@@ -22,6 +22,7 @@ permission:
     "git diff*": "allow"
     "git show*": "allow"
     "git branch*": "allow"
+    "beans *": "allow"
     "*": "deny"
   webfetch: "allow"
   websearch: "allow"
