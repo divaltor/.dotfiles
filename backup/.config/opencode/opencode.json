@@ -25,8 +25,8 @@
   "provider": {
     "google": {
       "models": {
-        "claude-opus-4-5-thinking-high": {
-          "name": "Claude Opus 4.5 Thinking High (Antigravity)",
+        "antigravity-claude-opus-4-5-thinking-high": {
+          "name": "Claude Opus 4.5 High Thinking (Antigravity)",
           "limit": {
             "context": 200000,
             "output": 64000
