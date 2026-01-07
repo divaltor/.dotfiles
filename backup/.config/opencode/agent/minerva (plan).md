@@ -26,6 +26,7 @@ permission:
     "*": "deny"
   webfetch: "allow"
   websearch: "allow"
+color: "#EB675E"
 ---
 
 <system-reminder>
