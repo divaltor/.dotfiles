@@ -11,6 +11,7 @@ description: Use when starting work, tracking tasks, or deciding where to record
 | **Beans** | Agent memory & audit trail | Git-tracked | Agents, future sessions |
 
 **Usage Guidelines:**
+
 - **TodoWrite**: Use for multi-step (3+) user-facing work to show progress. Skip for background tasks.
 - **Beans**: Use for all non-trivial work (3+ steps). Mandatory for audit trails and session-spanning tasks.
 - **Granularity**: Avoid excessive splitting. Keep related context together to minimize CLI overhead and context fragmentation.
@@ -57,15 +58,18 @@ Finding the right balance for task size is crucial for agent efficiency:
 ## Task Lifecycle
 
 ### 1. Before Starting
+
 - Find work: `beans list --ready`
 - Create bean: `beans create "Title" -t <type> -s in-progress`
 - For user-facing work, also create a **TodoWrite** list mirroring the bean's checklist.
 
 ### 2. During Work
+
 - **Update checklist immediately**: Mark items `- [x]` as finished. This provides persistence if context is lost.
 - Keep TodoWrite items in sync with bean checklist items for consistency.
 
 ### 3. After Completion
+
 - Mark completed: `beans update <id> -s completed`
 - Add a `## Summary of Changes` section to the bean file.
 - If scrapped, use `-s scrapped` and add a `## Reasons for Scrapping` section.
@@ -96,6 +100,7 @@ beans create "Subtask" -t task --parent <current-id> --tag discovered
 Use tags for concerns not covered by type or hierarchy.
 
 **Recommended tags:**
+
 - `discovered` - Work found during implementation
 - `frontend` / `backend` - Component type
 - `security` / `performance` - Non-functional concerns
@@ -109,11 +114,13 @@ beans list --tag security
 ## Git Integration
 
 Every code commit includes its associated bean file:
+
 ```bash
 git commit -m "[TYPE] Description" -- src/file.ts .beans/issue-abc123.md
 ```
 
 When closing a bean, reference it in the commit message:
+
 ```
 <descriptive message>
 
@@ -140,11 +147,13 @@ beans archive
 ## Advanced Tools
 
 **Roadmap Generation**
+
 ```bash
 beans roadmap > ROADMAP.md
 ```
 
 **Interactive Management**
+
 ```bash
 beans tui
 ```
@@ -201,26 +210,3 @@ beans list --is-blocked      # Beans that cannot start (blocked by others)
 beans list --has-blocking    # Beans that block others (are blockers)
 beans list --ready           # Beans NOT blocked (ready to start)
 ```
-
-## Priorities
-
-Use `-p` when creating or `--priority` when updating:
-{{range .Priorities}}
-- **{{.Name}}**{{if .Description}}: {{.Description}}{{end}}
-{{- end}}
-
-Beans without priority are treated as `normal` for sorting.
-
-## Issue Types
-
-Always specify a type with `-t` when creating beans:
-{{range .Types}}
-- **{{.Name}}**{{if .Description}}: {{.Description}}{{end}}
-{{- end}}
-
-## Statuses
-
-Project-configured statuses:
-{{range .Statuses}}
-- **{{.Name}}**{{if .Description}}: {{.Description}}{{end}}
-{{- end}}
