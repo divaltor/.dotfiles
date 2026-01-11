@@ -1,7 +1,8 @@
 ---
 description: 'Contextual grep for codebases. Answers "Where is X?", "Which file has Y?", "Find the code that does Z".'
 mode: subagent
-model: google/gemini-3-flash
+model: google/antigravity-gemini-3-flash
+variant: medium
 temperature: 0.1
 tools:
   write: false

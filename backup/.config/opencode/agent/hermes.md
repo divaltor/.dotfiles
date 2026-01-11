@@ -55,7 +55,7 @@ For questions: answer directly, no preamble.
 | Find pattern | Grep |
 | Read file | Read |
 | Find files | Glob |
-| Verify changes | lsp |
+| Verification & References | lsp |
 | Run commands | Bash |
 
 Rules:
