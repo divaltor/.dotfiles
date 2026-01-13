@@ -141,4 +141,5 @@
     "typescript.inlayHints.variableTypes.enabled": true,
     "typescript.inlayHints.functionLikeReturnTypes.enabled": true,
     "prisma.hidePrisma6Prompts": true,
+    "amp.tab.enabled": true,
 }
