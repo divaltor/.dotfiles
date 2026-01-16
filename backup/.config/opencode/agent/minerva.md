@@ -141,6 +141,18 @@ Never: leave code broken, delete failing tests to "pass"
 - If decision needed (new dep, refactor scope), present 2-3 options with recommendation
 - If user's design seems flawed, raise concern before implementing
 
+## Asking Questions (QuestionTool)
+
+Use `QuestionTool` when:
+- Request is ambiguous or has multiple valid interpretations
+- Critical information is missing (target behavior, constraints, scope)
+- Trade-off decision requires user input
+- You need to confirm assumptions before implementing
+
+Do NOT ask when:
+- You can find the answer by searching code/docs
+- The question is trivial or obvious from context
+
 # Output Format
 
 - Be concise. No inner monologue.
