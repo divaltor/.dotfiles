@@ -116,6 +116,6 @@
   "experimental": {
     "openTelemetry": true
   },
-  "default_agent": "athena",
+  "default_agent": "i.r.i.s",
   "$schema": "https://opencode.ai/config.json"
 }
