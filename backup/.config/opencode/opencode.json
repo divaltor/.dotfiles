@@ -4,11 +4,11 @@
   ],
   "agent": {
     "build": {
-      "disable": true
+      "disable": true,
     },
     "plan": {
       "disable": true
-    }
+    },
   },
   "mcp": {
     "grep": {
@@ -116,6 +116,6 @@
   "experimental": {
     "openTelemetry": true
   },
-  "default_agent": "minerva",
+  "default_agent": "athena",
   "$schema": "https://opencode.ai/config.json"
 }
