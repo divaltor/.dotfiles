@@ -116,6 +116,6 @@
   "experimental": {
     "openTelemetry": true
   },
-  "default_agent": "i.r.i.s",
+  "default_agent": "morney",
   "$schema": "https://opencode.ai/config.json"
 }
