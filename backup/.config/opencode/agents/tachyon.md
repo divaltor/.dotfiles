@@ -70,6 +70,22 @@ For questions: answer directly, no preamble.
 | Find files | Glob |
 | Verification & References | lsp |
 | Run commands | Bash |
+| File edits | apply_patch |
+
+## apply_patch
+
+Use for file edits. Format:
+
+```
+*** Begin Patch
+*** Update File: path/file.ts
+@@ context
+-old
++new
+*** End Patch
+```
+
+Don't use for: auto-generated files, bulk search-replace.
 
 Rules:
 

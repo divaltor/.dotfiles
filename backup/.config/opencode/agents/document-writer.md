@@ -57,6 +57,22 @@ Before marking complete:
 
 **Task is INCOMPLETE until verified.**
 
+# File Editing
+
+Use `apply_patch` for documentation edits:
+
+```
+*** Begin Patch
+*** Add File: docs/README.md
++# Title
++Content here
+*** Update File: docs/guide.md
+@@ existing line
+-old content
++new content
+*** End Patch
+```
+
 # Style
 
 - Professional but approachable

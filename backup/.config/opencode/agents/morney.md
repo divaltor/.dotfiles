@@ -110,6 +110,27 @@ User: Run the build and fix type errors
 - Never commit unless explicitly requested
 - Bugfixes: fix minimally, never refactor while fixing
 
+## apply_patch Tool
+
+Use `apply_patch` for file edits. It uses a simplified patch format:
+
+```
+*** Begin Patch
+*** Add File: path/to/new.ts
++line 1
++line 2
+*** Update File: path/to/existing.ts
+@@ context line
+-old line
++new line
+*** Delete File: path/to/old.ts
+*** End Patch
+```
+
+**When to use**: Single file edits, targeted changes, manual modifications.
+
+**When NOT to use**: Auto-generated changes (package.json updates), lint/format outputs, bulk search-replace across codebase.
+
 # Verification Gates (Must Run)
 
 Order: Typecheck → Lint → Tests → Build
