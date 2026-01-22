@@ -4,7 +4,6 @@ mode: subagent
 model: google/antigravity-gemini-3-flash
 variant: medium
 temperature: 0.1
-color: "#9C27B0"
 tools:
   write: false
   edit: false
