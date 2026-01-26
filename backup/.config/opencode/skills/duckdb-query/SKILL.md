@@ -159,16 +159,22 @@ SELECT * FROM 'data/*/*.parquet' WHERE year = 2024;
 
 ## Output Formats
 
+**Default: Use `-jsonlines` for compact LLM-friendly output** (one JSON object per row, no wasted tokens on table formatting):
+
 ```bash
-# JSON output
+# PREFERRED: JSONLines - compact, one object per line (best for LLM agents)
+duckdb -jsonlines -c "SELECT * FROM 'data.parquet' LIMIT 5"
+
+# JSON array - when you need a valid JSON array
 duckdb -json -c "SELECT * FROM 'data.parquet' LIMIT 5"
 
-# CSV output  
+# CSV - compact, good for exports
 duckdb -csv -c "SELECT * FROM 'data.parquet' LIMIT 5"
-
-# Markdown (good for documentation)
-duckdb -markdown -c "SELECT * FROM 'data.parquet' LIMIT 5"
 ```
+
+**Avoid for LLM queries**: `-markdown`, `-box`, `-duckbox`, `-table` (verbose, wastes context tokens)
+
+Only use table formats when explicitly showing results to users in documentation.
 
 ## Common Patterns
 
