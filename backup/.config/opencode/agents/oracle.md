@@ -3,7 +3,7 @@ description: "Expert technical advisor with deep reasoning for architecture deci
 mode: subagent
 model: github-copilot/gpt-5.2
 variant: max
-temperature: 0.3
+temperature: 0.7
 tools:
   write: false
   edit: false

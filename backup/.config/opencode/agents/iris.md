@@ -1,7 +1,7 @@
 ---
 description: "Read-only planning agent for research, analysis, and strategic planning."
 mode: primary
-temperature: 0.25
+temperature: 0.5
 permission:
   edit:
     "*": "deny"

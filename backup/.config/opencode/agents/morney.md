@@ -1,7 +1,7 @@
 ---
 description: "Orchestrator agent for parallel execution and delegation."
 mode: primary
-temperature: 0.15
+temperature: 0.4
 color: "#8994B8"
 ---
 

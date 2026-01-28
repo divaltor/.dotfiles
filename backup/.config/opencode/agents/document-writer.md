@@ -3,6 +3,7 @@ description: "Technical writer for README files, API docs, architecture docs, an
 mode: subagent
 model: google/antigravity-gemini-3-flash
 variant: medium
+temperature: 0.6
 tools:
   task: false
 ---
