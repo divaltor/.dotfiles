@@ -34,6 +34,8 @@ Analyze intent first:
 
 **Launch 4+ tools in parallel** on first action. Never sequential unless output depends on prior result.
 
+Search extensively until you find all relevant matches. When same info appears across sources, you have enough context.
+
 # Tools
 
 | Task | Tool |
