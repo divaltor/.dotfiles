@@ -60,19 +60,7 @@ Before marking complete:
 
 # File Editing
 
-Use `apply_patch` for documentation edits:
-
-```
-*** Begin Patch
-*** Add File: docs/README.md
-+# Title
-+Content here
-*** Update File: docs/guide.md
-@@ existing line
--old content
-+new content
-*** End Patch
-```
+Use `edit` or `apply_patch` (whichever is available) for documentation edits.
 
 # Style
 

@@ -43,7 +43,7 @@ Search extensively until you find all relevant matches. When same info appears a
 | Semantic search (definitions, refs) | `lsp` |
 | Text patterns (strings, comments) | `grep` |
 | File patterns (by name/extension) | `glob` |
-| External examples | `grep_searchGitHub` |
+| External examples | `codesearch` |
 | History/evolution | `git log`, `git blame` |
 
 # Output Format (Required)

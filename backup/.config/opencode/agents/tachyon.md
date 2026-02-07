@@ -70,22 +70,9 @@ For questions: answer directly, no preamble.
 | Find files | Glob |
 | Verification & References | lsp |
 | Run commands | Bash |
-| File edits | apply_patch |
+| File edits | `edit` or `apply_patch` (use whichever is available) |
 
-## apply_patch
-
-Use for file edits. Format:
-
-```
-*** Begin Patch
-*** Update File: path/file.ts
-@@ context
--old
-+new
-*** End Patch
-```
-
-Don't use for: auto-generated files, bulk search-replace.
+Don't use editing tools for: auto-generated files, bulk search-replace.
 
 Rules:
 
@@ -94,6 +81,19 @@ Rules:
 - Don't Read same file twice
 - Run independent reads in parallel
 - Don't edit same file in parallel
+
+# Security
+
+- Never introduce code that exposes or logs secrets and keys
+- Never commit secrets or keys to the repository
+- Redaction markers like `[REDACTED:*]` indicate secrets — never overwrite them
+
+# Git Hygiene
+
+- NEVER revert existing changes you did not make unless explicitly requested
+- Do not amend commits unless explicitly requested
+- **NEVER** use `git reset --hard` or `git checkout --` unless specifically requested
+- Never use background processes with `&` in shell commands
 
 # Failure Recovery
 
