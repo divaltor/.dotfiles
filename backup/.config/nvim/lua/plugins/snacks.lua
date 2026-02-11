@@ -34,12 +34,38 @@ return {
       layout = {
         prompt_position = "top",
       },
+      max_threads = 10,
+      prompt = "λ ",
     },
     keys = {
-      { "<leader><space>", function() require("fff").find_in_git_root() end, desc = "Find Files (Root Dir)" },
-      { "<leader>ff", function() require("fff").find_in_git_root() end, desc = "Find Files (Root Dir)" },
-      { "<leader>fF", function() require("fff").find_files() end, desc = "Find Files (cwd)" },
-      { "<leader>fg", function() require("fff").find_in_git_root() end, desc = "Find Files (git-files)" },
+      {
+        "<leader><space>",
+        function()
+          require("fff").find_in_git_root()
+        end,
+        desc = "Find Files (Root Dir)",
+      },
+      {
+        "<leader>ff",
+        function()
+          require("fff").find_in_git_root()
+        end,
+        desc = "Find Files (Root Dir)",
+      },
+      {
+        "<leader>fF",
+        function()
+          require("fff").find_files()
+        end,
+        desc = "Find Files (cwd)",
+      },
+      {
+        "<leader>fg",
+        function()
+          require("fff").find_in_git_root()
+        end,
+        desc = "Find Files (git-files)",
+      },
     },
   },
 }
