@@ -36,6 +36,20 @@ return {
       },
       max_threads = 10,
       prompt = "λ ",
+      hl = {
+        border = "FFFBorder",
+        normal = "FFFNormal",
+        cursor = "FFFCursor",
+        matched = "FFFMatched",
+        title = "FFFTitle",
+        prompt = "FFFPrompt",
+        active_file = "FFFActiveFile",
+        frecency = "FFFFrequency",
+        debug = "FFFDebug",
+        combo_header = "FFFComboHeader",
+        scrollbar = "FFFScrollbar",
+        directory_path = "FFFDirectoryPath",
+      },
     },
     keys = {
       {
