@@ -1,0 +1,4 @@
+[mgr]
+linemode = "size_and_mtime"
+show_symlink = true
+show_hidden = true
