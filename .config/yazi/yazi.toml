@@ -2,3 +2,8 @@
 linemode = "size_and_mtime"
 show_symlink = true
 show_hidden = true
+
+[opener]
+edit = [
+	{ run = "nvim %s", block = true, for = "unix" },
+]
