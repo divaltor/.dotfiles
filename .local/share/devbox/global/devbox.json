@@ -1,0 +1,50 @@
+{
+  "$schema": "https://raw.githubusercontent.com/jetify-com/devbox/0.14.1/.schema/devbox.schema.json",
+  "packages": {
+    "neovim":     "latest",
+    "bat":        "latest",
+    "starship":   "latest",
+    "eza":        "latest",
+    "lazygit":    "latest",
+    "zoxide":     "latest",
+    "go":         "latest",
+    "ripgrep":    "latest",
+    "yazi":       "latest",
+    "btop":       "latest",
+    "ffmpeg":     "latest",
+    "pkg-config": "latest",
+    "openssl": {
+      "version": "latest",
+      "outputs": ["dev", "out", "bin"]
+    },
+    "zig":      "latest",
+    "fzf":      "latest",
+    "tlrc":     "latest",
+    "helix":    "latest",
+    "bun":      "latest",
+    "pnpm":     "latest",
+    "rclone":   "latest",
+    "dust":     "latest",
+    "ouch":     "latest",
+    "ast-grep": "latest",
+    "age":      "latest",
+    "delta":    "latest",
+    "cmake":    "latest",
+    "uv":       "latest",
+    "opentofu": "latest",
+    "mise":     "latest",
+    "dive":     "latest",
+    "fd":       "latest",
+    "stow":     "latest"
+  },
+  "shell": {
+    "init_hook": [
+      "echo 'Welcome to devbox!' > /dev/null"
+    ],
+    "scripts": {
+      "test": [
+        "echo \"Error: no test specified\" && exit 1"
+      ]
+    }
+  }
+}
