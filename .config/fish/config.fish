@@ -1,12 +1,14 @@
 set fish_greeting ""
 
-set -U -x HOMEBREW_NO_AUTO_UPDATE ""
+set -U -x HOMEBREW_NO_AUTO_UPDATE 1
 set -U -x XDG_CONFIG_HOME $HOME/.config
 set -U -x nvm_default_version lts
 
 eval "$(/opt/homebrew/bin/brew shellenv)"
 
-devbox global shellenv --init-hook | source
+if type -q devbox
+    devbox global shellenv --init-hook | source
+end
 
 set -U -x PKG_CONFIG_PATH $DEVBOX_PACKAGES_DIR/lib/pkgconfig
 
