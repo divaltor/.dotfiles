@@ -100,7 +100,11 @@ return {
         directory_path = "FFFDirectoryPath",
       },
     },
+    -- stylua: ignore
     keys = {
+      { "<leader>/", function() require("fff").live_grep() end, desc = "Live Grep (fff)" },
+      { "<leader>sg", function() require("fff").live_grep() end, desc = "Live Grep (fff)" },
+      { "<leader>sG", function() require("fff").live_grep() end, desc = "Live Grep (fff, cwd)" },
       {
         "<leader><space>",
         function()

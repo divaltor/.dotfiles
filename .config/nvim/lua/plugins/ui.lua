@@ -116,20 +116,6 @@ return {
     },
   },
   {
-    "dmtrKovalenko/fff.nvim",
-    build = function()
-      require("fff.download").download_or_build_binary()
-    end,
-    lazy = false,
-    opts = {},
-    -- stylua: ignore
-    keys = {
-      { "<leader>/", function() require("fff").live_grep() end, desc = "Live Grep (fff)" },
-      { "<leader>sg", function() require("fff").live_grep() end, desc = "Live Grep (fff)" },
-      { "<leader>sG", function() require("fff").live_grep() end, desc = "Live Grep (fff, cwd)" },
-    },
-  },
-  {
     "folke/snacks.nvim",
     opts = {
       picker = {
