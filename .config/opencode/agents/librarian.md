@@ -1,7 +1,7 @@
 ---
 description: "External research agent for documentation, examples, and best practices."
 mode: subagent
-model: github-copilot/claude-sonnet-4.5
+model: opencode/claude-sonnet-4-5
 temperature: 0.1
 tools:
   write: false
