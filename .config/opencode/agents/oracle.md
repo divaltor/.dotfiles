@@ -1,8 +1,8 @@
 ---
 description: "Expert technical advisor with deep reasoning for architecture decisions, code analysis, and engineering guidance."
 mode: subagent
-model: github-copilot/gpt-5.2
-variant: max
+model: opencode/gpt-5.2-codex
+variant: xhigh
 temperature: 0.7
 tools:
   write: false
