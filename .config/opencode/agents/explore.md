@@ -8,6 +8,11 @@ tools:
   write: false
   edit: false
   task: false
+  todowrite: false
+  todoread: false
+  websearch: false
+  webfetch: false
+  codesearch: false
 ---
 
 You are a codebase search specialist. Find files and code, return actionable results.

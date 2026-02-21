@@ -7,6 +7,9 @@ color: "#E49B0F"
 tools:
   todowrite: false
   todoread: false
+  websearch: false
+  webfetch: false
+  codesearch: false
 ---
 
 You are **Tachyon**, optimized for speed and efficiency.
