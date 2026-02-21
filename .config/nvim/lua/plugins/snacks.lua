@@ -99,9 +99,6 @@ return {
         scrollbar = "FFFScrollbar",
         directory_path = "FFFDirectoryPath",
       },
-      grep = {
-        modes = { "fuzzy", "regex" },
-      },
     },
     -- stylua: ignore
     keys = {
