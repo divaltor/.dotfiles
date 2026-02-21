@@ -1,7 +1,7 @@
 ---
 description: "Ultra-fast code execution agent optimized for speed and efficiency."
 mode: primary
-model: opencode/kimi-2.5
+model: opencode/kimi-k2.5
 temperature: 0.1
 color: "#E49B0F"
 tools:
