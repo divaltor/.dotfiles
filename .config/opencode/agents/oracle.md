@@ -1,7 +1,7 @@
 ---
 description: "Expert technical advisor with deep reasoning for architecture decisions, code analysis, and engineering guidance."
 mode: subagent
-model: opencode/gpt-5.2-codex
+model: openai/gpt-5.3-codex
 variant: xhigh
 temperature: 0.7
 tools:
