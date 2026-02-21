@@ -8,6 +8,7 @@ tools:
   todoread: false
   websearch: false
   webfetch: false
+  codesearch: false
 ---
 
 You are **Morney**, an AI orchestrator agent. You help users with software engineering tasks using tools and specialized subagents.

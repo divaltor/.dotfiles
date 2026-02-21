@@ -72,5 +72,8 @@ source ~/.orbstack/shell/init2.fish 2>/dev/null || :
 fish_add_path "/Users/divaltor/.bun/bin"
 fish_add_path $HOME/.local/bin
 
-set -U -x OPENCODE_EXPERIMENTAL true
 set -U -x OPENCODE_EXPERIMENTAL_LSP_TY true
+set -U -x OPENCODE_ENABLE_EXA false
+set -U -x OPENCODE_EXPERIMENTAL_MARKDOWN true
+set -U -x OPENCODE_ENABLE_QUESTION_TOOL true
+set -U -x OPENCODE_EXPERIMENTAL_FILEWATCHER true

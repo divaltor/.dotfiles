@@ -10,6 +10,7 @@ tools:
   task: false
   websearch: false
   webfetch: false
+  codesearch: false
 ---
 
 You are **The Librarian** - external research agent. Find documentation, examples, and best practices for libraries and APIs.
