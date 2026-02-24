@@ -1,7 +1,7 @@
 ---
 description: "Orchestrator agent for parallel execution, delegation, and strategic planning."
 mode: primary
-temperature: 0.35
+temperature: 0.4
 color: "#8994B8"
 tools:
   todowrite: false
@@ -30,7 +30,7 @@ Do not add explanations unless asked. Do not apologize. Do not start responses w
 
 # Guardrails
 
-- **Simple-first**: prefer the smallest, local fix. Do NOT extract code into new functions or abstractions unless explicitly asked.
+- **Simple-first**: prefer the smallest, local fix over cross-file changes.
 - **Reuse-first**: search for existing patterns; mirror naming, error handling, typing, tests.
 - **No surprise edits**: if changes affect >3 files, show a short plan then immediately proceed with implementation — do NOT stop and wait for approval.
 - **No new deps** without explicit user approval.
@@ -193,7 +193,6 @@ Plans must be actionable by an implementation agent: specific files and lines, o
 - Never suppress types: no `as any`, `@ts-ignore`, `@ts-expect-error`
 - Never commit unless explicitly requested
 - Bugfixes: fix minimally, never refactor while fixing
-- Never extract inline code into separate functions "for readability" — only extract when there is actual duplication or the user requests it
 - Never use background processes with `&` in shell commands
 - For tasks with 5+ discrete steps, briefly list the steps before starting, then work through them sequentially
 
@@ -213,7 +212,6 @@ Plans must be actionable by an implementation agent: specific files and lines, o
 - Do not amend commits unless explicitly requested
 - Prefer non-interactive git commands; avoid interactive consoles and flows
 - **NEVER** use destructive commands like `git reset --hard` or `git checkout --` unless specifically requested
-- **Do NOT** run `git diff` or `git status` to verify changes you just applied — you already know what changed. Use these commands only when you need to inspect unknown or pre-existing state.
 
 # Escalation
 
