@@ -7,31 +7,37 @@ gui:
   showRandomTip: false
   theme:
     activeBorderColor:
-      - "#d7827e"
+      - green # Pine
       - bold
     inactiveBorderColor:
-      - "#6c6f85"
-    optionsTextColor:
-      - "#286983"
-    selectedLineBgColor:
-      - "#dfdad9"
-    cherryPickedCommitBgColor:
-      - "#dfdad9"
-    cherryPickedCommitFgColor:
-      - "#907aa9"
-    unstagedChangesColor:
-      - "#b4637a"
-    defaultFgColor:
-      - "#575279"
+      - default
     searchingActiveBorderColor:
-      - "#ea9d34"
+      - cyan # Rose
+      - bold
+    optionsTextColor:
+      - blue # Foam
+    selectedLineBgColor:
+      - default
+      - bold
+      - underline
+    inactiveViewSelectedLineBgColor:
+      - bold
+    cherryPickedCommitFgColor:
+      - default
+    cherryPickedCommitBgColor:
+      - cyan # Rose
+    markedBaseCommitFgColor:
+      - blue # Foam
+    markedBaseCommitBgColor:
+      - yellow # Gold
+    unstagedChangesColor:
+      - red # Love
+    defaultFgColor:
+      - default
   authorColors:
-    "*": "#907aa9"
+    "*": magenta # Iris
 git:
   overrideGpg: true
-  pagers:
-    - colorArg: always
-      pager: delta --paging=never --features="hoopoe" --syntax-theme="GitHub"
   commitPrefix:
     - pattern: "^(\\w+-\\d+).*"
       replace: "$1: "

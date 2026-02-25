@@ -16,3 +16,5 @@ window-inherit-font-size = false
 
 macos-option-as-alt = true
 keybind = shift+enter=text:\n
+
+window-colorspace = display-p3
