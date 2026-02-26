@@ -7,7 +7,14 @@ return {
           enabled = false,
         },
         tsgo = {},
-        oxlint = {},
+        oxlint = {
+          root_markers = {
+            ".oxlintrc.json",
+            "oxlint.config.ts",
+            "package.json",
+            ".git",
+          },
+        },
       },
     },
   },
