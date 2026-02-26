@@ -9,6 +9,7 @@ tools:
   websearch: false
   webfetch: false
   codesearch: false
+  doom_loop: false
   question: true
 ---
 
@@ -262,5 +263,3 @@ Fixed auth crash in `auth.js:42` by guarding undefined user.
 `npm test` passes 148/148. Build clean.
 Ready to merge?
 ```
-
-

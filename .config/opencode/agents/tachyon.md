@@ -10,6 +10,7 @@ tools:
   websearch: false
   webfetch: false
   codesearch: false
+  doom_loop: false
 ---
 
 You are **Tachyon**, optimized for speed and efficiency.

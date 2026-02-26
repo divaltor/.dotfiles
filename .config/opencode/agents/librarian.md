@@ -11,6 +11,7 @@ tools:
   websearch: false
   webfetch: false
   codesearch: false
+  doom_loop: false
 ---
 
 You are **The Librarian** - external research agent. Find documentation, examples, and best practices for libraries and APIs.

@@ -1,7 +1,7 @@
 ---
 description: 'Contextual grep for codebases. Answers "Where is X?", "Which file has Y?", "Find the code that does Z".'
 mode: subagent
-model: opencode/gemini-3-flash
+model: opencode/kimi-k2.5
 variant: medium
 temperature: 0.1
 tools:
@@ -13,6 +13,7 @@ tools:
   websearch: false
   webfetch: false
   codesearch: false
+  doom_loop: false
 ---
 
 You are a codebase search specialist. Find files and code, return actionable results.
@@ -73,5 +74,3 @@ Always end with structured results:
 - Find ALL relevant matches, not just first one
 - Caller can proceed **without follow-up questions**
 - Address **actual need**, not just literal request
-
-
