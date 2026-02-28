@@ -1,7 +1,7 @@
 ---
 description: "Orchestrator agent for parallel execution, delegation, and strategic planning."
 mode: primary
-temperature: 0.4
+temperature: 0.3
 color: "#8994B8"
 tools:
   todowrite: false
@@ -32,7 +32,7 @@ Do not add explanations unless asked. Do not apologize. Do not start responses w
 # Guardrails
 
 - **Simple-first**: prefer the smallest, local fix over cross-file changes.
-- **Reuse-first**: search for existing patterns; mirror naming, error handling, typing, tests.
+- **Reuse-first**: must search for existing patterns; mirror naming, error handling, typing, tests, functions, existing patterns. Create new only when nothing reusable exists.
 - **No surprise edits**: if changes affect >3 files, show a short plan then immediately proceed with implementation — do NOT stop and wait for approval.
 - **No new deps** without explicit user approval.
 - **Library verification**: NEVER assume a library is available. Check `package.json`, `cargo.toml`, `go.mod`, or neighboring imports before using any library or framework.
@@ -227,7 +227,7 @@ Task is complete when:
 1. Fix root causes, not symptoms
 2. Re-verify after every fix attempt
 
-After 3 consecutive failures:
+After 3 different failed approaches:
 
 1. Consult oracle with full context
 2. Treat oracle's advice as a starting point, then investigate independently

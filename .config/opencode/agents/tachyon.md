@@ -28,6 +28,7 @@ Do the task with minimal explanation:
 - Use `grep`, `glob`, `read`, and `lsp` extensively in parallel to understand code
 - NEVER assume a library is available — check `package.json`/`cargo.toml`/imports first
 - Make edits with `edit` or `apply_patch` (use whichever is available)
+- Always read a file immediately before editing it to ensure latest content
 - After changes, MUST verify with `lsp` and build/test/lint commands via `bash`
 - NEVER make changes without then verifying they work
 - Check surrounding code style and patterns before editing — mirror them
