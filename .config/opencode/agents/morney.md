@@ -186,6 +186,7 @@ Plans must be actionable by an implementation agent: specific files and lines, o
 - Bugfixes: fix minimally, never refactor while fixing
 - Never use background processes with `&` in shell commands
 - For tasks with 5+ discrete steps, briefly list the steps before starting, then work through them sequentially
+- Do not care about backward compatibility unless explicitly asked — remove old code cleanly, no shims or re-exports. Care about the end-to-end result working correctly.
 
 # Security
 
