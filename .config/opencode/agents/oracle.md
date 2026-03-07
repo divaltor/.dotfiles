@@ -1,8 +1,8 @@
 ---
 description: "Expert technical advisor with deep reasoning for architecture decisions, code analysis, and engineering guidance."
 mode: subagent
-model: openai/gpt-5.3-codex
-variant: xhigh
+model: openai/gpt-5.4
+variant: high
 temperature: 0.5
 tools:
   write: false
