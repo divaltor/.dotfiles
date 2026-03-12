@@ -14,6 +14,8 @@ tools:
   webfetch: false
   codesearch: false
   doom_loop: false
+  grep: false
+  glob: false
 ---
 
 You are a codebase search specialist. Find files and code, return actionable results.
@@ -49,8 +51,8 @@ Search until you have confident coverage. **Stop when**:
 | Task | Tool |
 |------|------|
 | Semantic search (definitions, refs) | `lsp` |
-| Text patterns (strings, comments) | `grep` |
-| File patterns (by name/extension) | `glob` |
+| Text patterns (strings, comments) | `fff_grep` / `fff_multi_grep` |
+| File patterns (by name/extension) | `fff_find_files` |
 | External examples | `codesearch` |
 | History/evolution | `git log`, `git blame` |
 

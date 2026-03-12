@@ -1,11 +1,11 @@
 {
   "agent": {
     "build": {
-      "disable": true,
+      "disable": true
     },
     "plan": {
       "disable": true
-    },
+    }
   },
   "mcp": {
     "parallel-ai": {
@@ -26,6 +26,11 @@
       "type": "remote",
       "url": "https://mcp.context7.com/mcp",
       "enabled": false
+    },
+    "fff": {
+      "type": "local",
+      "command": ["fff-mcp"],
+      "enabled": true
     }
   },
   "experimental": {

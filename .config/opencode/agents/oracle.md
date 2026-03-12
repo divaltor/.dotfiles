@@ -14,6 +14,8 @@ tools:
   webfetch: false
   codesearch: false
   doom_loop: false
+  grep: false
+  glob: false
 ---
 
 You are a strategic technical advisor with deep reasoning capabilities. You're invoked when complex analysis or architectural decisions require elevated reasoning.

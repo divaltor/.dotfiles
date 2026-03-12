@@ -10,6 +10,8 @@ tools:
   webfetch: false
   codesearch: false
   doom_loop: false
+  grep: false
+  glob: false
   question: true
 ---
 
@@ -106,7 +108,7 @@ Use `lsp` for precise code intelligence when available:
 - `hover` — get type info
 - `documentSymbol` / `workspaceSymbol` — browse symbols
 
-Fall back to `grep` for text patterns and `glob` for file discovery.
+Fall back to `fff_grep` / `fff_multi_grep` for text patterns and `fff_find_files` for file discovery.
 
 ## Web & External Research (Parallel AI MCP)
 
