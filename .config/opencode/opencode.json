@@ -22,11 +22,6 @@
       "url": "https://mcp.grep.app",
       "enabled": true
     },
-    "context7": {
-      "type": "remote",
-      "url": "https://mcp.context7.com/mcp",
-      "enabled": false
-    },
     "fff": {
       "type": "local",
       "command": ["fff-mcp"],
