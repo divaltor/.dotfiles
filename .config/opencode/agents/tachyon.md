@@ -62,9 +62,19 @@ For questions: answer directly, no preamble or summary.
 
 # Tool Usage
 
+**NEVER use `bash` for file reading (`cat`, `head`, `tail`), searching (`grep`, `find`, `rg`, `ag`), or file discovery.** Always use dedicated tools:
+
+| Task | Tool | NOT this |
+|------|------|----------|
+| Read file contents | `read` | `cat`, `head`, `tail`, `less` |
+| Text/pattern search | `fff_grep` / `fff_multi_grep` | `grep`, `rg`, `ag`, `ack` |
+| Find files by name/pattern | `fff_find_files` | `find`, `fd`, `ls -R` |
+| Semantic search | `lsp` | — |
+| File editing | `edit` / `apply_patch` | `sed`, `awk` |
+
 Use absolute paths with `read`. Read complete files, not ranges. Do NOT read the same file twice.
 
-Run independent read-only tools (`fff_grep`, `fff_multi_grep`, `fff_find_files`, `read`, `lsp`, `codesearch`) in parallel.
+**Launch 4+ read-only tools in parallel** on first action (`fff_grep`, `fff_multi_grep`, `fff_find_files`, `read`, `lsp`). Never search sequentially unless output depends on a prior result.
 
 Do NOT run multiple edits to the same file in parallel.
 

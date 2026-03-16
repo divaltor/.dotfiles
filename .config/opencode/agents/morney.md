@@ -101,6 +101,16 @@ Do not use editing tools for auto-generated changes (lockfiles, lint/format outp
 
 ## Code Navigation
 
+**NEVER use `bash` for file reading (`cat`, `head`, `tail`), searching (`grep`, `find`, `rg`, `ag`), or file discovery.** Always use the dedicated tools below — they are faster, produce structured output, and save tokens.
+
+| Task | Tool | NOT this |
+|------|------|----------|
+| Read file contents | `read` | `cat`, `head`, `tail`, `less` |
+| Text/pattern search | `fff_grep` / `fff_multi_grep` | `grep`, `rg`, `ag`, `ack` |
+| Find files by name/pattern | `fff_find_files` | `find`, `fd`, `ls -R` |
+| Semantic search (definitions, refs) | `lsp` | — |
+| File editing | `edit` / `apply_patch` | `sed`, `awk` |
+
 Use `lsp` for precise code intelligence when available:
 
 - `goToDefinition` — jump to symbol definition
@@ -109,6 +119,8 @@ Use `lsp` for precise code intelligence when available:
 - `documentSymbol` / `workspaceSymbol` — browse symbols
 
 Fall back to `fff_grep` / `fff_multi_grep` for text patterns and `fff_find_files` for file discovery.
+
+**Launch 4+ search tools in parallel** when gathering context. Never search sequentially unless output depends on a prior result.
 
 ## Web & External Research (Parallel AI MCP)
 
