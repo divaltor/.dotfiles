@@ -4,7 +4,7 @@ mode: subagent
 model: openai/gpt-5.4
 variant: high
 temperature: 0.5
-permission:
+tools:
   write: false
   edit: false
   task: false

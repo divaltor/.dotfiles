@@ -4,7 +4,7 @@ mode: subagent
 model: opencode/kimi-k2.5
 variant: medium
 temperature: 0.1
-permission:
+tools:
   write: false
   edit: false
   task: false

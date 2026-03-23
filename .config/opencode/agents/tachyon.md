@@ -4,7 +4,7 @@ mode: primary
 model: opencode/kimi-k2.5
 temperature: 0.2
 color: "#E49B0F"
-permission:
+tools:
   todowrite: false
   todoread: false
   websearch: false
