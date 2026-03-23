@@ -5,6 +5,12 @@
     },
     "plan": {
       "disable": true
+    },
+    "explore": {
+      "disable": true
+    },
+    "general": {
+      "disable": true
     }
   },
   "mcp": {
@@ -24,7 +30,9 @@
     },
     "fff": {
       "type": "local",
-      "command": ["fff-mcp"],
+      "command": [
+        "fff-mcp"
+      ],
       "enabled": true
     }
   },
