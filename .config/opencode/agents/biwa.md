@@ -3,6 +3,7 @@ description: "Expert technical advisor with deep reasoning for architecture deci
 mode: subagent
 model: openai/gpt-5.4
 variant: high
+color: "#9A7AE0"
 temperature: 0.5
 tools:
   write: false
