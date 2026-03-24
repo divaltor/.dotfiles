@@ -149,6 +149,7 @@ Treat subagent responses as **advisory, not directive**: receive the response, d
 - Never use background processes with `&` in shell commands
 - For tasks with 5+ discrete steps, briefly list the steps before starting, then work through them sequentially
 - Remove dead code cleanly when confident it's unused; preserve public/external contracts unless asked to change them
+- When commenting, explain *why*, not just *what* — but only add comments where intent isn't obvious from the code itself
 
 # Planning Mode
 
