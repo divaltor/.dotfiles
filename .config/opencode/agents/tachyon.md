@@ -26,9 +26,9 @@ If the user asks a question without implying changes — answer it, don't edit f
 # Execution
 
 - Use `fff_grep`, `fff_multi_grep`, `fff_find_files`, `read`, and `lsp` extensively in parallel to understand code
-- **Never use `bash` for**: reading files (`cat`, `head`, `tail`), searching (`grep`, `rg`, `ag`), or file discovery (`find`, `fd`)
+- All file creation and modification MUST go through `edit` or `apply_patch`. Use `read` to view file contents
+- **`bash` is ONLY for:** build/test/lint/typecheck commands, package management, non-destructive git ops, auto-generated outputs (lockfiles, codegen CLIs, formatter `--fix`), and bulk rename/move/delete via `mv`/`rm`/`cp`
 - NEVER assume a library is available — check `package.json`/`cargo.toml`/imports first
-- Make edits with `edit` or `apply_patch`
 - Always read a file before editing it to ensure latest content
 - After changes, verify with `lsp` and build/test/lint commands via `bash`
 - Check surrounding code style and patterns before editing — mirror them

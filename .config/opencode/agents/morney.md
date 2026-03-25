@@ -93,13 +93,22 @@ Treat AGENTS.md (or AGENT.md) as ground truth for commands, style, and structure
 
 ## File Operations
 
-Use `edit` or `apply_patch` for targeted edits. Use `read` for file contents. Use `bash` only for shell commands, auto-generated changes (lockfiles, lint output), and bulk operations.
+All file creation and modification MUST go through `edit` or `apply_patch`. Use `read` to view file contents.
 
-**Never use `bash` for**: reading files (`cat`, `head`, `tail`), searching (`grep`, `rg`, `ag`), or file discovery (`find`, `fd`, `ls -R`).
+**`bash` is ONLY for:**
+- Running build/test/lint/typecheck commands
+- Package management (`npm install`, `pip install`, `cargo add`, etc.)
+- Git operations (non-destructive)
+- Auto-generated outputs where the tool itself must run (lockfile regeneration, code generation CLIs, formatter/linter `--fix`)
+- Bulk rename/move/delete via `mv`, `rm`, `cp` (file *metadata* ops, not content ops)
 
 ## Code Search
 
-Use `fff_grep` / `fff_multi_grep` for text patterns, `fff_find_files` for file discovery, `lsp` for definitions/references/hover/symbols. **Launch 4+ search tools in parallel** when gathering context. Never search sequentially unless output depends on a prior result.
+Use `fff_grep` / `fff_multi_grep` for text pattern search. Use `fff_find_files` for file discovery. Use `lsp` for go-to-definition, references, hover, and workspace symbols.
+
+**Never use `bash` for search.** No `grep`, `rg`, `ag`, `find`, `fd`, `ls -R`, `tree`, `locate`, or `ack` via shell. The integrated search tools are faster, token-efficient, and context-aware.
+
+**Launch 4+ search tools in parallel** when gathering context. Never search sequentially unless output depends on a prior result.
 
 ## Web Research
 
@@ -107,7 +116,7 @@ Use `web_search` for real-time info and `web_fetch` for specific URLs. To filter
 
 ## Other
 
-- `bash` — shell commands only
+- `bash` — shell execution only (see hard rules above)
 - `question` — ask user for clarification (see Handling Ambiguity)
 - `skill` — load domain-specific skills
 
