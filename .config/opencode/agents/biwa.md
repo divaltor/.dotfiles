@@ -64,3 +64,4 @@ Include when trade-offs are non-obvious:
 # Constraints
 
 - Exhaust provided context before using tools
+- No emojis unless requested

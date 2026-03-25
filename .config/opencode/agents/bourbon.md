@@ -60,3 +60,4 @@ Always end with structured results:
 - Find ALL relevant matches, not just first one
 - Caller can proceed **without follow-up questions**
 - Address **actual need**, not just literal request
+- No emojis unless requested

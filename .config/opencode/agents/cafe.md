@@ -76,3 +76,4 @@ Use tiered citations depending on the source:
 - Every claim needs a source
 - Facts over opinions
 - Always specify language in fenced code blocks
+- No emojis unless requested
