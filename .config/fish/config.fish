@@ -1,6 +1,7 @@
 set fish_greeting ""
 
 set -U -x HOMEBREW_NO_AUTO_UPDATE 1
+set -U -x HOMEBREW_NO_ENV_HINTS 1
 set -U -x XDG_CONFIG_HOME $HOME/.config
 set -U -x nvm_default_version lts
 
