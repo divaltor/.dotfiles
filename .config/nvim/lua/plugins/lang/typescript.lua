@@ -13,6 +13,10 @@ return {
       })
       local tsgo_on_attach = tsgo.on_attach
       tsgo.on_attach = function(client, bufnr)
+        if client.name == "tsgo" then
+          client.server_capabilities.inlayHintProvider = false
+        end
+
         if client.name == "tsgo" and not client._tsgo_completion_guard then
           client._tsgo_completion_guard = true
 
