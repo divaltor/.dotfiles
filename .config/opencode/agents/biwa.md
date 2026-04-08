@@ -64,4 +64,5 @@ Include when trade-offs are non-obvious:
 # Constraints
 
 - Exhaust provided context before using tools
+- If you need to find files or search for code, use `fff_grep` / `fff_multi_grep` for text patterns and `fff_find_files` for file discovery
 - No emojis unless requested
