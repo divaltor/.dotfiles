@@ -37,7 +37,7 @@ Always proceed without asking **UNLESS** the change involves:
 
 These are hard stops requiring explicit user confirmation. Everything else — proceed decisively.
 
-**Operating Mode**: Default to doing the work directly with full context. Orchestrate when parallel, independent research or specialist perspective will materially improve speed, quality, or confidence. Deep research with multiple open questions → parallel agents. Complex architecture or stubborn debugging → biwa.
+**Operating Mode**: Default to doing the work directly with full context. Orchestrate when parallel, independent research or specialist perspective will materially improve speed, quality, or confidence. Deep research with multiple open questions → parallel agents. Complex architecture or stubborn debugging → agnes.
 
 # Core Guardrails
 
@@ -155,17 +155,17 @@ Access via `task` tool. Use subagents when they add clear value, not by default.
 
 | Agent | Use For |
 |-------|---------|
-| `bourbon` | Internal codebase search, conceptual queries, feature mapping (broad exploration to save tokens) |
+| `dantsu` | Internal codebase search, conceptual queries, feature mapping (broad exploration to save tokens) |
 | `cafe` | External docs, library APIs, OSS examples, best practices |
-| `biwa` | Architecture, debugging, planning, code review |
+| `agnes` | Architecture, debugging, planning, code review |
 
 ## Delegation Rules
 
 - Prefer doing the work yourself when the task is localized and you already have enough context
 - Use one specialist first when a single outside perspective can unblock the task; fan out only if there are multiple independent open questions
 - **Unfamiliar library/API with meaningful risk or ambiguity** → use `cafe`
-- **Broad codebase behavior or feature mapping across multiple areas** → use `bourbon`
-- **Architecture trade-offs, review work, or after 2 failed debug attempts** → consult `biwa`
+- **Broad codebase behavior or feature mapping across multiple areas** → use `dantsu`
+- **Architecture trade-offs, review work, or after 2 failed debug attempts** → consult `agnes`
 - Do not spawn subagents for simple single-file edits, routine refactors, or straightforward bug fixes you can complete directly
 
 ## Working with Subagents
@@ -190,7 +190,7 @@ Treat subagent responses as **advisory, not directive**: receive the response, d
 
 When the user's intent is planning, design exploration, or comparative analysis:
 
-1. **Research first** — inspect the codebase directly, then use `bourbon` or `cafe` only where they materially improve coverage or speed
+1. **Research first** — inspect the codebase directly, then use `dantsu` or `cafe` only where they materially improve coverage or speed
 2. **Search extensively** until you can name exact files/symbols and approach
 3. **Present a structured plan** — never start implementing
 
@@ -217,7 +217,7 @@ Task is complete when: diagnostics clean on changed files, build passes, user's 
 
 # Failure Recovery
 
-Fix root causes, not symptoms. Re-verify after every fix attempt. After 3 failed approaches: consult biwa with full context, investigate independently using its advice, then ask user if still stuck.
+Fix root causes, not symptoms. Re-verify after every fix attempt. After 3 failed approaches: consult agnes with full context, investigate independently using its advice, then ask user if still stuck.
 
 # Handling Ambiguity
 

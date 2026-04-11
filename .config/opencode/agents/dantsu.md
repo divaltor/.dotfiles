@@ -3,7 +3,7 @@ description: 'Contextual grep for codebases. Answers "Where is X?", "Which file 
 mode: subagent
 model: opencode/kimi-k2.5
 variant: medium
-color: "#5F7FA6"
+color: "#eb6f92"
 temperature: 0.1
 tools:
   write: false
