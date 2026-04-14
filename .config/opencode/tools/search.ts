@@ -9,8 +9,15 @@ type CommandResult = {
   stderr: string
 }
 
+const ansiEscapeSequencePattern = /(?:\u001B\[[0-?]*[ -/]*[@-~]|\u009B[0-?]*[ -/]*[@-~]|\u001B\][^\u0007]*(?:\u0007|\u001B\\))/g
+const escapedAnsiSequencePattern = /(?:\\u001[bB]\[[0-?]*[ -/]*[@-~]|\\x1[bB]\[[0-?]*[ -/]*[@-~])/g
+
 function resolveSearchPath(inputPath: string, directory: string) {
   return path.isAbsolute(inputPath) ? inputPath : path.resolve(directory, inputPath)
+}
+
+function cleanCommandOutput(output: string) {
+  return output.replace(ansiEscapeSequencePattern, "").replace(escapedAnsiSequencePattern, "").trim()
 }
 
 function runColgrep(args: string[], cwd: string, signal: AbortSignal) {
@@ -134,8 +141,8 @@ export default tool({
       return `Failed to run colgrep: ${message}`
     }
 
-    const stdout = result.stdout.trim()
-    const stderr = result.stderr.trim()
+    const stdout = cleanCommandOutput(result.stdout)
+    const stderr = cleanCommandOutput(result.stderr)
 
     if (!stdout && !stderr) {
       if (result.exitCode === 0) return "No output returned by colgrep."
