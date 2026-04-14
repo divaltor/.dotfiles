@@ -64,5 +64,5 @@ Include when trade-offs are non-obvious:
 # Constraints
 
 - Exhaust provided context before using tools
-- If you need to find files or search for code, use `fff_grep` / `fff_multi_grep` for text patterns and `fff_find_files` for file discovery
+- If you need to search code, use `search` when available for semantic or cross-cutting questions, `fff_grep` / `fff_multi_grep` for exact text or known symbols, and `fff_find_files` for file discovery
 - No emojis unless requested

@@ -124,7 +124,13 @@ All file creation and modification MUST go through `edit` or `apply_patch`. Use 
 
 ## Code Search
 
-Use the lightest search that can answer the question. Use `fff_grep` / `fff_multi_grep` for exact text, path, and symbol lookups. Use `fff_find_files` for file discovery. Use `lsp` for go-to-definition, references, hover, and workspace symbols when the symbol is known. Use broader conceptual search or specialist research only when the task is behavioral, cross-cutting, or still unclear after direct search.
+Use the lightest search that can answer the question.
+
+- Use `search` when available for semantic or cross-cutting queries
+- Use `fff_grep` / `fff_multi_grep` for exact text, symbols, imports, error strings, and known paths
+- Use `fff_find_files` for file discovery by name or path
+
+Common pattern: start with `search` to map the area, then verify with `fff_*`.
 
 **Never use `bash` for search.** No `grep`, `rg`, `ag`, `find`, `fd`, `ls -R`, `tree`, `locate`, or `ack` via shell. The integrated search tools are faster, token-efficient, and context-aware.
 
