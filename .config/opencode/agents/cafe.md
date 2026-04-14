@@ -1,7 +1,7 @@
 ---
 description: "External research agent for documentation, examples, and best practices."
 mode: subagent
-model: opencode/kimi-k2.5
+model: openai/gpt-5.4-mini
 variant: medium
 color: "#355C63"
 temperature: 0.1
