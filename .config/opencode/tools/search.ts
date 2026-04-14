@@ -44,13 +44,16 @@ function runColgrep(args: string[], cwd: string, signal: AbortSignal) {
 
 export default tool({
   description:
-    "Search code with colgrep semantic search. Use this for natural-language code discovery, hybrid regex+semantic queries, and scoped file/path searches.",
+    "Search code with colgrep semantic search. Prefer this for natural-language feature discovery, cross-cutting implementation lookups, hybrid regex+semantic queries, and scoped file/path searches. When looking for a specific feature, scope `paths` to the most likely source folders or packages first, and use `excludeDir` to skip `test`, `tests`, `__tests__`, `spec`, `specs`, `docs`, and examples unless the user explicitly wants them.",
   args: {
-    query: tool.schema.string().min(1).describe("Natural-language search query to send to colgrep."),
+    query: tool.schema
+      .string()
+      .min(1)
+      .describe("Natural-language search query to send to colgrep. Describe the behavior, feature, or implementation you want to find."),
     paths: tool.schema
       .array(tool.schema.string().min(1))
       .default(["."])
-      .describe("Files or directories to search. Relative paths are resolved from the current session directory."),
+      .describe("Files or directories to search. Relative paths are resolved from the current session directory. Prefer the narrowest likely source folders or packages instead of searching the whole repo."),
     pattern: tool.schema
       .string()
       .optional()
@@ -66,7 +69,7 @@ export default tool({
     excludeDir: tool.schema
       .array(tool.schema.string().min(1))
       .optional()
-      .describe("Exclude directories by literal name or glob pattern."),
+      .describe("Exclude directories by literal name or glob pattern. Use this to skip tests, docs, examples, generated output, or other irrelevant areas when narrowing implementation searches."),
     results: tool.schema
       .number()
       .int()
@@ -79,8 +82,8 @@ export default tool({
       .int()
       .positive()
       .max(50)
-      .optional()
-      .describe("Context lines to show around each result."),
+      .default(10)
+      .describe("Context lines to show around each result. Default: 10"),
     filesOnly: tool.schema
       .boolean()
       .default(false)
