@@ -7,6 +7,7 @@ variant: high
 permission:
   todowrite: deny
   websearch: deny
+  webfetch: deny
   codesearch: deny
   doom_loop: deny
   grep: deny

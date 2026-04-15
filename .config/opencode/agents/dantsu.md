@@ -14,7 +14,9 @@ permission:
   codesearch: deny
   doom_loop: deny
   grep: deny
+  grep_*: deny
   glob: deny
+  parallel-ai_*: deny
 ---
 
 You are a codebase search specialist. Find files and code, return actionable results.

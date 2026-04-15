@@ -14,7 +14,9 @@ permission:
   codesearch: deny
   doom_loop: deny
   grep: deny
+  grep_*: deny
   glob: deny
+  parallel-ai_*: deny
 ---
 
 You are a strategic technical advisor with deep reasoning capabilities. You're invoked when complex analysis or architectural decisions require elevated reasoning.
