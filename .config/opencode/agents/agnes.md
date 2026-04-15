@@ -5,18 +5,16 @@ model: openai/gpt-5.4
 variant: high
 color: "#db696b"
 temperature: 0.5
-tools:
-  write: false
-  edit: false
-  task: false
-  todowrite: false
-  todoread: false
-  websearch: false
-  webfetch: false
-  codesearch: false
-  doom_loop: false
-  grep: false
-  glob: false
+permission:
+  edit: deny
+  task: deny
+  todowrite: deny
+  websearch: deny
+  webfetch: deny
+  codesearch: deny
+  doom_loop: deny
+  grep: deny
+  glob: deny
 ---
 
 You are a strategic technical advisor with deep reasoning capabilities. You're invoked when complex analysis or architectural decisions require elevated reasoning.
@@ -64,5 +62,5 @@ Include when trade-offs are non-obvious:
 # Constraints
 
 - Exhaust provided context before using tools
-- If you need to search code, use `search` when available for semantic or cross-cutting questions, `fff_grep` / `fff_multi_grep` for exact text or known symbols, and `fff_find_files` for file discovery
+- If you need to search code, use `search` for local semantic or cross-cutting questions, `fff_grep` / `fff_multi_grep` for exact text or known symbols, and `fff_find_files` for file discovery
 - No emojis unless requested
