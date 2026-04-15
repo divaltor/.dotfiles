@@ -9,7 +9,8 @@ permission:
   edit: deny
   task: deny
   todowrite: deny
-  websearch: allow
+  websearch: deny
+  webfetch: deny
   codesearch: deny
   doom_loop: deny
   grep: deny
