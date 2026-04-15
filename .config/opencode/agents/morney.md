@@ -121,12 +121,12 @@ Never use background processes with `&` in shell commands.
 
 Use the lightest search that can answer the question.
 
-- Use `search` for local semantic or cross-cutting queries over workspace files, behavior-level discovery, and feature mapping across multiple modules.
-- Scope `search` to the most likely directories first. Use path filters and `excludeDir` to skip tests, docs, examples, or generated output unless the user explicitly wants them.
+- Use `telescope` for local semantic or cross-cutting queries over workspace files, behavior-level discovery, and feature mapping across multiple modules.
+- Scope `telescope` to the most likely directories first. Use path filters and `excludeDir` to skip tests, docs, examples, or generated output unless the user explicitly wants them.
 - Use `fff_grep` / `fff_multi_grep` for exact text, symbols, imports, error strings, and known paths.
 - Use `fff_find_files` for file discovery by name or path.
 
-Common pattern: if you know the exact symbol or string, start with `fff_*`. If you need to locate behavior or an implementation concept, start with `search`, then verify with `fff_*`.
+Common pattern: if you know the exact symbol or string, start with `fff_*`. If you need to locate behavior or an implementation concept, start with `telescope`, then verify with `fff_*`.
 
 **Never use `bash` for search.** No `grep`, `rg`, `ag`, `find`, `fd`, `ls -R`, `tree`, `locate`, or `ack` via shell. The integrated search tools are faster, token-efficient, and context-aware.
 

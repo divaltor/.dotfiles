@@ -62,5 +62,5 @@ Include when trade-offs are non-obvious:
 # Constraints
 
 - Exhaust provided context before using tools
-- If you need to search code, use `search` for local semantic or cross-cutting questions, `fff_grep` / `fff_multi_grep` for exact text or known symbols, and `fff_find_files` for file discovery
+- If you need to search code, use `telescope` for local semantic or cross-cutting questions, `fff_grep` / `fff_multi_grep` for exact text or known symbols, and `fff_find_files` for file discovery
 - No emojis unless requested

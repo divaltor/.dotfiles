@@ -12,7 +12,7 @@ type CommandResult = {
 const ansiEscapeSequencePattern = /(?:\u001B\[[0-?]*[ -/]*[@-~]|\u009B[0-?]*[ -/]*[@-~]|\u001B\][^\u0007]*(?:\u0007|\u001B\\))/g
 const escapedAnsiSequencePattern = /(?:\\u001[bB]\[[0-?]*[ -/]*[@-~]|\\x1[bB]\[[0-?]*[ -/]*[@-~])/g
 
-function resolveSearchPath(inputPath: string, directory: string) {
+function resolveTelescopePath(inputPath: string, directory: string) {
   return path.isAbsolute(inputPath) ? inputPath : path.resolve(directory, inputPath)
 }
 
@@ -51,7 +51,7 @@ function runColgrep(args: string[], cwd: string, signal: AbortSignal) {
 
 export default tool({
   description:
-    "Search code with colgrep semantic search. Prefer this for natural-language feature discovery, cross-cutting implementation lookups, hybrid regex+semantic queries, and scoped file/path searches. When looking for a specific feature, scope `paths` to the most likely source folders or packages first, and use `excludeDir` to skip `test`, `tests`, `__tests__`, `spec`, `specs`, `docs`, and examples unless the user explicitly wants them.",
+    "Search code with Telescope using colgrep semantic search. Prefer this for natural-language feature discovery, cross-cutting implementation lookups, hybrid regex+semantic queries, and scoped file/path searches. When looking for a specific feature, scope `paths` to the most likely source folders or packages first, and use `excludeDir` to skip `test`, `tests`, `__tests__`, `spec`, `specs`, `docs`, and examples unless the user explicitly wants them.",
   args: {
     query: tool.schema
       .string()
@@ -112,17 +112,17 @@ export default tool({
     for (const exclude of args.exclude ?? []) command.push("--exclude", exclude)
     for (const excludeDir of args.excludeDir ?? []) command.push("--exclude-dir", excludeDir)
 
-    const searchPaths = (args.paths.length ? args.paths : ["."]).map((searchPath) =>
-      resolveSearchPath(searchPath, context.directory),
+    const targetPaths = (args.paths.length ? args.paths : ["."]).map((targetPath) =>
+      resolveTelescopePath(targetPath, context.directory),
     )
 
-    command.push("--", args.query, ...searchPaths)
+    command.push("--", args.query, ...targetPaths)
 
     context.metadata({
-      title: `Search: ${args.query}`,
+      title: `Telescope: ${args.query}`,
       metadata: {
         command: ["colgrep", ...command].join(" "),
-        paths: searchPaths,
+        paths: targetPaths,
       },
     })
 
@@ -136,7 +136,7 @@ export default tool({
         return "colgrep is not installed or not available in PATH. Install it first, for example with `brew install lightonai/tap/colgrep`."
       }
       if (context.abort.aborted) {
-        return "Search aborted."
+        return "Telescope aborted."
       }
       return `Failed to run colgrep: ${message}`
     }

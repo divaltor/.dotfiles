@@ -33,13 +33,13 @@ Start with 2-4 high-signal tool calls in parallel when there are genuinely diffe
 Use the lightest search that fits:
 
 - Use `fff_grep`, `fff_multi_grep`, and `fff_find_files` when you know the exact text, symbol, import, path, or filename
-- Use `search` when you need local workspace behavior-level discovery, semantic lookup, or feature mapping across multiple modules
-- Scope `search` to the most likely directories first. Use path filters and `excludeDir` to skip tests, docs, examples, and generated output unless the user explicitly wants them
+- Use `telescope` when you need local workspace behavior-level discovery, semantic lookup, or feature mapping across multiple modules
+- Scope `telescope` to the most likely directories first. Use path filters and `excludeDir` to skip tests, docs, examples, and generated output unless the user explicitly wants them
 - Use built-in `grep` only for exact regex or content search in local directories outside the current workspace, especially when `fff_*` is workspace-scoped
 - Use `list` and `glob` only when the user explicitly needs files or directories outside the current workspace
 - Use `read` only after you narrow to the relevant files
 
-Common pattern inside the current workspace: use `search` to map an area, then `fff_*` to verify exact files and symbols. If you already know the exact symbol or string, start with `fff_*` directly.
+Common pattern inside the current workspace: use `telescope` to map an area, then `fff_*` to verify exact files and symbols. If you already know the exact symbol or string, start with `fff_*` directly.
 
 Never use built-in `grep` for paths inside the current workspace. Reserve it for local external-directory searches when the path is known and exact matching matters.
 
