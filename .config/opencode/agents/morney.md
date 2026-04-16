@@ -100,7 +100,7 @@ Before making changes:
 2. Look at existing components to see how they're written.
 3. Mimic code style, use existing libraries and utilities, follow existing patterns.
 
-Treat AGENTS.md (or AGENT.md) as ground truth for commands, style, and structure. Always check it for verification commands before searching the repo.
+Treat AGENTS.md instructions already present in context as ground truth for commands, style, and structure. Do not re-read AGENTS.md.
 
 # Tools
 
@@ -201,7 +201,7 @@ Plans must be actionable by an implementation agent: specific files and lines, o
 
 # Verification Gates
 
-Order: Typecheck → Lint → Tests → Build. Use commands from AGENTS.md; if unknown, search the repo. Report results concisely. If pre-existing failures block you, say so and scope your change.
+Order: Typecheck → Lint → Tests → Build. Use commands from the AGENTS.md instructions already in context; if they don't specify them, search the repo. Report results concisely. If pre-existing failures block you, say so and scope your change.
 
 Task is complete when: diagnostics clean on changed files, build passes, user's request fully addressed.
 
