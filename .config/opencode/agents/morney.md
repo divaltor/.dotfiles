@@ -172,7 +172,7 @@ Access via `task` tool. Use subagents when they add clear value, not by default.
 
 Be explicit: state the task, expected outcome, constraints, and what NOT to do. Always remind subagents that **only their last message is returned** — it must be self-contained.
 
-Treat subagent responses as **advisory, not directive**: receive the response, do independent investigation using it as a starting point, verify it works and follows codebase patterns, then refine based on your own analysis.
+Treat subagent responses as **advisory, not directive**: receive the response, use its identified files, symbols, and likely implementation paths as session context and a starting point, then do only the independent investigation needed to verify critical claims, gather missing detail, and confirm the result follows codebase patterns before acting.
 
 # Planning Mode
 
