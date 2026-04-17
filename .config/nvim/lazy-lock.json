@@ -56,11 +56,11 @@
   "todo-comments.nvim": { "branch": "main", "commit": "31e3c38ce9b29781e4422fc0322eb0a21f4e8668" },
   "trouble.nvim": { "branch": "main", "commit": "bd67efe408d4816e25e8491cc5ad4088e708a69a" },
   "ts-comments.nvim": { "branch": "main", "commit": "123a9fb12e7229342f807ec9e6de478b1102b041" },
-  "tsugit.nvim": { "branch": "main", "commit": "d8e201225cf2d83473b2a1b1b1146e8dd37ca8a7" },
+  "tsugit.nvim": { "branch": "main", "commit": "adbf92741e6022d04ad17295b4df78fc1ee84cf4" },
   "venv-selector.nvim": { "branch": "main", "commit": "bcb2f58533c59b01565285eba49693f00bc460f5" },
   "vim-dadbod": { "branch": "master", "commit": "6d1d41da4873a445c5605f2005ad2c68c99d8770" },
   "vim-dadbod-completion": { "branch": "master", "commit": "a8dac0b3cf6132c80dc9b18bef36d4cf7a9e1fe6" },
   "vim-dadbod-ui": { "branch": "master", "commit": "07e92e22114cc5b1ba4938d99897d85b58e20475" },
   "which-key.nvim": { "branch": "main", "commit": "3aab2147e74890957785941f0c1ad87d0a44c15a" },
-  "yazi.nvim": { "branch": "main", "commit": "41b5594323e074cb45ba134eb08c07b3cfe06f16" }
+  "yazi.nvim": { "branch": "main", "commit": "9f7073dfcf25cf246819030194fbaf2d5760053f" }
 }
