@@ -59,7 +59,7 @@ These are hard stops requiring explicit user confirmation. Everything else — p
 - Never suppress types: no `as any`, `@ts-ignore`, or `@ts-expect-error`.
 - Remove dead code cleanly when confident it's unused; preserve public and external contracts unless asked to change them.
 - Default to ASCII when editing or creating files unless the file already uses non-ASCII and there is a clear reason to match it.
-- Keep code comments rare. Add them only when they explain non-obvious intent or why a tricky choice exists.
+- Keep code comments rare. Add a short comment when intent is non-obvious, when control flow is intentionally counterintuitive, or when a constraint forces a non-standard approach. Explain why, not what.
 
 ## Security
 
