@@ -11,6 +11,7 @@ type CommandResult = {
 
 const ansiEscapeSequencePattern = /(?:\u001B\[[0-?]*[ -/]*[@-~]|\u009B[0-?]*[ -/]*[@-~]|\u001B\][^\u0007]*(?:\u0007|\u001B\\))/g
 const escapedAnsiSequencePattern = /(?:\\u001[bB]\[[0-?]*[ -/]*[@-~]|\\x1[bB]\[[0-?]*[ -/]*[@-~])/g
+const benignStderrPatterns = ["Index is being updated by another process"]
 
 function resolveTelescopePath(inputPath: string, directory: string) {
   return path.isAbsolute(inputPath) ? inputPath : path.resolve(directory, inputPath)
@@ -18,6 +19,14 @@ function resolveTelescopePath(inputPath: string, directory: string) {
 
 function cleanCommandOutput(output: string) {
   return output.replace(ansiEscapeSequencePattern, "").replace(escapedAnsiSequencePattern, "").trim()
+}
+
+function filterBenignStderr(output: string) {
+  return output
+    .split(/\r?\n/)
+    .filter((line) => !benignStderrPatterns.some((pattern) => line.includes(pattern)))
+    .join("\n")
+    .trim()
 }
 
 function runColgrep(args: string[], cwd: string, signal: AbortSignal) {
@@ -51,12 +60,12 @@ function runColgrep(args: string[], cwd: string, signal: AbortSignal) {
 
 export default tool({
   description:
-    "Search code with Telescope using colgrep semantic search. Prefer this for natural-language feature discovery, cross-cutting implementation lookups, hybrid regex+semantic queries, and scoped file/path searches. When looking for a specific feature, scope `paths` to the most likely source folders or packages first, and use `excludeDir` to skip `test`, `tests`, `__tests__`, `spec`, `specs`, `docs`, and examples unless the user explicitly wants them.",
+    "Search code with Telescope using ColGREP's hybrid semantic search. Start with a short natural-language intent query such as `JWT headers validation` or `database connection pooling`, scope `paths` to the most likely source folders first. Prefer it when you don't know exact location of files or code.",
   args: {
     query: tool.schema
       .string()
       .min(1)
-      .describe("Natural-language search query to send to colgrep. Describe the behavior, feature, or implementation you want to find."),
+      .describe("Natural-language search query to send to ColGREP. Describe the behavior, feature, or implementation you want to find, not just an exact identifier."),
     paths: tool.schema
       .array(tool.schema.string().min(1))
       .default(["."])
@@ -64,7 +73,7 @@ export default tool({
     pattern: tool.schema
       .string()
       .optional()
-      .describe("Optional text pattern for hybrid regex/text pre-filtering before semantic ranking."),
+      .describe("Optional regex/text pre-filter for hybrid search. Use this only when you know a lexical constraint that should narrow candidates before semantic ranking."),
     include: tool.schema
       .array(tool.schema.string().min(1))
       .optional()
@@ -142,7 +151,7 @@ export default tool({
     }
 
     const stdout = cleanCommandOutput(result.stdout)
-    const stderr = cleanCommandOutput(result.stderr)
+    const stderr = filterBenignStderr(cleanCommandOutput(result.stderr))
 
     if (!stdout && !stderr) {
       if (result.exitCode === 0) return "No output returned by colgrep."
