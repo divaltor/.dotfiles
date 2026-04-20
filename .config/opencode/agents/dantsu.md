@@ -1,7 +1,7 @@
 ---
 description: 'Contextual code search for exact and semantic queries. Answers "Where is X?", "Which file has Y?", "Find the code that does Z".'
 mode: subagent
-model: opencode/kimi-k2.5
+model: opencode/kimi-k2.6
 variant: medium
 color: "#eb6f92"
 temperature: 0.1
