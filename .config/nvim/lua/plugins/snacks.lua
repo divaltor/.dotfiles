@@ -108,30 +108,23 @@ return {
       {
         "<leader><space>",
         function()
-          require("fff").find_in_git_root()
+          require("fff").find_files()
         end,
         desc = "Find Files (Root Dir)",
       },
       {
         "<leader>ff",
         function()
-          require("fff").find_in_git_root()
+          require("fff").find_files()
         end,
         desc = "Find Files (Root Dir)",
       },
       {
         "<leader>fF",
         function()
-          require("fff").find_files()
+          require("fff").find_files_in_dir(vim.fn.getcwd())
         end,
         desc = "Find Files (cwd)",
-      },
-      {
-        "<leader>fg",
-        function()
-          require("fff").find_in_git_root()
-        end,
-        desc = "Find Files (git-files)",
       },
     },
   },
