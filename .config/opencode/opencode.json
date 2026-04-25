@@ -22,12 +22,9 @@
   "mcp": {
     "parallel-ai": {
       "type": "remote",
-      "url": "https://search-mcp.parallel.ai/mcp",
+      "url": "https://search.parallel.ai/mcp",
       "enabled": true,
       "oauth": false,
-      "headers": {
-        "Authorization": "Bearer {env:PARALLEL_API_KEY}"
-      }
     },
     "grep": {
       "type": "remote",
