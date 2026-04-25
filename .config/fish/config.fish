@@ -55,7 +55,31 @@ if type -q z
 end
 
 if type -q yt-dlp
-    alias mp4 'yt-dlp -t mp4 --sponsorblock-remove sponsor --extractor-args "youtube:player-client=default,-tv_simply" -o "~/youtube/%(title)s.%(ext)s"'
+    function mp4
+        set -l ffmpeg_path (command -s ffmpeg 2>/dev/null)
+
+        if test -n "$ffmpeg_path"
+            set -l ffmpeg_dir (path dirname "$ffmpeg_path")
+
+            yt-dlp \
+                --ffmpeg-location "$ffmpeg_dir" \
+                -f "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]" \
+                --merge-output-format mp4 \
+                --sponsorblock-remove sponsor \
+                --extractor-args "youtube:player-client=default,-tv_simply" \
+                -o "$HOME/youtube/%(title)s.%(ext)s" \
+                $argv
+            return
+        end
+
+        yt-dlp \
+            -f "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]" \
+            --merge-output-format mp4 \
+            --sponsorblock-remove sponsor \
+            --extractor-args "youtube:player-client=default,-tv_simply" \
+            -o "$HOME/youtube/%(title)s.%(ext)s" \
+            $argv
+    end
 end
 
 function y
