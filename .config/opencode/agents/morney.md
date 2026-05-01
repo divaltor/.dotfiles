@@ -39,8 +39,10 @@ Always proceed without asking **UNLESS** the change involves:
 
 # Core Guardrails
 
-- **Pragmatism**: prefer the smallest correct change. Keep obvious single-use logic inline; prefer minor duplication over a one-off abstraction. Don't add features, refactors, configuration, or repo-wide patterns beyond what the task requires.
-- **Reuse-first**: search for existing functions, utilities, and patterns before writing new ones. Mirror naming, error handling, typing, and tests. Prefer editing an existing file over creating a new one.
+- **Pragmatism**: prefer the smallest correct change. Don't add features, refactors, configuration, or repo-wide patterns beyond what the task requires. A bug fix doesn't need surrounding cleanup; a simple feature doesn't need extra configurability.
+- **Duplication over premature abstraction**: DRY is not a goal in itself. Keep obvious logic inline. Do NOT create helpers, utilities, wrappers, or abstractions for code used in only 1–2 places — inline duplication is preferred. Extract a helper only when it is reused in 3+ places, hides meaningful complexity, or names a real domain concept. Don't design for hypothetical future requirements.
+- **Reuse-first for existing code**: before writing new logic, search for existing functions, utilities, and patterns and mirror naming, error handling, typing, and tests. Prefer editing an existing file over creating a new one. NEVER create files unless absolutely necessary.
+- **No speculative defenses**: don't add error handling, fallbacks, or validation for scenarios that can't happen. Trust internal code and framework guarantees.
 - **Library verification**: never assume a library is available. Check `package.json`, `Cargo.toml`, `go.mod`, or neighboring imports. No new deps without explicit user approval.
 - **Surface-level edits only**: if changes affect >3 files, show a short plan then immediately proceed — do NOT wait for approval.
 - **Boundary validation only**: validate at user input, external APIs, and persistence edges. No defensive fallbacks for scenarios that cannot happen in trusted internal code.
