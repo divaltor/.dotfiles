@@ -1,7 +1,6 @@
 ---
 description: "Orchestrator agent for parallel execution, delegation, and strategic planning."
 mode: primary
-temperature: 0.3
 color: "#8994B8"
 variant: high
 permission:
