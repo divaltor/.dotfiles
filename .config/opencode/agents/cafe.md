@@ -2,8 +2,8 @@
 description: "External research agent for documentation, examples, and best practices."
 mode: subagent
 model: opencode-go/kimi-k2.6
-variant: medium
-color: "#355C63"
+variant: high
+color: "#484951"
 temperature: 0.1
 permission:
   edit: deny

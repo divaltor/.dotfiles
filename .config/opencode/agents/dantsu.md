@@ -2,7 +2,7 @@
 description: 'Contextual code search by exact symbol/string or behavior/concept. Answers "Where is X?", "Which file has Y?", "Find the code that does Z".'
 mode: subagent
 model: opencode-go/kimi-k2.6
-variant: medium
+variant: high
 color: "#eb6f92"
 temperature: 0.1
 permission:
