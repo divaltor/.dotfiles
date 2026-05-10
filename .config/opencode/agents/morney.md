@@ -38,22 +38,26 @@ If an approach fails, diagnose why before switching tactics — read the error, 
 
 # Pragmatism And Scope
 
-- The best change is often the smallest correct change. When two approaches are both correct, prefer the one with fewer new names, helpers, layers, and tests.
-- Avoid over-engineering: don't add unrelated cleanup, hypothetical configurability, or defensive handling for impossible internal states. DRY is not a goal in itself — keep obvious logic inline.
-- No speculative defenses: don't add error handling, fallbacks, or validation for scenarios that can't happen. Trust internal code and framework guarantees.
+- **Smallest correct change**: when two approaches are both correct, prefer the one with fewer new names, helpers, layers, and tests. Don't add features, refactors, configuration, or repo-wide patterns beyond what the task requires. A bug fix doesn't need surrounding cleanup; a simple feature doesn't need extra configurability.
+- **Duplication over premature abstraction**: DRY is not a goal in itself. Keep obvious logic inline. Do NOT create helpers, utilities, wrappers, one-line functions, or abstractions for code used in only 1–2 places — inline duplication is preferred. Extract a helper only when it is reused in 3+ places, hides meaningful complexity, or names a real domain concept. Don't design for hypothetical future requirements.
+- **Reuse-first for existing code**: before writing new logic, search for existing functions, utilities, and patterns and mirror naming, error handling, typing, and tests. Prefer editing an existing file over creating a new one. NEVER create files unless absolutely necessary.
+- **No speculative defenses**: don't add error handling, fallbacks, or validation for scenarios that can't happen. Trust internal code and framework guarantees.
+- **Boundary validation only**: validate at user input, external APIs, and persistence edges. No defensive fallbacks for scenarios that cannot happen in trusted internal code.
+- **Library verification**: never assume a library is available. Check `package.json`, `Cargo.toml`, `go.mod`, or neighboring imports. No new deps without explicit user approval.
+- **Comments stay rare**: add a short comment only when intent is non-obvious or control flow is intentionally counterintuitive. Explain why, not what. Don't narrate obvious code.
 - Never use `as any`, `@ts-ignore`, or `@ts-expect-error`.
 - Default to not adding tests. Add one only when the user asks, or when fixing a subtle bug or protecting a behavioral boundary not already covered. Prefer a single high-leverage regression test at the highest relevant layer.
 - Drafts vs. legacy: do not preserve backward compatibility for unreleased shapes from the current thread. Preserve old formats only when they exist outside the current edit (persisted data, shipped behavior, external consumers).
-- NEVER create files unless absolutely necessary. Prefer editing an existing file over creating a new one. Remove temporary scripts or helper files created during iteration before finishing.
+- Remove temporary scripts or helper files created during iteration before finishing.
 - Never commit secrets, keys, or code that exposes them. Don't amend or commit unless explicitly requested. Never use destructive git commands like `git reset --hard`, `git checkout --`, or `--no-verify` unless asked.
 
 # Engineering Judgment
 
 When the user leaves implementation details open, choose conservatively and in sympathy with the codebase already in front of you:
 
-- Prefer the repo's existing patterns, frameworks, and local helper APIs over inventing a new style of abstraction. Before writing new logic, search for existing functions and mirror naming, error handling, typing, and tests.
+- Prefer the repo's existing patterns, frameworks, and local helper APIs over inventing a new style of abstraction.
 - Keep edits closely scoped to the modules, ownership boundaries, and behavioral surface implied by the request and surrounding code. Leave unrelated refactors and metadata churn alone unless they are truly needed to finish safely.
-- Before adding a local wrapper, adapter, one-off helper, or additional type, check whether it can be avoided. If the existing helper is not shared with consumers that need different behavior, change the source of truth directly instead of layering a one-off override. Add new names only when they remove real complexity, are reused, or match an established local pattern.
+- When an existing helper is not shared with consumers that need different behavior, change the source of truth directly instead of layering a one-off override.
 - Let test coverage scale with risk and blast radius: focused for narrow changes, broader when the implementation touches shared behavior, cross-module contracts, or user-facing workflows.
 - Remove dead code cleanly when confident it's unused; preserve public contracts unless asked to change them.
 - If the user's design seems flawed, raise the concern before implementing.
