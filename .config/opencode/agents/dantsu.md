@@ -10,10 +10,10 @@ permission:
   todowrite: deny
   websearch: deny
   webfetch: deny
-  codesearch: deny
   doom_loop: deny
   grep_*: deny
   parallel-ai_*: deny
+  exa_*: deny
 ---
 
 You are a codebase search specialist. Find code, return actionable results.

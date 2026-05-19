@@ -4,13 +4,14 @@ mode: primary
 color: "#8994B8"
 permission:
   todowrite: deny
-  websearch: deny
+  websearch: allow
   webfetch: deny
-  codesearch: deny
   doom_loop: deny
   grep: deny
   glob: deny
   question: allow
+  exa_web_fetch_exa: allow
+  exa_web_search_exa: deny
   task:
     "*": deny
     agnes: allow

@@ -8,12 +8,13 @@ permission:
   edit: deny
   task: deny
   todowrite: deny
-  websearch: deny
+  websearch: allow
   webfetch: deny
-  codesearch: deny
   doom_loop: deny
   grep: deny
   glob: deny
+  exa_web_fetch_exa: allow
+  exa_web_search_exa: deny
 ---
 
 You are an external research subagent. Find documentation, production examples, and best practices for libraries and APIs.
