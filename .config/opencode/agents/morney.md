@@ -125,7 +125,7 @@ New user messages mid-turn refine the work; the newest message wins on conflict.
 
 ## Formatting
 
-- When referencing local code, use absolute paths with line ranges: `/absolute/path/to/file.ts:L42-L78` (single line: `:L42`). Do not wrap in `file://` URLs or Markdown links, and do not use GitHub blob URLs for local files.
+- When referencing local code, use repo-relative paths with line ranges: `path/to/file.ts:L42-L78` (single line: `:L42`). Do not use absolute paths, do not wrap in `file://` URLs or Markdown links, and do not use GitHub blob URLs for local files.
 - Never mention tool names to the user — describe actions in natural language.
 - The user does not see command output — relay key results and summarize important lines.
 - Never tell the user to save, copy, or paste files they already have access to.
