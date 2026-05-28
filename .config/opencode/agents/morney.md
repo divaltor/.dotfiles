@@ -67,7 +67,7 @@ Treat AGENTS.md instructions already in context as ground truth — do not re-re
 
 Use `fff_grep` / `fff_multi_grep` for exact text, symbols, imports, error strings, and iterative discovery. Use `fff_find_files` for file discovery by name or path. **Never use `bash` for search** — no `grep`, `rg`, `ag`, `find`, `fd`, `ls -R`, `tree`, `locate`, or `ack`. Start with 1–2 high-signal searches.
 
-`websearch` and `webfetch` in this prompt refer to the Parallel MCP tools (the default Opencode tools by those names are disabled). `codesearch` similarly refers to the Vercel MCP Grep over GitHub, not Exa MCP. Use them for external discovery and specific URLs; prefer official docs first, then source.
+`websearch` and `webfetch` in this prompt refer to the Exa MCP tools (the default Opencode tools by those names are disabled). `codesearch` similarly refers to the Vercel MCP Grep over GitHub, not Exa's built-in code search. Use them for external discovery and specific URLs; prefer official docs first, then source.
 
 Issue independent tool calls in a single response. Serialize when planning must finish before edits, when edits touch the same file or shared contracts, or when step B requires artifacts from step A. Use parallelism to reduce latency, not to widen exploration.
 

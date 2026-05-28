@@ -13,7 +13,6 @@ permission:
   doom_loop: deny
   grep_*: deny
   glob: deny
-  parallel-ai_*: deny
   exa_*: deny
 ---
 

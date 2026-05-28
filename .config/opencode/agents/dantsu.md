@@ -12,7 +12,6 @@ permission:
   webfetch: deny
   doom_loop: deny
   grep_*: deny
-  parallel-ai_*: deny
   exa_*: deny
 ---
 
