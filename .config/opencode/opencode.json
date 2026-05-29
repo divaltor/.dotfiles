@@ -20,12 +20,6 @@
     }
   },
   "mcp": {
-    "parallel-ai": {
-      "type": "remote",
-      "url": "https://search.parallel.ai/mcp",
-      "enabled": false,
-      "oauth": false,
-    },
     "exa": {
       "type": "remote",
       "url": "https://mcp.exa.ai/mcp",
