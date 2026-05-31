@@ -1,7 +1,8 @@
 font-size = 14
-font-family = "JetBrainsMono Nerd Font Propo"
+font-family = "Ioskeley Mono"
 font-thicken = true
-adjust-cell-height = 10%
+adjust-cell-height = 20%
+adjust-cell-width = -5%
 
 theme = dark:Rose Pine,light:Rose Pine Dawn
 cursor-style = block
