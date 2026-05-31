@@ -57,27 +57,38 @@ end
 if type -q yt-dlp
     function mp4
         set -l ffmpeg_path (command -s ffmpeg 2>/dev/null)
+        set -l js_runtime
+
+        if type -q deno
+            set js_runtime --js-runtimes deno
+        else if type -q node
+            set js_runtime --js-runtimes node
+        end
 
         if test -n "$ffmpeg_path"
             set -l ffmpeg_dir (path dirname "$ffmpeg_path")
 
             yt-dlp \
+                $js_runtime \
                 --ffmpeg-location "$ffmpeg_dir" \
                 -f "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]" \
                 --merge-output-format mp4 \
                 --sponsorblock-remove sponsor \
                 --extractor-args "youtube:player-client=default,-tv_simply" \
                 -o "$HOME/youtube/%(title)s.%(ext)s" \
+                --remote-components ejs:github \
                 $argv
             return
         end
 
         yt-dlp \
+            $js_runtime \
             -f "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]" \
             --merge-output-format mp4 \
             --sponsorblock-remove sponsor \
             --extractor-args "youtube:player-client=default,-tv_simply" \
             -o "$HOME/youtube/%(title)s.%(ext)s" \
+            --remote-components ejs:github \
             $argv
     end
 end
