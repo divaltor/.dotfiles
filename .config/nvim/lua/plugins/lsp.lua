@@ -5,23 +5,12 @@ local cci_pkg = vim.fn.stdpath("data") .. "/mason/packages/circleci-yaml-languag
 local cci_bin = cci_pkg .. "/circleci-yaml-language-server"
 local cci_schema = cci_pkg .. "/schema.json"
 
--- CircleCI's LSP assumes every YAML in a project with a .circleci/ folder is
--- a CircleCI config and demands `version: 2.1`, giving bogus "version is
--- required" diagnostics on every other YAML. Scope the LSP to actual
--- `.circleci/config.{yml,yaml}` files via a dedicated filetype.
---
--- Register the filetype at module load time, NOT inside the lspconfig opts:
--- LazyVim lazy-loads nvim-lspconfig on BufReadPre, so opts runs after the
--- first file's filetype is already detected. Running vim.filetype.add at
--- the top of this file means it executes when lazy.nvim loads this spec
--- file during startup, before any buffer is opened.
---
--- Pattern notes:
--- - vim.filetype.add implicitly anchors user patterns with `^...$`, so the
---   pattern here omits both anchors (no double `$$`).
--- - `.*/` ensures the `.circleci` literal dot is preceded by a path
---   component, so `circleci/foo.yml` (no leading dot) doesn't match.
--- - `%.ya?ml` matches `yml` or `yaml` with literal dots.
+-- cci-language-server assumes every YAML in a project with a .circleci/
+-- is a CircleCI config and demands `version: 2.1`, giving bogus errors on
+-- every other YAML. Scope it to `.circleci/config.{yml,yaml}` via a
+-- dedicated filetype. Registered here, not inside the lspconfig opts,
+-- because LazyVim lazy-loads nvim-lspconfig on BufReadPre — opts would
+-- run after the first file's filetype is already detected.
 vim.filetype.add({
   pattern = {
     [".*/%.circleci/config%.ya?ml"] = "yaml.circleci",
@@ -53,6 +42,66 @@ return {
           on_dir(vim.fs.root(bufnr, { ".circleci" }))
         end,
       }
+      -- Add yaml.cloudformation to yamlls's filetypes. The full list is
+      -- redeclared because lspconfig's tbl_deep_extend("keep", user,
+      -- default) replaces arrays wholesale — list_extending into nil at
+      -- opts-eval time would clobber the LazyVim defaults.
+      opts.servers.yamlls = opts.servers.yamlls or {}
+      opts.servers.yamlls.filetypes = {
+        "yaml",
+        "yaml.docker-compose",
+        "yaml.gitlab",
+        "yaml.helm-values",
+        "yaml.cloudformation",
+      }
+      -- CFN intrinsic-function short tags. customTags is parser-level,
+      -- runs before the schema — the goformation schema only describes
+      -- the JSON form ({"Ref": ...}), so without this yamlls reports
+      -- "Unresolved tag" on every !Ref / !Sub / !GetAtt. Safe globally:
+      -- none appear in vanilla YAML 1.2.
+      local cfn_intrinsics = {
+        "!Ref", "!Sub", "!If", "!Not", "!Equals", "!Join", "!Split",
+        "!FindInMap", "!Base64", "!Cidr", "!And", "!Or", "!ImportValue",
+        "!Select", "!GetAtt", "!Transform", "!Condition",
+      }
+      opts.servers.yamlls.settings = opts.servers.yamlls.settings or {}
+      opts.servers.yamlls.settings.yaml = opts.servers.yamlls.settings.yaml or {}
+      opts.servers.yamlls.settings.yaml.customTags = vim.list_extend(
+        opts.servers.yamlls.settings.yaml.customTags or {},
+        cfn_intrinsics
+      )
+      -- Attach the goformation CFN schema, scoped to project CFN
+      -- directories so it doesn't validate CircleCI orbs / docker-compose
+      -- / etc. against CFN's top-level shape. Done in before_init rather
+      -- than opts because LazyVim's default before_init runs after our
+      -- opts and does
+      --   tbl_deep_extend("force", settings.schemas, require("schemastore").yaml.schemas())
+      -- with "force" the SchemaStore side wins, clobbering anything we
+      -- set in opts. (customTags above doesn't have this problem —
+      -- SchemaStore doesn't touch it.)
+      local cfn_url = "https://raw.githubusercontent.com/awslabs/goformation/master/schema/cloudformation.schema.json"
+      local cfn_project_globs = {
+        "**/cloudformation/**",
+      }
+      opts.servers.yamlls.before_init = function(_, new_config)
+        new_config.settings.yaml.schemas = vim.tbl_deep_extend(
+          "force",
+          new_config.settings.yaml.schemas or {},
+          require("schemastore").yaml.schemas()
+        )
+        local existing = new_config.settings.yaml.schemas[cfn_url] or {}
+        local seen = {}
+        for _, g in ipairs(existing) do
+          seen[g] = true
+        end
+        for _, g in ipairs(cfn_project_globs) do
+          if not seen[g] then
+            table.insert(existing, g)
+            seen[g] = true
+          end
+        end
+        new_config.settings.yaml.schemas[cfn_url] = existing
+      end
       return opts
     end,
   },
