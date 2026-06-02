@@ -5,6 +5,29 @@ local cci_pkg = vim.fn.stdpath("data") .. "/mason/packages/circleci-yaml-languag
 local cci_bin = cci_pkg .. "/circleci-yaml-language-server"
 local cci_schema = cci_pkg .. "/schema.json"
 
+-- CircleCI's LSP assumes every YAML in a project with a .circleci/ folder is
+-- a CircleCI config and demands `version: 2.1`, giving bogus "version is
+-- required" diagnostics on every other YAML. Scope the LSP to actual
+-- `.circleci/config.{yml,yaml}` files via a dedicated filetype.
+--
+-- Register the filetype at module load time, NOT inside the lspconfig opts:
+-- LazyVim lazy-loads nvim-lspconfig on BufReadPre, so opts runs after the
+-- first file's filetype is already detected. Running vim.filetype.add at
+-- the top of this file means it executes when lazy.nvim loads this spec
+-- file during startup, before any buffer is opened.
+--
+-- Pattern notes:
+-- - vim.filetype.add implicitly anchors user patterns with `^...$`, so the
+--   pattern here omits both anchors (no double `$$`).
+-- - `.*/` ensures the `.circleci` literal dot is preceded by a path
+--   component, so `circleci/foo.yml` (no leading dot) doesn't match.
+-- - `%.ya?ml` matches `yml` or `yaml` with literal dots.
+vim.filetype.add({
+  pattern = {
+    [".*/%.circleci/config%.ya?ml"] = "yaml.circleci",
+  },
+})
+
 return {
   {
     "mason-org/mason.nvim",
@@ -17,27 +40,21 @@ return {
   },
   {
     "neovim/nvim-lspconfig",
-    opts = {
-      servers = {
-        ["circleci-yaml-language-server"] = {
-          cmd = { cci_bin, "-stdio", "-schema", cci_schema },
-          filetypes = { "yaml" },
-          root_dir = function(bufnr, on_dir)
-            on_dir(vim.fs.root(bufnr, { ".circleci" }))
-          end,
-        },
-      },
-      inlay_hints = {
-        enabled = true,
-      },
-      diagnostics = {
-        virtual_text = false,
-        virtual_lines = { only_current_line = true, highlight_whole_line = false },
-        virtual_improved = {
-          current_line = "hide",
-        },
-      },
-    },
+    opts = function(_, opts)
+      -- `opts` is mutated in place rather than replaced: lazy.nvim's _values
+      -- uses the function's return value as-is, so returning a fresh table
+      -- would drop LazyVim's defaults (folds, codelens, format, etc.) and
+      -- break downstream code that reads opts.folds.enabled and similar.
+      opts.servers = opts.servers or {}
+      opts.servers["circleci-yaml-language-server"] = {
+        cmd = { cci_bin, "-stdio", "-schema", cci_schema },
+        filetypes = { "yaml.circleci" },
+        root_dir = function(bufnr, on_dir)
+          on_dir(vim.fs.root(bufnr, { ".circleci" }))
+        end,
+      }
+      return opts
+    end,
   },
   {
     "Wansmer/symbol-usage.nvim",
