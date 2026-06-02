@@ -9,9 +9,6 @@
     "explore": {
       "disable": true
     },
-    "general": {
-      "disable": true
-    }
   },
   "permission": {
     "external_directory": {
