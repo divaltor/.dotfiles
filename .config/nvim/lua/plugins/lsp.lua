@@ -1,10 +1,32 @@
 -- @type Symbol
 local SymbolKind = vim.lsp.protocol.SymbolKind
 
+local cci_pkg = vim.fn.stdpath("data") .. "/mason/packages/circleci-yaml-language-server"
+local cci_bin = cci_pkg .. "/circleci-yaml-language-server"
+local cci_schema = cci_pkg .. "/schema.json"
+
 return {
+  {
+    "mason-org/mason.nvim",
+    opts_extend = { "ensure_installed" },
+    opts = {
+      ensure_installed = {
+        "circleci-yaml-language-server",
+      },
+    },
+  },
   {
     "neovim/nvim-lspconfig",
     opts = {
+      servers = {
+        ["circleci-yaml-language-server"] = {
+          cmd = { cci_bin, "-stdio", "-schema", cci_schema },
+          filetypes = { "yaml" },
+          root_dir = function(bufnr, on_dir)
+            on_dir(vim.fs.root(bufnr, { ".circleci" }))
+          end,
+        },
+      },
       inlay_hints = {
         enabled = true,
       },
