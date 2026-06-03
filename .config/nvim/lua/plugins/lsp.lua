@@ -5,15 +5,47 @@ local cci_pkg = vim.fn.stdpath("data") .. "/mason/packages/circleci-yaml-languag
 local cci_bin = cci_pkg .. "/circleci-yaml-language-server"
 local cci_schema = cci_pkg .. "/schema.json"
 
--- cci-language-server assumes every YAML in a project with a .circleci/
--- is a CircleCI config and demands `version: 2.1`, giving bogus errors on
--- every other YAML. Scope it to `.circleci/config.{yml,yaml}` via a
--- dedicated filetype. Registered here, not inside the lspconfig opts,
--- because LazyVim lazy-loads nvim-lspconfig on BufReadPre — opts would
--- run after the first file's filetype is already detected.
+local function has_cfn_marker(_, bufnr)
+  local lines = vim.api.nvim_buf_get_lines(bufnr, 0, 200, false)
+  for _, line in ipairs(lines) do
+    if line:find("AWSTemplateFormatVersion", 1, true) then
+      return true
+    end
+  end
+  return false
+end
+
+local function is_circleci_orb_source(path)
+  local orb_dir = path:match("^(.*[/\\]orb)[/\\].*%.yml$") or path:match("^(.*[/\\]orb)[/\\].*%.yaml$")
+  return orb_dir ~= nil
+    and (vim.uv.fs_stat(orb_dir .. "/@orb.yml") ~= nil or vim.uv.fs_stat(orb_dir .. "/@orb.yaml") ~= nil)
+end
+
+local function yaml_filetype(path, bufnr)
+  if path:match("[/\\]%.circleci[/\\]config.*%.yml$") or path:match("[/\\]%.circleci[/\\]config.*%.yaml$") then
+    return "yaml.circleci"
+  elseif path:match("[/\\]%.circleci[/\\].*%.yml$") or path:match("[/\\]%.circleci[/\\].*%.yaml$") or is_circleci_orb_source(path) then
+    return "yaml.circleci-orb"
+  elseif has_cfn_marker(path, bufnr) then
+    return "yaml.cloudformation"
+  end
+end
+
+-- Registered here, not inside lspconfig opts, because LazyVim lazy-loads
+-- nvim-lspconfig on BufReadPre — opts would run after the first file's
+-- filetype is already detected.
 vim.filetype.add({
   pattern = {
-    [".*/%.circleci/config%.ya?ml"] = "yaml.circleci",
+    [".*%.yml"] = yaml_filetype,
+    [".*%.yaml"] = yaml_filetype,
+    [".*%.json"] = {
+      priority = -math.huge,
+      function(path, bufnr)
+        if has_cfn_marker(path, bufnr) then
+          return "json.cloudformation"
+        end
+      end,
+    },
   },
 })
 
@@ -37,10 +69,8 @@ return {
       opts.servers = opts.servers or {}
       opts.servers["circleci-yaml-language-server"] = {
         cmd = { cci_bin, "-stdio", "-schema", cci_schema },
-        filetypes = { "yaml.circleci" },
-        root_dir = function(bufnr, on_dir)
-          on_dir(vim.fs.root(bufnr, { ".circleci" }))
-        end,
+        filetypes = { "yaml.circleci", "yaml.circleci-orb" },
+        root_markers = { ".circleci", ".git" },
       }
       -- Add yaml.cloudformation to yamlls's filetypes. The full list is
       -- redeclared because lspconfig's tbl_deep_extend("keep", user,
@@ -154,7 +184,7 @@ return {
         text_format = text_format,
         disable = {
           lsp = { "pyright", "basedpyright" },
-          filetypes = { "dockerfile" },
+          filetypes = { "dockerfile", "yaml.circleci-orb" },
         },
         hl = { link = "GitSignsCurrentLineBlame" },
         filetypes = {
@@ -184,6 +214,9 @@ return {
   {
     "luozhiya/lsp-virtual-improved.nvim",
     event = { "LspAttach" },
+    init = function()
+      vim.tbl_islist = vim.tbl_islist or vim.islist
+    end,
     opts = {},
   },
   {

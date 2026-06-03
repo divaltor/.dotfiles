@@ -22,47 +22,6 @@ return {
       ensure_installed = { "cfn-lint", "cfn-lsp-extra" },
     },
   },
-  -- Detect CloudFormation templates by their first lines so cfn-lint and
-  -- cfn-lsp-extra only attach to actual CFN files, not every yaml/json.
-  {
-    "neovim/nvim-lspconfig",
-    opts = function()
-      local function is_cfn_yaml(l1)
-        if not l1 then
-          return false
-        end
-        return l1:match("^AWSTemplateFormatVersion") ~= nil
-          or l1:match("^AWS::Serverless") ~= nil
-      end
-      local function is_cfn_json(l1, l2)
-        for _, l in ipairs({ l1, l2 }) do
-          if l and l:match([[^%s*["']AWSTemplateFormatVersion["']%s*:%s*]]) then
-            return true
-          end
-          if l and l:match([[^%s*["']Transform["']%s*:%s*["']AWS::Serverless]]) then
-            return true
-          end
-        end
-        return false
-      end
-      vim.filetype.add({
-        pattern = {
-          [".*"] = {
-            priority = math.huge,
-            function(_, bufnr)
-              local lines = vim.api.nvim_buf_get_lines(bufnr, 0, 2, false)
-              local l1, l2 = lines[1], lines[2]
-              if is_cfn_yaml(l1) then
-                return "yaml.cloudformation"
-              elseif is_cfn_json(l1, l2) then
-                return "json.cloudformation"
-              end
-            end,
-          },
-        },
-      })
-    end,
-  },
   -- LSP: hover, completion, goto-definition, diagnostics (via cfn-lint).
   {
     "neovim/nvim-lspconfig",
