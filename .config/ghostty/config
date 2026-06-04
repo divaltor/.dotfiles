@@ -1,8 +1,9 @@
-font-size = 14
+font-size = 16
 font-family = "Ioskeley Mono Term"
+font-style = "Semi-Condensed"
 font-thicken = true
-adjust-cell-height = 20%
-adjust-cell-width = -5%
+# adjust-cell-height = 20%
+# adjust-cell-width = 5%
 
 theme = dark:Rose Pine,light:Rose Pine Dawn
 cursor-style = block
