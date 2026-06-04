@@ -1,7 +1,7 @@
 ---
 description: "External research agent for documentation, examples, and best practices."
 mode: subagent
-model: opencode-go/deepseek-v4-flash
+model: opencode-go/deepseek-v4-pro
 color: "#484951"
 temperature: 0.1
 permission:
