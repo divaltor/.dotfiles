@@ -16,15 +16,48 @@ local function has_cfn_marker(_, bufnr)
 end
 
 local function is_circleci_orb_source(path)
-  local orb_dir = path:match("^(.*[/\\]orb)[/\\].*%.yml$") or path:match("^(.*[/\\]orb)[/\\].*%.yaml$")
-  return orb_dir ~= nil
-    and (vim.uv.fs_stat(orb_dir .. "/@orb.yml") ~= nil or vim.uv.fs_stat(orb_dir .. "/@orb.yaml") ~= nil)
+  local dir = vim.fs.dirname(path)
+  return #vim.fs.find({ "@orb.yml", "@orb.yaml" }, { path = dir, upward = true }) > 0
+end
+
+local function is_packed_circleci_orb(path, bufnr)
+  local name = vim.fs.basename(path)
+  if name ~= "@orb.yml" and name ~= "@orb.yaml" and name ~= "orb.yml" and name ~= "orb.yaml" then
+    return false
+  end
+
+  local has_version = false
+  local has_orb_section = false
+  local orb_sections = {
+    description = true,
+    display = true,
+    orbs = true,
+    commands = true,
+    jobs = true,
+    executors = true,
+    examples = true,
+  }
+  local lines = vim.api.nvim_buf_get_lines(bufnr, 0, 40, false)
+  for _, line in ipairs(lines) do
+    if line:match("^%s*version:%s*2%.1%s*$") then
+      has_version = true
+    else
+      local section = line:match("^%s*([%w_-]+):")
+      has_orb_section = has_orb_section or orb_sections[section] == true
+    end
+  end
+
+  return has_version and has_orb_section
 end
 
 local function yaml_filetype(path, bufnr)
   if path:match("[/\\]%.circleci[/\\]config.*%.yml$") or path:match("[/\\]%.circleci[/\\]config.*%.yaml$") then
     return "yaml.circleci"
-  elseif path:match("[/\\]%.circleci[/\\].*%.yml$") or path:match("[/\\]%.circleci[/\\].*%.yaml$") or is_circleci_orb_source(path) then
+  elseif path:match("[/\\]%.circleci[/\\].*%.yml$")
+    or path:match("[/\\]%.circleci[/\\].*%.yaml$")
+    or is_circleci_orb_source(path)
+    or is_packed_circleci_orb(path, bufnr)
+  then
     return "yaml.circleci-orb"
   elseif has_cfn_marker(path, bufnr) then
     return "yaml.cloudformation"
@@ -69,7 +102,7 @@ return {
       opts.servers = opts.servers or {}
       opts.servers["circleci-yaml-language-server"] = {
         cmd = { cci_bin, "-stdio", "-schema", cci_schema },
-        filetypes = { "yaml.circleci", "yaml.circleci-orb" },
+        filetypes = { "yaml.circleci" },
         root_markers = { ".circleci", ".git" },
       }
       -- Add yaml.cloudformation to yamlls's filetypes. The full list is
@@ -82,6 +115,7 @@ return {
         "yaml.docker-compose",
         "yaml.gitlab",
         "yaml.helm-values",
+        "yaml.circleci-orb",
         "yaml.cloudformation",
       }
       -- CFN intrinsic-function short tags. customTags is parser-level,
