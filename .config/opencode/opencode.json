@@ -10,12 +10,7 @@
       "disable": true
     },
   },
-  "permission": {
-    "external_directory": {
-      "/tmp/**": "allow",
-      "/$HOME/dev/**": "allow"
-    }
-  },
+  "permission": "allow",
   "mcp": {
     "exa": {
       "type": "remote",
