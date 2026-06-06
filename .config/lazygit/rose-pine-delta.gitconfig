@@ -6,6 +6,7 @@
 # ---- Rose Pine Main (dark) ----
 [delta "rose-pine-main"]
 	dark = true
+	keep-plus-minus-markers = true
 	syntax-theme = rose-pine
 	blame-palette = "#191724 #1f1d2e #26233a #2a283e #393552"
 	commit-decoration-style = "#6e6a86" bold box ul
@@ -20,10 +21,10 @@
 	line-numbers-plus-style = bold "#31748f"
 	line-numbers-right-style = "#6e6a86"
 	line-numbers-zero-style = "#6e6a86"
-	minus-emph-style = bold syntax "#3b2a35"
-	minus-style = syntax "#21202e"
-	plus-emph-style = bold syntax "#1f2e35"
-	plus-style = syntax "#21202e"
+	minus-emph-style = bold syntax "#4d2d3a"
+	minus-style = syntax "#3a2530"
+	plus-emph-style = bold syntax "#1f3d4a"
+	plus-style = syntax "#1d3038"
 	map-styles = \
 		bold red => syntax "#3b2a35", \
 		bold green => syntax "#1f2e35", \
@@ -35,6 +36,7 @@
 # ---- Rose Pine Dawn (light) ----
 [delta "rose-pine-dawn"]
 	dark = false
+	keep-plus-minus-markers = true
 	syntax-theme = rose-pine-dawn
 	blame-palette = "#faf4ed #fffaf3 #f2e9e1 #f4ede8 #dfdad9"
 	commit-decoration-style = "#9893a5" bold box ul
@@ -49,10 +51,10 @@
 	line-numbers-plus-style = bold "#286983"
 	line-numbers-right-style = "#9893a5"
 	line-numbers-zero-style = "#9893a5"
-	minus-emph-style = bold syntax "#e0c8c5"
-	minus-style = syntax "#f4ede8"
-	plus-emph-style = bold syntax "#c8d8da"
-	plus-style = syntax "#f4ede8"
+	minus-emph-style = bold syntax "#dcb8b3"
+	minus-style = syntax "#ead5d0"
+	plus-emph-style = bold syntax "#b5c5c7"
+	plus-style = syntax "#d2d8d8"
 	map-styles = \
 		bold red => syntax "#e0c8c5", \
 		bold green => syntax "#c8d8da", \
