@@ -39,7 +39,7 @@ gui:
 git:
   pagers:
     - colorArg: always
-      pager: ~/.config/lazygit/delta.sh --paging=never
+      pager: ~/.config/lazygit/delta.sh
   overrideGpg: true
   commitPrefix:
     - pattern: "^(\\w+-\\d+).*"

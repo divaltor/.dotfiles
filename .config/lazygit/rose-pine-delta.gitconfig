@@ -1,0 +1,62 @@
+# Rose Pine delta features for lazygit.
+# Loaded by ~/.config/lazygit/delta.sh via GIT_CONFIG_GLOBAL, which
+# scopes it to delta invocations from the lazygit pager only.
+# Palette source: https://rosepinetheme.com/palette
+
+# ---- Rose Pine Main (dark) ----
+[delta "rose-pine-main"]
+	dark = true
+	syntax-theme = rose-pine
+	blame-palette = "#191724 #1f1d2e #26233a #2a283e #393552"
+	commit-decoration-style = "#6e6a86" bold box ul
+	file-decoration-style = "#6e6a86"
+	file-style = "#e0def4"
+	hunk-header-decoration-style = "#6e6a86" box ul
+	hunk-header-file-style = bold
+	hunk-header-line-number-style = bold "#908caa"
+	hunk-header-style = file line-number syntax
+	line-numbers-left-style = "#6e6a86"
+	line-numbers-minus-style = bold "#eb6f92"
+	line-numbers-plus-style = bold "#31748f"
+	line-numbers-right-style = "#6e6a86"
+	line-numbers-zero-style = "#6e6a86"
+	minus-emph-style = bold syntax "#3b2a35"
+	minus-style = syntax "#21202e"
+	plus-emph-style = bold syntax "#1f2e35"
+	plus-style = syntax "#21202e"
+	map-styles = \
+		bold red => syntax "#3b2a35", \
+		bold green => syntax "#1f2e35", \
+		bold yellow => syntax "#3a3128", \
+		bold blue => syntax "#1f2a35", \
+		bold magenta => syntax "#2e2640", \
+		bold cyan => syntax "#2e2030"
+
+# ---- Rose Pine Dawn (light) ----
+[delta "rose-pine-dawn"]
+	dark = false
+	syntax-theme = rose-pine-dawn
+	blame-palette = "#faf4ed #fffaf3 #f2e9e1 #f4ede8 #dfdad9"
+	commit-decoration-style = "#9893a5" bold box ul
+	file-decoration-style = "#9893a5"
+	file-style = "#575279"
+	hunk-header-decoration-style = "#9893a5" box ul
+	hunk-header-file-style = bold
+	hunk-header-line-number-style = bold "#797593"
+	hunk-header-style = file line-number syntax
+	line-numbers-left-style = "#9893a5"
+	line-numbers-minus-style = bold "#b4637a"
+	line-numbers-plus-style = bold "#286983"
+	line-numbers-right-style = "#9893a5"
+	line-numbers-zero-style = "#9893a5"
+	minus-emph-style = bold syntax "#e0c8c5"
+	minus-style = syntax "#f4ede8"
+	plus-emph-style = bold syntax "#c8d8da"
+	plus-style = syntax "#f4ede8"
+	map-styles = \
+		bold red => syntax "#e0c8c5", \
+		bold green => syntax "#c8d8da", \
+		bold yellow => syntax "#ead0b0", \
+		bold blue => syntax "#c8d8da", \
+		bold magenta => syntax "#d4c8e0", \
+		bold cyan => syntax "#e0c8c5"
