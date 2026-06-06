@@ -1,6 +1,6 @@
 ---
 name: effect-ts
-description: 'Guidelines and patterns for writing Effect-TS services, layers, and runtime code. Covers service definition patterns, naming conventions, error handling, tracing, layer composition, and anti-patterns to avoid.'
+description: 'Guidelines and patterns for writing Effect-TS v4 beta services, layers, and runtime code. Covers service definition (Context.Service / Effect.Service), schema modeling (Schema.Class / TaggedClass / TaggedErrorClass with getters and methods), API response parsing (HttpClient + schemaBodyJson), error handling, tracing, layer composition, ManagedRuntime, and anti-patterns to avoid.'
 ---
 
 # Effect-TS Skill
@@ -175,86 +175,9 @@ Use `Effect.catchAll` with `Effect.fail` (not `Effect.logError` + `Effect.succee
 
 ## Schema
 
-Use Effect Schema as the default boundary for validation, normalization, and object parsing.
+Effect Schema is the default boundary for validation, normalization, and domain modeling (`Schema.Struct`, `Schema.Class`, `Schema.TaggedClass`, `Schema.TaggedErrorClass`, branded IDs, recursive `Schema.suspend`, decode/encode variants, and the `optionalNull` / `withStatics` utilities).
 
-### Named Structs
-
-```ts
-export const Item = Schema.Struct({
-  id: Schema.String,
-  title: Schema.String,
-  createdAt: Schema.DateTimeUtc,
-})
-export type Item = typeof Item.Type
-```
-
-### Branded IDs
-
-```ts
-export const ID = Schema.String.pipe(Schema.brand("ItemID"))
-export type ID = Schema.Schema.Type<typeof ID>
-
-export const OrgID = Schema.String.pipe(Schema.brand("OrgID"))
-export const AccessToken = Schema.String.pipe(Schema.brand("AccessToken"))
-```
-
-### Class-Based Schemas
-
-Use `Schema.Class` when a schema needs attached methods:
-
-```ts
-export class Info extends Schema.Class<Info>("ModelV2.Info")({
-  id: ID,
-  name: Schema.String,
-  enabled: Schema.Boolean,
-  status: Schema.Literals(["alpha", "beta", "deprecated", "active"]),
-}) {
-  static empty(id: ID): Info {
-    return new Info({ id, name: "", enabled: false, status: "active" })
-  }
-}
-```
-
-### Tagged Unions (Non-Error)
-
-```ts
-export class PollSuccess extends Schema.TaggedClass<PollSuccess>()("PollSuccess", {
-  email: Schema.String,
-}) {}
-export class PollPending extends Schema.TaggedClass<PollPending>()("PollPending", {}) {}
-export class PollError extends Schema.TaggedClass<PollError>()("PollError", {
-  cause: Schema.Defect,
-}) {}
-export const PollResult = Schema.Union([PollSuccess, PollPending, PollError])
-```
-
-### Enum-Like Unions
-
-```ts
-export const Effect = Schema.Literals(["allow", "deny"]).annotate({ identifier: "Policy.Effect" })
-export type Effect = typeof Effect.Type
-```
-
-### Decoding Variants
-
-```ts
-// Effectful — fails into error channel
-Schema.decodeUnknownEffect(Message)(input)
-
-// Option-based — returns Option.none() on failure, no error channel
-Schema.decodeUnknownOption(Info)(input, { errors: "all", onExcessProperty: "ignore" })
-
-// Sync — throws on failure, use only at startup boundaries
-const decoded = Schema.decodeUnknownSync(Config)(raw)
-```
-
-Prefer `Schema.decodeUnknownOption` for optional config parsing and `Schema.decodeUnknownEffect` for runtime data boundaries. Use `Schema.decodeUnknownSync` only at process startup where failure should crash.
-
-### Encoding
-
-```ts
-const encoded = Schema.encodeSync(Message)(message)  // throws on failure
-```
+See [reference/schema.md](reference/schema.md) for the full Schema guide.
 
 ## HttpClient
 
@@ -299,6 +222,31 @@ const data = yield* HttpClientResponse.schemaBodyJson(MySchema)(response).pipe(
 - `HttpClientRequest.post/get(...)` — start with a request, then pipe through `.acceptJson`, `.setHeaders`, `.bodyJson`, `.bearerToken`, etc.
 - `HttpClientResponse.schemaBodyJson(Schema)(response)` — decode through a Schema, returns the typed Schema type
 - Use `client.execute(request)` on a filtered client — never call `client.post(url, { body })` directly
+
+**Response schemas with domain methods.** Define HTTP response schemas in the **same module** as the HTTP client that returns them. When a parsed response carries logic that downstream code needs (e.g., mapping an error response to a typed result), add a method to the schema class:
+
+```ts
+// In services/account.ts
+class DeviceTokenError extends Schema.Class<DeviceTokenError>("DeviceTokenError")({
+  error: Schema.String,
+  error_description: Schema.String,
+}) {
+  toPollResult(): PollResult {
+    if (this.error === "authorization_pending") return new PollPending()
+    if (this.error === "slow_down") return new PollSlow()
+    if (this.error === "expired_token") return new PollExpired()
+    return new PollError({ cause: this.error })
+  }
+}
+
+// In the HTTP client — the parsed instance carries the method
+const parsed = yield* HttpClientResponse.schemaBodyJson(DeviceTokenError)(response)
+return parsed.toPollResult()
+```
+
+Keep parsed objects as schema class instances throughout the codebase. Convert to plain types only at persistence boundaries (DB rows → schema via `decodeUnknownSync`).
+
+**Opencode reference:** `~/dev/opencode/packages/opencode/src/account/account.ts:L69-L112`
 
 **Retry wrapper** for transient network errors:
 
@@ -389,73 +337,9 @@ export const defaultLayer = layer.pipe(
 
 ## ManagedRuntime
 
-### Creating a Runtime
+Runtime construction and wrappers — `ManagedRuntime.make` with `memoMap`, ergonomic run wrappers, lazy singleton runtimes, the `NodeRuntime.runMain` CLI entry point, and the `Effect.Service` internals appendix.
 
-```ts
-import { ManagedRuntime } from "effect"
-
-export const AppRuntime = ManagedRuntime.make(AppLayer, { memoMap })
-
-// Extract the service type for type annotations
-export type AppServices = ManagedRuntime.ManagedRuntime.Services<typeof AppRuntime>
-```
-
-The `memoMap` option is important — it enables memoization across layers built from the same runtime, avoiding duplicate resource initialization when a layer is used by multiple consumers.
-
-### Runtime Wrappers
-
-Wrap the raw `ManagedRuntime` methods for ergonomic access:
-
-```ts
-const rt = ManagedRuntime.make(AppLayer, { memoMap })
-
-export const AppRuntime = {
-  runSync: <A, E>(effect: Effect.Effect<A, E, AppServices>) => rt.runSync(effect),
-  runPromise: <A, E>(effect: Effect.Effect<A, E, AppServices>) => rt.runPromise(effect),
-  runFork: <A, E>(effect: Effect.Effect<A, E, AppServices>) => rt.runFork(effect),
-  dispose: () => rt.dispose(),
-}
-```
-
-### Lazy Singleton Runtime
-
-When runtime creation is expensive and may not always be needed, defer initialization:
-
-```ts
-export function makeRuntime<I, S, E>(service: Context.Service<I, S>, layer: Layer.Layer<I, E>) {
-  let rt: ManagedRuntime.ManagedRuntime<I, E> | undefined
-
-  const getRuntime = () =>
-    (rt ??= ManagedRuntime.make(Layer.provideMerge(layer, Observability.layer), { memoMap }))
-
-  return {
-    runSync: <A, Err>(fn: (svc: S) => Effect.Effect<A, Err, I>) =>
-      getRuntime().runSync(service.use(fn)),
-    runPromise: <A, Err>(fn: (svc: S) => Effect.Effect<A, Err, I>, options?: Effect.RunOptions) =>
-      getRuntime().runPromise(service.use(fn), options),
-  }
-}
-```
-
-The first call to `runSync` or `runPromise` triggers runtime construction; subsequent calls reuse the cached instance.
-
-### CLI Entry Point
-
-For CLI tools, use `NodeRuntime.runMain`:
-
-```ts
-import { NodeRuntime } from "@effect/platform-node"
-import { Command, Effect, Layer } from "effect"
-
-const cli = Command.make("my-app", ...)
-const layer = Layer.mergeAll(AppLayer, NodeServices.layer)
-
-Command.run(cli, { version: "1.0.0" }).pipe(
-  Effect.provide(layer),
-  Effect.scoped,
-  NodeRuntime.runMain,
-)
-```
+See [reference/runtime.md](reference/runtime.md) for the full Runtime guide.
 
 ## Anti-Patterns to Avoid
 
@@ -470,30 +354,6 @@ Command.run(cli, { version: "1.0.0" }).pipe(
 - Do not expose `Layer` construction details outside the service module
 - Do not add convenience exports (`export const list = () => Service.use(...)`) — callers should `yield* Service` directly
 
-## Appendix: `Effect.Service` Internals
-
-`Effect.Service<Self>()(key, options)` does the following under the hood:
-
-1. Creates a `Context.Tag` — the class itself becomes yieldable in generators (`yield* Service`)
-2. Inspects the `options` object:
-   - `sync: () => value` → creates `Layer.sync(Service, value)`
-   - `effect: Effect.gen(...)` → creates `Layer.effect(Service, effect)`
-   - `scoped: Effect.gen(...)` → creates `Layer.scoped(Service, scoped)`
-3. Exposes the auto-generated layer as `Service.Default` (dependencies wired) and `Service.Layer` (dependencies exposed)
-4. If `dependencies: [...]` is provided, pipes each dependency through `Layer.provide`:
-
-```ts
-// Internal equivalent:
-const baseLayer = Layer.effect(Service, options.effect)
-const wiredLayer = dependencies.reduce(
-  (acc, dep) => acc.pipe(Layer.provide(dep)),
-  baseLayer,
-)
-// wiredLayer becomes Service.Default
-```
-
-This means `dependencies` is purely syntactic sugar for chained `Layer.provide()` calls — there is no runtime magic, just composition.
-
 ## Reference Documentation
 
 The canonical documentation lives at <https://effect.website/docs>. Key sections relevant to this project:
@@ -502,7 +362,9 @@ The canonical documentation lives at <https://effect.website/docs>. Key sections
 | --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Service definition & layers | [Managing Services](https://effect.website/docs/requirements-management/services/), [Managing Layers](https://effect.website/docs/requirements-management/layers/)                                                                                                                                                                                                                                 |
 | Error handling              | [Expected Errors](https://effect.website/docs/error-management/expected-errors/), [Unexpected Errors](https://effect.website/docs/error-management/unexpected-errors/), [Retrying](https://effect.website/docs/error-management/retrying/), [Fallback](https://effect.website/docs/error-management/fallback/), [Yieldable Errors](https://effect.website/docs/error-management/yieldable-errors/) |
-| Schema validation           | [Introduction to Effect Schema](https://effect.website/docs/schema/introduction/), [Basic Usage](https://effect.website/docs/schema/basic-usage/), [Transformations](https://effect.website/docs/schema/transformations/), [Filters](https://effect.website/docs/schema/filters/)                                                                                                                  |
+| Schema basics               | [Introduction to Effect Schema](https://effect.website/docs/schema/introduction/), [Basic Usage](https://effect.website/docs/schema/basic-usage/), [Transformations](https://effect.website/docs/schema/transformations/), [Filters](https://effect.website/docs/schema/filters/)                                                                                                                  |
+| Schema.Class / TaggedClass  | [Schema Classes](https://effect.website/docs/schema/classes/), [Branded Types](https://effect.website/docs/schema/branded-types/)                                                                                                                                                                                                                                                                   |
+| HttpClient                  | [HttpClient module](https://effect.website/docs/platform/http-client/), [Request builders](https://effect.website/docs/platform/http-client/#making-requests)                                                                                                                                                                                                                                       |
 | Tracing                     | [Tracing in Effect](https://effect.website/docs/observability/tracing/)                                                                                                                                                                                                                                                                                                                            |
 | Runtime                     | [Introduction to Runtime](https://effect.website/docs/runtime/)                                                                                                                                                                                                                                                                                                                                    |
 | Generators / control flow   | [Using Generators](https://effect.website/docs/getting-started/using-generators/), [Control Flow Operators](https://effect.website/docs/getting-started/control-flow/)                                                                                                                                                                                                                             |
