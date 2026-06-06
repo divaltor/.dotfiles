@@ -1,6 +1,6 @@
 ---
 name: effect-ts
-description: 'Guidelines and patterns for writing Effect-TS v4 beta services, layers, and runtime code. Covers service definition (Context.Service / Effect.Service), schema modeling (Schema.Class / TaggedClass / TaggedErrorClass with getters and methods), API response parsing (HttpClient + schemaBodyJson), error handling, tracing, layer composition, ManagedRuntime, and anti-patterns to avoid.'
+description: 'Guidelines and patterns for writing Effect-TS v4 beta services, layers, and runtime code. Covers service definition (Context.Service / Effect.Service), schema modeling (Schema.Class / TaggedClass / TaggedErrorClass with getters and methods), API response parsing (HttpClient + schemaBodyJson), error handling, tracing, layer composition, ManagedRuntime, testing with testEffect / Layer.mock / pollWithTimeout, and anti-patterns to avoid.'
 ---
 
 # Effect-TS Skill
@@ -341,6 +341,12 @@ Runtime construction and wrappers — `ManagedRuntime.make` with `memoMap`, ergo
 
 See [reference/runtime.md](reference/runtime.md) for the full Runtime guide.
 
+## Testing
+
+Effect service tests run inside a per-file `testEffect` runner from `test/lib/effect.ts`. The three variants — `it.effect` (TestClock), `it.live` (real clock), and `it.instance` (live + scoped tempdir + `InstanceRef`) — cover the common shapes. Layer composition uses `Layer.mock` for partial service stubs and small boundary fakes in `test/fake/*` for shared stubs. Synchronization waits on published signals (`pollWithTimeout`, `awaitWithTimeout`, `Deferred`, `SessionStatus.Service`), never on `Effect.sleep` or `setTimeout`.
+
+See [reference/testing.md](reference/testing.md) for the full Testing guide.
+
 ## Anti-Patterns to Avoid
 
 - Do not swallow errors with `catchAll` converting to `null` — use typed errors via `Effect.fail` with `Schema.TaggedErrorClass`
@@ -368,6 +374,7 @@ The canonical documentation lives at <https://effect.website/docs>. Key sections
 | Tracing                     | [Tracing in Effect](https://effect.website/docs/observability/tracing/)                                                                                                                                                                                                                                                                                                                            |
 | Runtime                     | [Introduction to Runtime](https://effect.website/docs/runtime/)                                                                                                                                                                                                                                                                                                                                    |
 | Generators / control flow   | [Using Generators](https://effect.website/docs/getting-started/using-generators/), [Control Flow Operators](https://effect.website/docs/getting-started/control-flow/)                                                                                                                                                                                                                             |
+| Testing                     | [Testing](https://effect.website/docs/testing/overview/) (testEffect runner, TestClock, TestConsole)                                                                                                                                                                                                                                                                                               |
 
 **Topics not covered in this skill** — refer to the official docs when needed:
 
@@ -378,6 +385,5 @@ The canonical documentation lives at <https://effect.website/docs>. Key sections
 - [Resource Management](https://effect.website/docs/resource-management/introduction/) — Scope, safe acquisition/release
 - [Observability](https://effect.website/docs/observability/logging/) — logging, metrics, supervisors
 - [Caching](https://effect.website/docs/caching/cache/) — Cache, Caching Effects
-- [Testing](https://effect.website/docs/testing/testclock/) — TestClock, controlled time in tests
 - [Platform](https://effect.website/docs/platform/introduction/) — FileSystem, Command, Path, Terminal, KeyValueStore
 - [Configuration](https://effect.website/docs/configuration/) — typed config loading with providers
