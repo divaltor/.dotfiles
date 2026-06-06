@@ -15,6 +15,10 @@ window-padding-x = 5
 window-padding-balance = true
 window-save-state = always
 window-inherit-font-size = false
+window-width = 80%
+window-height = 80%
+window-position-x = center
+window-position-y = center
 
 macos-option-as-alt = true
 keybind = shift+enter=text:\n
