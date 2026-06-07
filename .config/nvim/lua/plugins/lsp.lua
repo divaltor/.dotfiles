@@ -84,16 +84,12 @@ vim.filetype.add({
 
 return {
   {
-    "mason-org/mason.nvim",
+    "KingMichaelPark/mason.nvim",
     opts_extend = { "ensure_installed" },
     opts = {
       ensure_installed = {
         "circleci-yaml-language-server",
       },
-      -- Use `uv` for every pypi-sourced Mason package: `uv venv` for venv
-      -- creation and `uv pip install` for installs. Faster than
-      -- python -m pip and not subject to the system python version
-      -- (cf. the 3.9.6 default on macOS).
       pip = {
         use_uv = true,
       },

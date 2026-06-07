@@ -8,7 +8,7 @@ return {
   -- The default github registry is listed first so packages there keep
   -- winning on name conflicts.
   {
-    "mason-org/mason.nvim",
+    "KingMichaelPark/mason.nvim",
     opts = function(_, opts)
       opts.registries = opts.registries or { "github:mason-org/mason-registry" }
       table.insert(opts.registries, "lua:mason-custom-registry")
@@ -16,7 +16,7 @@ return {
     end,
   },
   {
-    "mason-org/mason.nvim",
+    "KingMichaelPark/mason.nvim",
     opts_extend = { "ensure_installed" },
     opts = {
       ensure_installed = { "cfn-lint", "cfn-lsp-extra" },
