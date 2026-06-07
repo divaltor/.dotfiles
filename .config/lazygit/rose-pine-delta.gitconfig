@@ -21,17 +21,17 @@
 	line-numbers-plus-style = bold "#31748f"
 	line-numbers-right-style = "#6e6a86"
 	line-numbers-zero-style = "#6e6a86"
-	minus-emph-style = bold syntax "#4d2d3a"
-	minus-style = syntax "#3a2530"
-	plus-emph-style = bold syntax "#1f3d4a"
-	plus-style = syntax "#1d3038"
+	minus-emph-style = bold syntax "#482b38"
+	minus-style = syntax "#37242f"
+	plus-emph-style = bold syntax "#1e3946"
+	plus-style = syntax "#1d2e36"
 	map-styles = \
-		bold red => syntax "#3b2a35", \
-		bold green => syntax "#1f2e35", \
-		bold yellow => syntax "#3a3128", \
-		bold blue => syntax "#1f2a35", \
-		bold magenta => syntax "#2e2640", \
-		bold cyan => syntax "#2e2030"
+		bold red => syntax "#382833", \
+		bold green => syntax "#1e2c33", \
+		bold yellow => syntax "#372e28", \
+		bold blue => syntax "#1e2833", \
+		bold magenta => syntax "#2c253d", \
+		bold cyan => syntax "#2c1f2f"
 
 # ---- Rose Pine Dawn (light) ----
 [delta "rose-pine-dawn"]
@@ -51,14 +51,14 @@
 	line-numbers-plus-style = bold "#286983"
 	line-numbers-right-style = "#9893a5"
 	line-numbers-zero-style = "#9893a5"
-	minus-emph-style = bold syntax "#dcb8b3"
-	minus-style = syntax "#ead5d0"
-	plus-emph-style = bold syntax "#b5c5c7"
-	plus-style = syntax "#d2d8d8"
+	minus-emph-style = bold syntax "#dfbeb9"
+	minus-style = syntax "#ecd8d3"
+	plus-emph-style = bold syntax "#bccacb"
+	plus-style = syntax "#d6dbda"
 	map-styles = \
-		bold red => syntax "#e0c8c5", \
-		bold green => syntax "#c8d8da", \
-		bold yellow => syntax "#ead0b0", \
-		bold blue => syntax "#c8d8da", \
-		bold magenta => syntax "#d4c8e0", \
-		bold cyan => syntax "#e0c8c5"
+		bold red => syntax "#e3ccc9", \
+		bold green => syntax "#cddbdc", \
+		bold yellow => syntax "#ecd4b6", \
+		bold blue => syntax "#cddbdc", \
+		bold magenta => syntax "#d8cce1", \
+		bold cyan => syntax "#e3ccc9"
