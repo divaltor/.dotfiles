@@ -7,6 +7,8 @@ permission:
   websearch: allow
   webfetch: deny
   doom_loop: deny
+  plan_enter: deny
+  plan_exit: deny
   grep: deny
   glob: deny
   question: allow

@@ -9,6 +9,8 @@ permission:
   webfetch: deny
   doom_loop: deny
   grep: deny
+  plan_enter: deny
+  plan_exit: deny
   glob: deny
   question: deny
   exa_web_fetch_exa: allow

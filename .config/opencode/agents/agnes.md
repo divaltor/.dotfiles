@@ -12,6 +12,8 @@ permission:
   webfetch: deny
   doom_loop: deny
   grep_*: deny
+  plan_enter: deny
+  plan_exit: deny
   glob: deny
   exa_*: deny
 ---
