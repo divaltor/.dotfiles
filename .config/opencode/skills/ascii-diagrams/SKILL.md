@@ -17,16 +17,10 @@ Do not default to a flow diagram. Match the diagram to the problem.
 | Movement between steps/services/states, pipelines, request lifecycles, deps   | **Flow diagram**             |
 | Call stacks, hot paths, CPU/memory profiles, nested time spent, blame trees   | **Stack / flamegraph**       |
 | Time-anchored events, schedules, ranges, durations                            | **Timeline**                 |
+| A value plotted against a continuous axis (time, distance, progress); curves, drift, spread | **XY plot** |
+| Memory/buffer layout, geometry, or spatial relationships                       | **Other** (layouts, vectors) |
 
-Decision checklist before drawing:
-
-1. Is the answer fundamentally **a number, ratio, or short list**? → simple ASCII, not a flow.
-2. Does the explanation require **arrows between distinct nodes**? → flow.
-3. Is it about **where time/CPU/memory is spent** or **nested call relationships**? → flamegraph or stack.
-4. Is the X axis **time**? → timeline.
-5. If two shapes fit, pick the smaller one.
-
-When in doubt, prefer the simplest shape that still answers the question.
+If two shapes fit, pick the smaller one. When in doubt, prefer the simplest shape that still answers the question — never wrap a number, ratio, or 2-line answer in a flow.
 
 ## Style
 
@@ -137,20 +131,10 @@ PluginBoot background fiber
 ```
 ````
 
-Rules for call stacks / trees:
+Rules:
 
-- use 2-space indent per level, `→` prefix on every child
-- one call per line; keep identifiers exact (`Module.method()`)
-- group independent stacks under a plain heading line, separated by a blank line
-- pick a language tag (`ts`, `py`, `go`, …) so identifiers highlight
-- omit args unless they carry the explanation; never invent types
-
-Rules for flamegraphs:
-
-- align all bars to the same left edge
-- one frame per line, label first then bar
-- show absolute time or % on the right
-- only include frames that matter; collapse the rest into `…`
+- **trees:** 2-space indent per level, `→` on every child, one exact identifier per line (`Module.method()`); separate independent stacks with a blank line under a heading; tag the block (`ts`, `py`, `go`, …) so identifiers highlight.
+- **flamegraphs:** align all bars to the same left edge, label first then bar, show time/% on the right, collapse irrelevant frames into `…`.
 
 ## Shape 4 — Timeline
 
@@ -166,13 +150,86 @@ Sun        Mon        Tue        Wed        Thu        Fri
  │      canary window
 ```
 
+## Shape 5 — XY plot
+
+Use when a value changes over a continuous axis (time, distance, progress) and the *shape of the curve* is the point: growth, drift, deltas, spread. Y axis labeled on the left, X axis along the bottom with an arrow, `┤` / `┼` for tick joints.
+
+Single curve (elapsed time vs track progress):
+
+```text
+elapsed
+   28s ┤                    ▇
+       │                 ▇  ▇
+       │              ▇  ▇  ▇
+   14s ┤┄┄┄┄┄┄┄┄▇  ▇  ▇  ▇  ▇
+       │     ▇  ▇  ▇  ▇  ▇  ▇
+    0s ┤▇  ▇  ▇  ▇  ▇  ▇  ▇  ▇
+       └─────────┴──────────────▶ progress
+       0        0.42            1
+```
+
+Signed values around a zero baseline (delta above/below a reference):
+
+```text
+ +Δ ┤      ▇  ▇
+    │   ▇  ▇  ▇  ▇
+  0 ┼──────────────────────────▶ progress
+    │            ▇  ▇  ▇
+ −Δ ┤               ▇
+    0                          1   +Δ behind · −Δ ahead · 0 reference
+```
+
+Curve plus an envelope/spread band (`█` actual run, `░` ±σ band):
+
+```text
+e + ┤                       ░░░░
+    │              ░░░░░░░░░░░░░
+  0 ┤█░█░░░░░█░█░░░░░░░░░█░█░░░░
+    │  ░░░░░█░░░░█░░░░█░█░░░░░░
+e − ┤             ░░░░░░░░░░░░░
+    └──────────────────────────▶ t
+```
+
+Rules for XY plots:
+
+- label the Y axis above the top tick; put the X axis label after the arrow
+- use `┤` for plain ticks, `┼` where a zero/baseline line crosses
+- keep one glyph per column so points stay vertically aligned
+- legend goes on one line under the plot, not inside it
+
+## Shape 6 — Layout / geometry
+
+Use for memory and buffer layouts, on-disk formats, or spatial/vector relationships — anything where *position* carries the meaning.
+
+Ring buffer / memory layout:
+
+```text
+        head ─┐ (next write)
+ idx:  0    1    2    3   …   15
+      ┌────┬────┬────┬────┬────┐
+      │ t₀ │ t₁ │ t₂ │ t₃ │ t₁₅│   timestamps (µs)
+      └────┴────┴────┴────┴────┘
+        ↑ oldest          newest ↑
+```
+
+Geometric projection (project a point onto the nearest segment):
+
+```text
+              ● point
+              ┊  ⟂ perpendicular onto nearest segment
+              ▼
+   •╮     A        B
+    ╰•╮ ╭•───X────•╮
+      ╰•╯       ╰•── … ──▶
+
+  X = A + t·(B − A)
+  t = clamp(0, (● − A)·(B − A) / |B − A|², 1)
+```
+
 ## Rules
 
 - Return the diagram as a single `text` code block when the user asks for a single ASCII output.
 - Do not use Mermaid or other rendered diagram syntaxes.
-- Keep labels short and readable.
-- Avoid dense tables unless a table is the clearest shape.
+- Keep labels short; include only the details needed to make the point.
 - Prefer vertical sections over one huge crowded diagram.
-- Include only the details needed to understand the point.
 - End with a compact summary box only when there is a decision or conclusion worth restating.
-- Never wrap a simple number, ratio, or 2-line answer in a flow diagram.
