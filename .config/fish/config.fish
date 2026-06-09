@@ -5,9 +5,7 @@ set -U -x HOMEBREW_NO_ENV_HINTS 1
 set -U -x XDG_CONFIG_HOME $HOME/.config
 set -U -x nvm_default_version lts
 
-if type -q brew
-    eval "$(/opt/homebrew/bin/brew shellenv)"
-end
+eval "$(/opt/homebrew/bin/brew shellenv)"
 
 if type -q devbox
     devbox global shellenv --init-hook | source
