@@ -22,13 +22,6 @@
       "url": "https://mcp.grep.app",
       "enabled": true
     },
-    "fff": {
-      "type": "local",
-      "command": [
-        "fff-mcp"
-      ],
-      "enabled": true
-    }
   },
   "experimental": {
     "openTelemetry": true

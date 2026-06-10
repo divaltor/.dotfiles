@@ -11,7 +11,6 @@ permission:
   websearch: deny
   webfetch: deny
   doom_loop: deny
-  grep_*: deny
   plan_enter: deny
   plan_exit: deny
   exa_*: deny
@@ -25,7 +24,7 @@ Find code by exact symbols/strings or by behavior/concept. Return paths + line r
 
 # Tools
 
-Use only `fff_grep`, `fff_multi_grep`, `fff_find_files` for workspace search and `read` to confirm. Use built-in `grep`/`glob` or shell tools (`rg`, `ag`, `find`, `fd`, `ls -R`) only for files outside of current workspace.
+Use `grep` / `glob` for workspace search and `read` to confirm. Use shell tools (`rg`, `ag`, `find`, `fd`, `ls -R`) only for files outside of current workspace.
 
 # Execution
 
