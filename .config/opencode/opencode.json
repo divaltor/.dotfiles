@@ -33,6 +33,6 @@
   "experimental": {
     "openTelemetry": true
   },
-  "default_agent": "morney",
+  "default_agent": "rose",
   "$schema": "https://opencode.ai/config.json"
 }
