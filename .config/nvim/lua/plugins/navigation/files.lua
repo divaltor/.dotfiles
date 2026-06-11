@@ -1,43 +1,10 @@
 return {
   {
-    "akinsho/bufferline.nvim",
-    opts = {
-      options = {
-        move_wraps_at_ends = true,
-      },
-    },
-  },
-  {
-    "folke/which-key.nvim",
-    opts = {
-      preset = "helix",
-      delay = 0,
-      plugins = {
-        spelling = {
-          enabled = false,
-        },
-      },
-      icons = {
-        colors = false,
-        rules = false,
-        separator = "",
-        mappings = false,
-      },
-      show_help = false,
-    },
-  },
-  {
-    "nvim-mini/mini.indentscope",
-    enabled = false,
-  },
-  {
     "nvim-neo-tree/neo-tree.nvim",
     dependencies = {
       "saifulapm/neotree-file-nesting-config",
     },
     opts = {
-      -- hide_root_node = true,
-      -- retain_hidden_root_indent = true,
       filesystem = {
         filtered_items = {
           show_hidden_count = false,
@@ -112,17 +79,6 @@ return {
       integrations = {
         grep_in_directory = "snacks.picker",
         grep_in_selected_files = "snacks.picker",
-      },
-    },
-  },
-  {
-    "folke/snacks.nvim",
-    opts = {
-      picker = {
-        matcher = {
-          frecency = true,
-          cwd_bonus = true,
-        },
       },
     },
   },
