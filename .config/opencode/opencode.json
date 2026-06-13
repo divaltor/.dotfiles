@@ -10,6 +10,8 @@
       "disable": true
     },
   },
+  "lsp": true,
+  "formatter": true,
   "permission": "allow",
   "mcp": {
     "exa": {
