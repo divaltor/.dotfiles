@@ -33,12 +33,12 @@
   "experimental": {
     "openTelemetry": true
   },
-  "default_agent": "rose",
   "references": {
     "opencode": {
       "path": "anomalyco/opencode",
       "description": "Official repo of Opencode"
     }
   },
+  "default_agent": "morney",
   "$schema": "https://opencode.ai/config.json"
 }
