@@ -91,3 +91,130 @@ const wiredLayer = dependencies.reduce(
 ```
 
 This means `dependencies` is purely syntactic sugar for chained `Layer.provide()` calls — there is no runtime magic, just composition.
+
+## Global memoMap
+
+The opencode codebase shares a single `memoMap` across all runtimes to deduplicate layer instances globally:
+
+```ts
+// packages/core/src/effect/memo-map.ts
+import { Layer } from "effect"
+export const memoMap = Layer.makeMemoMapUnsafe()
+```
+
+Every `ManagedRuntime.make` call in the codebase passes `{ memoMap }`. This ensures that services like `Bus`, `Cache`, and `Observability` are created once and shared across all runtimes in the process.
+
+## EffectBridge — Promise/Callback Interop
+
+`EffectBridge` (`packages/opencode/src/effect/bridge.ts`) is the sanctioned helper for crossing from non-Effect code (callbacks, native APIs, plugin systems) back into Effect while preserving instance/workspace context.
+
+### Why It's Needed
+
+When a non-Effect callback (e.g., `@parcel/watcher`, `node-pty`, plugin hooks) needs to run Effect code, it must restore the `InstanceRef` and `WorkspaceRef` that existed when the callback was registered. Without this, code like `Effect.runPromise(someEffect)` runs without instance context and fails on any service that depends on per-directory state.
+
+### How It Works
+
+```ts
+import { EffectBridge } from "@/effect/bridge"
+
+// Capture happens inside an Effect fiber (has instance/workspace context)
+const bridge = yield* EffectBridge.make()
+
+// Later, from a non-Effect callback:
+await bridge.promise(someEffect)   // runs with original instance/workspace context
+bridge.fork(someEffect)             // fire-and-forget with restored context
+bridge.bind((x) => compute(x))()    // sync binding with restored context
+```
+
+Internally, `EffectBridge.make()` captures:
+1. The current fiber's `InstanceRef` (per-directory instance identity)
+2. The current fiber's `WorkspaceRef` (workspace identity)
+3. The fiber context itself
+
+When `bridge.promise(effect)` is called later, it wraps the effect with the captured context before running it.
+
+### When to Use
+
+Use `EffectBridge` for:
+- Native callback APIs (`@parcel/watcher`, `node-pty`, `fs.watch`)
+- Plugin systems that call back into Effect code
+- Any boundary where non-Effect code needs to re-enter Effect with context
+
+Do not use `EffectBridge` for:
+- Plain async code that can stay inside an Effect fiber — yield `Effect.promise(...)` instead
+- Code that doesn't depend on instance/workspace context
+- Test code — use `testEffect` / `it.effect` / `it.instance` instead
+
+## InstanceState — Per-Directory ScopedCache
+
+`InstanceState` (`packages/opencode/src/effect/instance-state.ts`) wraps `ScopedCache` to provide per-directory state with automatic disposal. When two open directories should not share one copy of a service's state, use `InstanceState`.
+
+### When to Use InstanceState
+
+Use `InstanceState` when:
+- Two open project directories in the same process should have independent service state
+- The state requires cleanup when a directory instance is unloaded (subscriptions, file watchers, connection pools)
+- The state has per-instance finalizers (`Effect.addFinalizer`, `Effect.acquireRelease`)
+
+### Pattern
+
+```ts
+import { InstanceState } from "@/effect/instance-state"
+
+const stateImpl = Effect.fn("Service.state")(function* () {
+  // Subscribe to events — cleaned up when instance is disposed
+  const bus = yield* Bus.Service
+  yield* bus.subscribeAll().pipe(
+    Stream.runForEach((event) => handleEvent(event)),
+    Effect.forkScoped,
+  )
+
+  // Acquire a resource — released on disposal
+  yield* Effect.acquireRelease(openConnection, closeConnection)
+
+  return yield* loadInitialState()
+})
+
+// In the layer:
+const state = yield* InstanceState.make<MyState>(stateImpl)
+
+// In methods:
+const methods = {
+  read: (key: string) => Effect.gen(function* () {
+    const s = yield* InstanceState.get(state)
+    return s.get(key)
+  }),
+}
+```
+
+### Rules
+
+- Do the work directly in the `InstanceState.make(...)` closure — `ScopedCache` handles run-once and concurrent deduplication.
+- Do not add ad hoc `started` flags, `ensure()` callbacks, or separate `init()` fibers on top of `InstanceState`.
+- Put subscriptions, finalizers, and scoped background work inside the `InstanceState.make(...)` initializer.
+- Use `Effect.forkScoped` inside the closure for background stream consumers — the fiber is interrupted when the instance is disposed.
+- To make `init()` non-blocking, fork at the caller/bootstrap boundary (e.g., `Effect.forkIn(scope)`), not inside `InstanceState.make(...)`. Forking inside the closure leaves state incomplete.
+
+### InstanceRef & WorkspaceRef
+
+`Context.Reference` values carry instance and workspace identity through the fiber context:
+
+```ts
+// packages/opencode/src/effect/instance-ref.ts
+export const InstanceRef = Context.Reference<InstanceContext | undefined>(
+  "~opencode/InstanceRef",
+  { defaultValue: () => undefined },
+)
+export const WorkspaceRef = Context.Reference<WorkspaceV2.ID | undefined>(
+  "~opencode/WorkspaceRef",
+  { defaultValue: () => undefined },
+)
+```
+
+These are set when an instance is loaded and restored by `EffectBridge` when crossing boundaries.
+
+## Configuration
+
+For typed config loading, use `Config` from `effect` directly, or the opencode-specific `ConfigService` custom factory for compile-time-typed config layers. See [reference/config.md](reference/config.md).
+
+For graph-based layer wiring with cycle detection, see [reference/layer-node.md](reference/layer-node.md). For concurrency patterns, see [reference/concurrency.md](reference/concurrency.md).

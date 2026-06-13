@@ -233,3 +233,111 @@ export const Source = Schema.Union([DirectorySource, UrlSource, EmbeddedSource])
 ```
 
 **Opencode references:** `~/dev/opencode/packages/llm/src/protocols/shared.ts:L23`, `~/dev/opencode/packages/core/src/schema.ts:L85-L88`
+
+#### `Newtype` — Nominal Scalar Types
+
+For single-value types that need strong nominal identity (not just a brand), the codebase has a `Newtype` helper that wraps a branded schema in an abstract class:
+
+```ts
+// packages/core/src/schema.ts:L109-L126
+export function Newtype<Self>() {
+  return <Tag extends string, S extends Schema.Top>(tag: Tag, schema: S) => {
+    abstract class Base {
+      readonly [TypeId]!: TypeId
+      constructor(readonly value: Schema.Schema.Type<S>) {}
+      toJSON() { return this.value }
+      toString() { return String(this.value) }
+    }
+    // ... static decode, encode, schema methods
+    return Base as unknown as Newtype<Tag, Schema.Schema.Type<S>>
+  }
+}
+```
+
+Use `Newtype` when you need `instanceof` checks plus a nominal type that can't be accidentally passed as a plain string/number. For simpler cases, `Schema.brand` is sufficient.
+
+**Opencode reference:** `~/dev/opencode/packages/core/src/schema.ts:L109-L126`
+
+### `Schema.Defect` — Unknown Cause Fields
+
+Use `Schema.Defect` for error cause fields that carry arbitrary unknown values:
+
+```ts
+export class MyError extends Schema.TaggedErrorClass<MyError>()("MyError", {
+  message: Schema.String,
+  cause: Schema.optional(Schema.Defect),
+}) {}
+
+// Wrapping an unknown cause
+static fromCause(input: { message: string; cause: unknown }): MyError {
+  return new MyError({ message: input.message, cause: new Schema.Defect(input.cause) })
+}
+```
+
+`Schema.Defect` preserves the raw value without asserting a Schema shape. It's the canonical way to represent "I don't know what this is, but I'm carrying it" in error types.
+
+### Decoding Variants (Extended)
+
+Beyond the three common variants, the codebase uses these additional decode/encode helpers:
+
+#### `Schema.decodeUnknownExit` — Returns `Exit`
+
+Returns an `Exit` instead of failing into the error channel. Useful when you need to inspect or transform failures:
+
+```ts
+const decoded = Schema.decodeUnknownExit(schema)(data, { errors: "all", propertyOrder: "original" })
+// Returns Exit.Success(value) | Exit.Failure(cause)
+```
+
+#### `Schema.encodeUnknownSync` — Serialization
+
+Synchronous encoding of Schema types to plain values, used for event serialization:
+
+```ts
+encode: Schema.encodeUnknownSync(syncCodec(definition)),
+```
+
+#### `Schema.fromJsonString` — Parse JSON Strings
+
+Wraps a Schema in JSON.parse semantics:
+
+```ts
+const LockMetaJson = Schema.fromJsonString(Schema.Struct({
+  token: Schema.String,
+  pid: Schema.Number,
+  hostname: Schema.String,
+  createdAt: Schema.String,
+}))
+```
+
+Use `Schema.fromJsonString` instead of `JSON.parse` wrapped in `Effect.try` when parsing JSON strings from external sources.
+
+### `Schema.Literals` — Constrained String Unions
+
+For constraining a union of specific string values:
+
+```ts
+export const PolicyActions = Schema.Literals(["provider.use", "model.read"])
+export type PolicyActions = typeof PolicyActions.Type
+```
+
+Also supports annotations:
+
+```ts
+export const Effect = Schema.Literals(["allow", "deny"]).annotate({
+  identifier: "Policy.Effect",
+})
+export type Effect = typeof Effect.Type
+```
+
+### `Schema.optionFromOption` — Lifting Option into Schema
+
+When a field should be `Option<X>` rather than `X | undefined`:
+
+```ts
+import { Option, Schema } from "effect"
+
+quote: Schema.optionFromOption(FxEmbedTweet),
+```
+
+This gives you `Option<FxEmbedTweet>` instead of `FxEmbedTweet | undefined` — callers use `Option.match` / `Option.isSome` instead of null checks.
