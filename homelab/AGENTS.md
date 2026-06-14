@@ -1,3 +1,7 @@
+## Standarts
+
+When edit any Opentofu or Ansible files ensure it is up to date with other part. Ansible and Terraform are coupled together into single setup layet. Terraform setup Proxmox and resources in it, Ansible setups VMs, LXC and other stuff Opentofu can't.
+
 ## Homelab specs
 
 Hardware
