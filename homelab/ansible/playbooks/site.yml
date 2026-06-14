@@ -1,0 +1,9 @@
+---
+# ============================================================
+# Master playbook — Proxmox infrastructure
+# Run order matters: host config → containers → VMs
+# ============================================================
+
+- import_playbook: proxmox_host.yml
+- import_playbook: lxc_smb.yml
+- import_playbook: vm_homelab.yml

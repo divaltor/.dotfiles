@@ -1,0 +1,25 @@
+[global]
+   workgroup = {{ samba_workgroup }}
+   netbios name = {{ samba_netbios_name }}
+   server string = {{ samba_server_string }}
+   map to guest = {{ samba_map_to_guest }}
+   restrict anonymous = {{ samba_restrict_anonymous }}
+   vfs objects = {{ samba_vfs_objects }}
+   fruit:model = {{ samba_fruit_model }}
+   unix extensions = {{ samba_unix_extensions | lower }}
+   interfaces = {{ samba_interfaces }}
+   bind interfaces only = {{ samba_bind_interfaces_only | lower }}
+
+{% for share in samba_shares %}
+[{{ share.name }}]
+   path = {{ share.path }}
+   read only = {{ share.read_only | lower }}
+   browseable = {{ share.browseable | lower }}
+   inherit permissions = {{ share.inherit_permissions | lower }}
+   valid users = {{ share.valid_users }}
+   force user = {{ share.force_user }}
+   create mask = {{ share.create_mask }}
+   force create mode = {{ share.force_create_mode }}
+   directory mask = {{ share.directory_mask }}
+   force directory mode = {{ share.force_directory_mode }}
+{% endfor %}

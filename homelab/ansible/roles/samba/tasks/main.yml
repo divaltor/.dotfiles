@@ -1,0 +1,53 @@
+---
+# Samba role — install and configure Samba file server
+
+- name: Install Samba packages
+  ansible.builtin.package:
+    name:
+      - samba
+      - samba-common
+    state: present
+
+- name: Deploy smb.conf
+  ansible.builtin.template:
+    src: smb.conf.j2
+    dest: /etc/samba/smb.conf
+    owner: root
+    group: root
+    mode: "0644"
+    validate: "testparm -s %s"
+  notify: Restart Samba
+
+- name: Ensure share directories exist
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: directory
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+    mode: "0775"
+  loop: "{{ samba_shares }}"
+
+- name: Create Samba users (if any)
+  ansible.builtin.assert:
+    that:
+      - item.password | length > 0
+    fail_msg: "Samba password for '{{ item.name }}' is not set; provide SAMBA_PASSWORD or TF_VAR_samba_password via 1Password"
+  loop: "{{ samba_users }}"
+  when: samba_users | length > 0
+  no_log: true
+
+- name: Create Samba users (if any)
+  ansible.builtin.shell: |
+    (pdbedit -L | grep -q "^{{ item.name }}:") || \
+    (echo "{{ item.password }}" | smbpasswd -s -a {{ item.name }})
+  args:
+    executable: /bin/bash
+  loop: "{{ samba_users }}"
+  when: samba_users | length > 0
+  no_log: true
+
+- name: Ensure Samba service is running
+  ansible.builtin.service:
+    name: smbd
+    state: started
+    enabled: true

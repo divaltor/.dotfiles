@@ -1,0 +1,14 @@
+---
+# SSH role — install operator public key for passwordless Ansible access
+
+- name: Ensure SSH public key is provided
+  ansible.builtin.assert:
+    that:
+      - ssh_public_key | length > 0
+    fail_msg: "TF_VAR_ssh_public_key is not set"
+
+- name: Install authorized SSH key
+  ansible.posix.authorized_key:
+    user: "{{ ssh_authorized_user }}"
+    key: "{{ ssh_public_key }}"
+    state: present

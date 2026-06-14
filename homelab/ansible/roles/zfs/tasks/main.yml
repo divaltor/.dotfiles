@@ -1,0 +1,43 @@
+---
+# ZFS role — manage datasets on Proxmox host
+
+- name: Check ZFS pool exists
+  ansible.builtin.command:
+    cmd: "zpool list -H -o name {{ zfs_pool_name }}"
+  register: zpool_check
+  changed_when: false
+  failed_when: false
+
+- name: Fail if ZFS pool not found
+  ansible.builtin.fail:
+    msg: "ZFS pool '{{ zfs_pool_name }}' not found on host"
+  when: zpool_check.rc != 0
+
+- name: Ensure ZFS datasets exist
+  ansible.builtin.command:
+    cmd: "zfs list -H -o name {{ item.name }}"
+  register: zfs_dataset_check
+  changed_when: false
+  failed_when: false
+  loop: "{{ zfs_datasets }}"
+
+- name: Fail if configured ZFS datasets are missing
+  ansible.builtin.fail:
+    msg: "ZFS dataset '{{ item.item.name }}' is missing; create or import storage manually before running Ansible"
+  when: item.rc != 0
+  loop: "{{ zfs_dataset_check.results }}"
+
+- name: Ensure ZFS dataset mountpoints match config
+  ansible.builtin.command:
+    cmd: "zfs set mountpoint={{ item.mountpoint }} {{ item.name }}"
+  loop: "{{ zfs_datasets }}"
+
+- name: Show ZFS pool status
+  ansible.builtin.command:
+    cmd: "zpool status {{ zfs_pool_name }}"
+  register: zpool_status
+  changed_when: false
+
+- name: Display ZFS pool status
+  ansible.builtin.debug:
+    var: zpool_status.stdout_lines

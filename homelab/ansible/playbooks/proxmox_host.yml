@@ -1,0 +1,23 @@
+---
+# ============================================================
+# Proxmox host — ZFS dataset management
+# ============================================================
+# Runs against the Proxmox VE host (192.168.1.19).
+# Manages ZFS datasets on pool "pool".
+# The ZFS pool itself is created via Proxmox CLI (not managed here).
+# ============================================================
+
+- name: Configure Proxmox host (ZFS datasets)
+  hosts: proxmox_host
+  gather_facts: true
+  become: false
+  vars_files:
+    - ../group_vars/all.yml
+
+  roles:
+    - ssh
+    - zfs
+    - role: avahi
+      vars:
+        avahi_hostname: proxmox
+        avahi_allow_interfaces: vmbr0

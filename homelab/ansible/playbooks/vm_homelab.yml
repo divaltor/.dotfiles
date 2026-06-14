@@ -1,0 +1,15 @@
+---
+# ============================================================
+# VM: homelab (100) — Debian 13
+# ============================================================
+
+- name: Configure homelab VM
+  hosts: homelab
+  gather_facts: true
+  vars_files:
+    - ../group_vars/all.yml
+
+  roles:
+    - ssh
+    - common
+    - avahi

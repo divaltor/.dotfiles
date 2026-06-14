@@ -1,0 +1,58 @@
+---
+# Avahi role — mDNS for local hostname resolution
+# Enables Macs to reach the Samba server as smb.local
+
+- name: Install Avahi daemon
+  ansible.builtin.package:
+    name:
+      - avahi-daemon
+      - avahi-utils
+    state: present
+
+- name: Deploy avahi-daemon.conf
+  ansible.builtin.template:
+    src: avahi-daemon.conf.j2
+    dest: /etc/avahi/avahi-daemon.conf
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart Avahi
+
+- name: Ensure Avahi is running
+  ansible.builtin.service:
+    name: avahi-daemon
+    state: started
+    enabled: true
+
+- name: Announce Samba service via Avahi
+  ansible.builtin.copy:
+    dest: /etc/avahi/services/samba.service
+    content: |
+      <?xml version="1.0" standalone='no'?>
+      <!DOCTYPE service-group SYSTEM "avahi-service.dtd">
+      <service-group>
+        <name replace-wildcards="yes">{{ avahi_samba_service_name }}</name>
+
+        <service>
+          <type>_smb._tcp</type>
+          <port>445</port>
+        </service>
+
+        <service>
+          <type>_device-info._tcp</type>
+          <port>0</port>
+          <txt-record>model={{ avahi_samba_device_model }}</txt-record>
+        </service>
+      </service-group>
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart Avahi
+  when: avahi_samba_advertise
+
+- name: Remove Samba Avahi service where SMB is not hosted
+  ansible.builtin.file:
+    path: /etc/avahi/services/samba.service
+    state: absent
+  notify: Restart Avahi
+  when: not avahi_samba_advertise

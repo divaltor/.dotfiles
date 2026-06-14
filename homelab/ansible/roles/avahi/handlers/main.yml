@@ -1,0 +1,7 @@
+---
+# Avahi role handlers
+
+- name: Restart Avahi
+  ansible.builtin.service:
+    name: avahi-daemon
+    state: restarted

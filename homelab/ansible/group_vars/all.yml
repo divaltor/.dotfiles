@@ -1,0 +1,73 @@
+---
+# Group variables — all hosts
+
+# ZFS pool configuration (managed on Proxmox host)
+zfs_pool_name: pool
+zfs_pool_mountpoint: /media
+
+# ZFS datasets (existing layout; the pool root itself is mounted at /media/cold)
+zfs_datasets:
+  - name: pool
+    mountpoint: /media/cold
+    # Shared to LXC 101 (smb) via bind mount
+  # - name: pool/media
+  #   mountpoint: /media/media
+  # - name: pool/backups
+  #   mountpoint: /media/backups
+
+# Samba configuration (LXC: smb only)
+samba_workgroup: WORKGROUP
+samba_netbios_name: divaos
+samba_server_string: DivaOS
+samba_interfaces: "eth0 lo"
+samba_bind_interfaces_only: false
+samba_map_to_guest: Never
+samba_restrict_anonymous: 2
+samba_vfs_objects: "catia fruit streams_xattr"
+samba_fruit_model: RackMac
+samba_unix_extensions: false
+
+# Samba shares — adjust paths and permissions as needed
+samba_shares:
+  - name: storage
+    path: /mnt/share
+    browseable: true
+    read_only: false
+    inherit_permissions: false
+    valid_users: divaltor
+    force_user: divaltor
+    create_mask: "0664"
+    force_create_mode: "0664"
+    directory_mask: "0775"
+    force_directory_mode: "0775"
+    owner: divaltor
+    group: divaltor
+
+samba_users:
+  - name: divaltor
+    password: "{{ lookup('env', 'SAMBA_PASSWORD') | default(lookup('env', 'TF_VAR_samba_password'), true) }}"
+
+# Avahi / mDNS
+avahi_enable: true
+avahi_hostname: "{{ inventory_hostname }}"
+avahi_allow_interfaces: eth0
+avahi_publish_workstation: true
+avahi_reflector: false
+avahi_samba_advertise: false
+avahi_samba_service_name: DivaOS
+avahi_samba_device_model: TimeCapsule
+
+# Common packages
+common_packages:
+  - vim
+  - curl
+  - wget
+  - htop
+  - tmux
+  - net-tools
+  - ca-certificates
+  - gnupg
+
+# SSH bootstrap
+ssh_authorized_user: root
+ssh_public_key: "{{ lookup('env', 'TF_VAR_ssh_public_key') }}"

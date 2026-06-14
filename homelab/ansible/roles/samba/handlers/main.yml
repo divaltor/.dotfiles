@@ -1,0 +1,12 @@
+---
+# Samba role handlers
+
+- name: Restart Samba
+  ansible.builtin.service:
+    name: smbd
+    state: restarted
+
+- name: Restart Avahi
+  ansible.builtin.service:
+    name: avahi-daemon
+    state: restarted

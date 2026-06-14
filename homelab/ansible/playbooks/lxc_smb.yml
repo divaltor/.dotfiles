@@ -1,0 +1,22 @@
+---
+# ============================================================
+# LXC: smb (101) — Samba file server + Avahi mDNS
+# ============================================================
+# The container runs Debian with Samba sharing ZFS-backed
+# storage from the Proxmox host via bind mount (/mnt/share).
+# ============================================================
+
+- name: Configure Samba LXC
+  hosts: smb
+  gather_facts: true
+  vars_files:
+    - ../group_vars/all.yml
+
+  roles:
+    - ssh
+    - common
+    - role: samba
+    - role: avahi
+      vars:
+        avahi_samba_advertise: true
+        avahi_hostname: divaos
