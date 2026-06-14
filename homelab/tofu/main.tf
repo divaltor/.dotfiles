@@ -12,13 +12,24 @@ moved {
   to   = proxmox_virtual_environment_vm.homelab
 }
 
-resource "proxmox_download_file" "debian_13_netinst_iso" {
-  content_type       = "iso"
+import {
+  to = proxmox_storage_directory.local
+  id = "local"
+}
+
+resource "proxmox_storage_directory" "local" {
+  id      = "local"
+  path    = "/var/lib/vz"
+  content = ["backup", "import", "iso", "snippets", "vztmpl"]
+}
+
+resource "proxmox_download_file" "debian_13_cloud_image" {
+  content_type       = "import"
   datastore_id       = "local"
-  file_name          = "debian-13.5.0-amd64-netinst.iso"
+  file_name          = "debian-13-generic-amd64.qcow2"
   node_name          = "divaltor-dc"
-  url                = "https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/debian-13.5.0-amd64-netinst.iso"
-  checksum           = "b2be60c555e328b4fa5ebb2d0e5c7ee6bc3eb4250c4dcfd3f78b8d9aec596efdf9f14f10a898c280eb252d50bbac91ea0a2bba29736df0d4985d50d4c8d77519"
+  url                = "https://cloud.debian.org/images/cloud/trixie/latest/debian-13-generic-amd64.qcow2"
+  checksum           = "97675b27e69153002c4e13644e36200c8f9067f661dca00918c54f1cacbdb88d4bff8c0fbf5cf5d63a0397bdf0cc472d7a6372bae5281bf7ced756249c10f8a2"
   checksum_algorithm = "sha512"
 }
 
@@ -55,6 +66,7 @@ resource "proxmox_virtual_environment_vm" "homelab" {
     interface    = "scsi0"
     datastore_id = "fast-nvme"
     file_format  = "raw"
+    import_from  = proxmox_download_file.debian_13_cloud_image.id
     size         = 300
     iothread     = true
     discard      = "on"
@@ -65,9 +77,19 @@ resource "proxmox_virtual_environment_vm" "homelab" {
     type         = "4m"
   }
 
-  cdrom {
-    interface = "ide2"
-    file_id   = proxmox_download_file.debian_13_netinst_iso.id
+  initialization {
+    datastore_id = "fast-nvme"
+
+    ip_config {
+      ipv4 {
+        address = "dhcp"
+      }
+    }
+
+    user_account {
+      username = "root"
+      keys     = [trimspace(var.ssh_public_key)]
+    }
   }
 
   network_device {
@@ -77,11 +99,12 @@ resource "proxmox_virtual_environment_vm" "homelab" {
 
   scsi_hardware = "virtio-scsi-single"
 
-  boot_order = ["scsi0", "ide2", "net0"]
+  serial_device {}
+
+  boot_order = ["scsi0", "net0"]
 
   lifecycle {
     ignore_changes = [
-      cdrom,           # ISO may be ejected after install
       disk[0].file_id, # auto-assigned by Proxmox
     ]
   }
@@ -89,13 +112,13 @@ resource "proxmox_virtual_environment_vm" "homelab" {
 
 # ─── LXC: smb (101) — Samba NAS container ───────────────────
 
-resource "proxmox_download_file" "debian_12_lxc_template" {
+resource "proxmox_download_file" "debian_13_lxc_template" {
   content_type       = "vztmpl"
   datastore_id       = "local"
-  file_name          = "debian-12-standard_12.12-1_amd64.tar.zst"
+  file_name          = "debian-13-standard_13.1-2_amd64.tar.zst"
   node_name          = "divaltor-dc"
-  url                = "http://download.proxmox.com/images/system/debian-12-standard_12.12-1_amd64.tar.zst"
-  checksum           = "50c85eaaece677a3ebe01cc909b83872e9da2a22c29ae652838afce71e83222fdf40f6accecd7d52b180e912fc1f85ecdf7b3fc4d3027da4d865e509a9e76597"
+  url                = "http://download.proxmox.com/images/system/debian-13-standard_13.1-2_amd64.tar.zst"
+  checksum           = "5aec4ab2ac5c16c7c8ecb87bfeeb10213abe96db6b85e2463585cea492fc861d7c390b3f9c95629bf690b95e9dfe1037207fc69c0912429605f208d5cb2621f8"
   checksum_algorithm = "sha512"
 }
 
@@ -110,7 +133,7 @@ resource "proxmox_virtual_environment_container" "smb" {
 
   operating_system {
     type             = "debian"
-    template_file_id = proxmox_download_file.debian_12_lxc_template.id
+    template_file_id = proxmox_download_file.debian_13_lxc_template.id
   }
 
   cpu {
