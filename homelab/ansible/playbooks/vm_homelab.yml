@@ -12,4 +12,6 @@
   roles:
     - ssh
     - common
-    - avahi
+    - role: avahi
+      vars:
+        avahi_allow_interfaces: ens18
