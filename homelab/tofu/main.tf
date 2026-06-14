@@ -12,6 +12,16 @@ moved {
   to   = proxmox_virtual_environment_vm.homelab
 }
 
+resource "proxmox_download_file" "debian_13_netinst_iso" {
+  content_type       = "iso"
+  datastore_id       = "local"
+  file_name          = "debian-13.5.0-amd64-netinst.iso"
+  node_name          = "divaltor-dc"
+  url                = "https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/debian-13.5.0-amd64-netinst.iso"
+  checksum           = "b2be60c555e328b4fa5ebb2d0e5c7ee6bc3eb4250c4dcfd3f78b8d9aec596efdf9f14f10a898c280eb252d50bbac91ea0a2bba29736df0d4985d50d4c8d77519"
+  checksum_algorithm = "sha512"
+}
+
 resource "proxmox_virtual_environment_vm" "homelab" {
   node_name = "divaltor-dc"
   vm_id     = 100
@@ -57,7 +67,7 @@ resource "proxmox_virtual_environment_vm" "homelab" {
 
   cdrom {
     interface = "ide2"
-    file_id   = "local:iso/debian-13.5.0-amd64-netinst.iso"
+    file_id   = proxmox_download_file.debian_13_netinst_iso.id
   }
 
   network_device {
@@ -79,6 +89,16 @@ resource "proxmox_virtual_environment_vm" "homelab" {
 
 # ─── LXC: smb (101) — Samba NAS container ───────────────────
 
+resource "proxmox_download_file" "debian_12_lxc_template" {
+  content_type       = "vztmpl"
+  datastore_id       = "local"
+  file_name          = "debian-12-standard_12.12-1_amd64.tar.zst"
+  node_name          = "divaltor-dc"
+  url                = "http://download.proxmox.com/images/system/debian-12-standard_12.12-1_amd64.tar.zst"
+  checksum           = "50c85eaaece677a3ebe01cc909b83872e9da2a22c29ae652838afce71e83222fdf40f6accecd7d52b180e912fc1f85ecdf7b3fc4d3027da4d865e509a9e76597"
+  checksum_algorithm = "sha512"
+}
+
 resource "proxmox_virtual_environment_container" "smb" {
   node_name     = "divaltor-dc"
   vm_id         = 101
@@ -90,7 +110,7 @@ resource "proxmox_virtual_environment_container" "smb" {
 
   operating_system {
     type             = "debian"
-    template_file_id = "local:vztmpl/debian-12-standard.tar.zst"
+    template_file_id = proxmox_download_file.debian_12_lxc_template.id
   }
 
   cpu {
@@ -115,9 +135,9 @@ resource "proxmox_virtual_environment_container" "smb" {
   }
 
   network_interface {
-    name        = "eth0"
-    bridge      = "vmbr0"
-    firewall    = false
+    name     = "eth0"
+    bridge   = "vmbr0"
+    firewall = false
   }
 
   initialization {
