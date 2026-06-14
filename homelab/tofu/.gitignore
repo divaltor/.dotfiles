@@ -1,0 +1,13 @@
+# OpenTofu
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+terraform.tfvars
+
+# Ansible
+*.retry
+
+# Secrets
+*.vault
+secrets.yml
