@@ -89,6 +89,9 @@ return {
       },
       max_threads = 10,
       prompt = "λ ",
+      grep = {
+        modes = { "fuzzy", "plain", "regex" },
+      },
       hl = {
         border = "FFFBorder",
         normal = "FFFNormal",
