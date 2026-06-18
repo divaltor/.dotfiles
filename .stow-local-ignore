@@ -1,0 +1,11 @@
+# Repository metadata
+^\.git$
+^\.gitattributes$
+
+# Files/directories kept in the repo but not linked into $HOME
+^README\.md$
+^mise\.toml$
+^homelab$
+
+# Stow control file
+^\.stow-local-ignore$

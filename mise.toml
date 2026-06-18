@@ -1,0 +1,45 @@
+[tools]
+ansible-core = "latest"
+opentofu = "latest"
+pipx = "latest"
+
+[tasks.tofu]
+description = "Run OpenTofu in homelab/tofu through 1Password"
+raw_args = true
+run = "op run --environment 5hfpicsmni2xf56r2dv5gumz5e -- tofu -chdir=homelab/tofu"
+
+[tasks."tofu:plan"]
+description = "Run OpenTofu plan"
+run = "mise run tofu -- plan"
+
+[tasks."tofu:apply"]
+description = "Run OpenTofu apply"
+run = "mise run tofu -- apply"
+
+[tasks.ansible]
+description = "Run ansible in homelab/ansible through 1Password"
+raw_args = true
+dir = "homelab/ansible"
+run = "op run --environment 5hfpicsmni2xf56r2dv5gumz5e -- ansible"
+
+[tasks.playbook]
+description = "Run ansible-playbook in homelab/ansible through 1Password"
+raw_args = true
+dir = "homelab/ansible"
+run = "op run --environment 5hfpicsmni2xf56r2dv5gumz5e -- ansible-playbook"
+
+[tasks."ansible:syntax"]
+description = "Syntax-check the site playbook"
+run = "mise run playbook -- playbooks/site.yml --syntax-check"
+
+[tasks."ansible:ping"]
+description = "Ping all Ansible hosts"
+run = "mise run ansible -- all -m ping"
+
+[tasks."ansible:check"]
+description = "Dry-run the site playbook"
+run = "mise run playbook -- playbooks/site.yml --check --diff"
+
+[tasks."ansible:apply"]
+description = "Apply the site playbook"
+run = "mise run playbook -- playbooks/site.yml"

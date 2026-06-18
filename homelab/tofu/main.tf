@@ -28,7 +28,7 @@ resource "proxmox_download_file" "debian_13_cloud_image" {
   datastore_id       = "local"
   file_name          = "debian-13-generic-amd64.qcow2"
   node_name          = "divaltor-dc"
-  url                = "https://cloud.debian.org/images/cloud/trixie/latest/debian-13-generic-amd64.qcow2"
+  url                = "https://cloud.debian.org/images/cloud/trixie/20260601-2496/debian-13-generic-amd64-20260601-2496.qcow2"
   checksum           = "97675b27e69153002c4e13644e36200c8f9067f661dca00918c54f1cacbdb88d4bff8c0fbf5cf5d63a0397bdf0cc472d7a6372bae5281bf7ced756249c10f8a2"
   checksum_algorithm = "sha512"
 }
@@ -48,7 +48,7 @@ resource "proxmox_virtual_environment_vm" "homelab" {
   }
 
   cpu {
-    cores   = 16
+    cores   = 24
     type    = "host"
     sockets = 1
   }
