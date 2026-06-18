@@ -1,0 +1,25 @@
+brew "stow"
+brew "fish"
+brew "mise"
+
+brew "git"
+brew "git-delta"
+brew "neovim"
+brew "helix"
+brew "lazygit"
+brew "lazydocker"
+
+brew "bat"
+brew "eza"
+brew "yazi"
+brew "starship"
+brew "zoxide"
+brew "yt-dlp"
+brew "ffmpeg"
+
+brew "uv"
+brew "bun"
+brew "node"
+
+brew "opencode"
+brew "1password-cli"
