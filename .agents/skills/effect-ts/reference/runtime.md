@@ -3,12 +3,14 @@
 ### Creating a Runtime
 
 ```ts
-import { ManagedRuntime } from "effect"
+import { ManagedRuntime } from "effect";
 
-export const AppRuntime = ManagedRuntime.make(AppLayer, { memoMap })
+export const AppRuntime = ManagedRuntime.make(AppLayer, { memoMap });
 
 // Extract the service type for type annotations
-export type AppServices = ManagedRuntime.ManagedRuntime.Services<typeof AppRuntime>
+export type AppServices = ManagedRuntime.ManagedRuntime.Services<
+  typeof AppRuntime
+>;
 ```
 
 The `memoMap` option is important — it enables memoization across layers built from the same runtime, avoiding duplicate resource initialization when a layer is used by multiple consumers.
@@ -18,14 +20,17 @@ The `memoMap` option is important — it enables memoization across layers built
 Wrap the raw `ManagedRuntime` methods for ergonomic access:
 
 ```ts
-const rt = ManagedRuntime.make(AppLayer, { memoMap })
+const rt = ManagedRuntime.make(AppLayer, { memoMap });
 
 export const AppRuntime = {
-  runSync: <A, E>(effect: Effect.Effect<A, E, AppServices>) => rt.runSync(effect),
-  runPromise: <A, E>(effect: Effect.Effect<A, E, AppServices>) => rt.runPromise(effect),
-  runFork: <A, E>(effect: Effect.Effect<A, E, AppServices>) => rt.runFork(effect),
+  runSync: <A, E>(effect: Effect.Effect<A, E, AppServices>) =>
+    rt.runSync(effect),
+  runPromise: <A, E>(effect: Effect.Effect<A, E, AppServices>) =>
+    rt.runPromise(effect),
+  runFork: <A, E>(effect: Effect.Effect<A, E, AppServices>) =>
+    rt.runFork(effect),
   dispose: () => rt.dispose(),
-}
+};
 ```
 
 ### Lazy Singleton Runtime
@@ -33,18 +38,26 @@ export const AppRuntime = {
 When runtime creation is expensive and may not always be needed, defer initialization:
 
 ```ts
-export function makeRuntime<I, S, E>(service: Context.Service<I, S>, layer: Layer.Layer<I, E>) {
-  let rt: ManagedRuntime.ManagedRuntime<I, E> | undefined
+export function makeRuntime<I, S, E>(
+  service: Context.Service<I, S>,
+  layer: Layer.Layer<I, E>,
+) {
+  let rt: ManagedRuntime.ManagedRuntime<I, E> | undefined;
 
   const getRuntime = () =>
-    (rt ??= ManagedRuntime.make(Layer.provideMerge(layer, Observability.layer), { memoMap }))
+    (rt ??= ManagedRuntime.make(
+      Layer.provideMerge(layer, Observability.layer),
+      { memoMap },
+    ));
 
   return {
     runSync: <A, Err>(fn: (svc: S) => Effect.Effect<A, Err, I>) =>
       getRuntime().runSync(service.use(fn)),
-    runPromise: <A, Err>(fn: (svc: S) => Effect.Effect<A, Err, I>, options?: Effect.RunOptions) =>
-      getRuntime().runPromise(service.use(fn), options),
-  }
+    runPromise: <A, Err>(
+      fn: (svc: S) => Effect.Effect<A, Err, I>,
+      options?: Effect.RunOptions,
+    ) => getRuntime().runPromise(service.use(fn), options),
+  };
 }
 ```
 
@@ -68,29 +81,18 @@ Command.run(cli, { version: "1.0.0" }).pipe(
 )
 ```
 
-## Appendix: `Effect.Service` Internals
+## Appendix: `Effect.Service` in Upstream Effect v4
 
-`Effect.Service<Self>()(key, options)` does the following under the hood:
-
-1. Creates a `Context.Tag` — the class itself becomes yieldable in generators (`yield* Service`)
-2. Inspects the `options` object:
-   - `sync: () => value` → creates `Layer.sync(Service, value)`
-   - `effect: Effect.gen(...)` → creates `Layer.effect(Service, effect)`
-   - `scoped: Effect.gen(...)` → creates `Layer.scoped(Service, scoped)`
-3. Exposes the auto-generated layer as `Service.Default` (dependencies wired) and `Service.Layer` (dependencies exposed)
-4. If `dependencies: [...]` is provided, pipes each dependency through `Layer.provide`:
+The upstream `Effect-TS/effect` v4 package ships a convenience API `Effect.Service<Self>()(key, options)` that bundles `Context.Tag` creation and layer construction. It auto-generates `Service.Default` (dependencies wired) and `Service.Layer` (dependencies exposed), and accepts options like `sync`, `effect`, `scoped`, or `dependencies`.
 
 ```ts
-// Internal equivalent:
-const baseLayer = Layer.effect(Service, options.effect)
-const wiredLayer = dependencies.reduce(
-  (acc, dep) => acc.pipe(Layer.provide(dep)),
-  baseLayer,
-)
-// wiredLayer becomes Service.Default
+// Upstream-only example — NOT used in this codebase
+class Prefix extends Effect.Service<Prefix>()("Prefix", {
+  sync: () => ({ prefix: "PRE" }),
+}) {}
 ```
 
-This means `dependencies` is purely syntactic sugar for chained `Layer.provide()` calls — there is no runtime magic, just composition.
+**Important:** `Effect.Service` is **not** present in the `effect-smol` source that this project uses as its source of truth, and it is **not used** anywhere in the opencode codebase. Prefer `Context.Service` + explicit `Layer.effect` here. If you are porting upstream Effect examples, translate `Effect.Service` declarations into the `Context.Service` pattern used throughout this repo.
 
 ## Global memoMap
 
@@ -98,8 +100,8 @@ The opencode codebase shares a single `memoMap` across all runtimes to deduplica
 
 ```ts
 // packages/core/src/effect/memo-map.ts
-import { Layer } from "effect"
-export const memoMap = Layer.makeMemoMapUnsafe()
+import { Layer } from "effect";
+export const memoMap = Layer.makeMemoMapUnsafe();
 ```
 
 Every `ManagedRuntime.make` call in the codebase passes `{ memoMap }`. This ensures that services like `Bus`, `Cache`, and `Observability` are created once and shared across all runtimes in the process.
@@ -115,18 +117,19 @@ When a non-Effect callback (e.g., `@parcel/watcher`, `node-pty`, plugin hooks) n
 ### How It Works
 
 ```ts
-import { EffectBridge } from "@/effect/bridge"
+import { EffectBridge } from "@/effect/bridge";
 
 // Capture happens inside an Effect fiber (has instance/workspace context)
-const bridge = yield* EffectBridge.make()
+const bridge = yield * EffectBridge.make();
 
 // Later, from a non-Effect callback:
-await bridge.promise(someEffect)   // runs with original instance/workspace context
-bridge.fork(someEffect)             // fire-and-forget with restored context
-bridge.bind((x) => compute(x))()    // sync binding with restored context
+await bridge.promise(someEffect); // runs with original instance/workspace context
+bridge.fork(someEffect); // fire-and-forget with restored context
+bridge.bind((x) => compute(x))(); // sync binding with restored context
 ```
 
 Internally, `EffectBridge.make()` captures:
+
 1. The current fiber's `InstanceRef` (per-directory instance identity)
 2. The current fiber's `WorkspaceRef` (workspace identity)
 3. The fiber context itself
@@ -136,11 +139,13 @@ When `bridge.promise(effect)` is called later, it wraps the effect with the capt
 ### When to Use
 
 Use `EffectBridge` for:
+
 - Native callback APIs (`@parcel/watcher`, `node-pty`, `fs.watch`)
 - Plugin systems that call back into Effect code
 - Any boundary where non-Effect code needs to re-enter Effect with context
 
 Do not use `EffectBridge` for:
+
 - Plain async code that can stay inside an Effect fiber — yield `Effect.promise(...)` instead
 - Code that doesn't depend on instance/workspace context
 - Test code — use `testEffect` / `it.effect` / `it.instance` instead
@@ -152,6 +157,7 @@ Do not use `EffectBridge` for:
 ### When to Use InstanceState
 
 Use `InstanceState` when:
+
 - Two open project directories in the same process should have independent service state
 - The state requires cleanup when a directory instance is unloaded (subscriptions, file watchers, connection pools)
 - The state has per-instance finalizers (`Effect.addFinalizer`, `Effect.acquireRelease`)
@@ -159,32 +165,33 @@ Use `InstanceState` when:
 ### Pattern
 
 ```ts
-import { InstanceState } from "@/effect/instance-state"
+import { InstanceState } from "@/effect/instance-state";
 
 const stateImpl = Effect.fn("Service.state")(function* () {
   // Subscribe to events — cleaned up when instance is disposed
-  const bus = yield* Bus.Service
+  const bus = yield* Bus.Service;
   yield* bus.subscribeAll().pipe(
     Stream.runForEach((event) => handleEvent(event)),
     Effect.forkScoped,
-  )
+  );
 
   // Acquire a resource — released on disposal
-  yield* Effect.acquireRelease(openConnection, closeConnection)
+  yield* Effect.acquireRelease(openConnection, closeConnection);
 
-  return yield* loadInitialState()
-})
+  return yield* loadInitialState();
+});
 
 // In the layer:
-const state = yield* InstanceState.make<MyState>(stateImpl)
+const state = yield * InstanceState.make<MyState>(stateImpl);
 
 // In methods:
 const methods = {
-  read: (key: string) => Effect.gen(function* () {
-    const s = yield* InstanceState.get(state)
-    return s.get(key)
-  }),
-}
+  read: (key: string) =>
+    Effect.gen(function* () {
+      const s = yield* InstanceState.get(state);
+      return s.get(key);
+    }),
+};
 ```
 
 ### Rules
@@ -204,11 +211,11 @@ const methods = {
 export const InstanceRef = Context.Reference<InstanceContext | undefined>(
   "~opencode/InstanceRef",
   { defaultValue: () => undefined },
-)
+);
 export const WorkspaceRef = Context.Reference<WorkspaceV2.ID | undefined>(
   "~opencode/WorkspaceRef",
   { defaultValue: () => undefined },
-)
+);
 ```
 
 These are set when an instance is loaded and restored by `EffectBridge` when crossing boundaries.

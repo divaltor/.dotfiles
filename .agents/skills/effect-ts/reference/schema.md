@@ -4,13 +4,13 @@ Use Effect Schema as the default boundary for validation, normalization, and obj
 
 ### When to Use Which Schema Constructor
 
-| Need | Constructor |
-|---|---|
-| Pure data shape (DTOs, request bodies, config) | `Schema.Struct({...})` |
-| Domain object with behavior, methods, or getters | `Schema.Class<Self>(name)({...})` |
-| Discriminated union leaves with `_tag` + `instanceof` | `Schema.TaggedClass<Self>()(name, {...})` |
+| Need                                                  | Constructor                                    |
+| ----------------------------------------------------- | ---------------------------------------------- |
+| Pure data shape (DTOs, request bodies, config)        | `Schema.Struct({...})`                         |
+| Domain object with behavior, methods, or getters      | `Schema.Class<Self>(name)({...})`              |
+| Discriminated union leaves with `_tag` + `instanceof` | `Schema.TaggedClass<Self>()(name, {...})`      |
 | Error types needing `instanceof` + `_tag` + yieldable | `Schema.TaggedErrorClass<Self>()(name, {...})` |
-| Static helpers on a `Struct` or `Union` | `.pipe(withStatics(...))` |
+| Static helpers on a `Struct` or `Union`               | `.pipe(withStatics(...))`                      |
 
 ### Named Structs
 
@@ -19,15 +19,15 @@ export const Item = Schema.Struct({
   id: Schema.String,
   title: Schema.String,
   createdAt: Schema.DateTimeUtc,
-})
-export type Item = typeof Item.Type
+});
+export type Item = typeof Item.Type;
 ```
 
 ### Branded IDs
 
 ```ts
-export const ItemID = Schema.String.pipe(Schema.brand("ItemID"))
-export type ItemID = Schema.Schema.Type<typeof ItemID>
+export const ItemID = Schema.String.pipe(Schema.brand("ItemID"));
+export type ItemID = Schema.Schema.Type<typeof ItemID>;
 ```
 
 ### Schema.Class — Domain Objects with Behavior
@@ -46,7 +46,7 @@ export class Usage extends Schema.Class<Usage>("LLM.Usage")({
 }) {
   /** outputTokens minus reasoningTokens, clamped to zero */
   get visibleOutputTokens(): number {
-    return Math.max(0, (this.outputTokens ?? 0) - (this.reasoningTokens ?? 0))
+    return Math.max(0, (this.outputTokens ?? 0) - (this.reasoningTokens ?? 0));
   }
 }
 ```
@@ -61,15 +61,17 @@ Every `Schema.Class` instantiated from external data should expose a `static fro
 export class Usage extends Schema.Class<Usage>("LLM.Usage")({
   // ... fields
 }) {
-  get visibleOutputTokens(): number { /* ... */ }
+  get visibleOutputTokens(): number {
+    /* ... */
+  }
 
   static from(input: UsageInput): Usage {
-    return input instanceof Usage ? input : new Usage(input)
+    return input instanceof Usage ? input : new Usage(input);
   }
 }
 
 // Input type accepts instance OR constructor args
-export type UsageInput = Usage | ConstructorParameters<typeof Usage>[0]
+export type UsageInput = Usage | ConstructorParameters<typeof Usage>[0];
 ```
 
 This is critical for event builders, protocol mappers, and any code that normalizes data flowing between subsystems. Consumers call `Usage.from(data)` and always get a canonical `Usage` instance regardless of what they received.
@@ -89,24 +91,29 @@ export class Message extends Schema.Class<Message>("LLM.Message")({
 
 export namespace Message {
   // Loose Input type — accepts a string or pre-built parts
-  export type Input = Omit<ConstructorParameters<typeof Message>[0], "content"> & {
-    readonly content: string | ContentPart | ReadonlyArray<ContentPart>
-  }
+  export type Input = Omit<
+    ConstructorParameters<typeof Message>[0],
+    "content"
+  > & {
+    readonly content: string | ContentPart | ReadonlyArray<ContentPart>;
+  };
 
   // Canonical factory — idempotent, normalizes input
   export const make = (input: Message | Input): Message => {
-    if (input instanceof Message) return input
-    return new Message({ ...input, content: normalize(input.content) })
-  }
+    if (input instanceof Message) return input;
+    return new Message({ ...input, content: normalize(input.content) });
+  };
 
   // Shorthand constructors
-  export const user = (content: string) => make({ role: "user", content })
-  export const assistant = (content: string) => make({ role: "assistant", content })
-  export const system = (content: string) => make({ role: "system", content })
+  export const user = (content: string) => make({ role: "user", content });
+  export const assistant = (content: string) =>
+    make({ role: "assistant", content });
+  export const system = (content: string) => make({ role: "system", content });
 }
 ```
 
 Rules:
+
 - Class body: fields only (no factory logic)
 - Namespace: `make()` is the canonical entry point; shorthand constructors delegate to it
 - Always use `ConstructorParameters<typeof X>[0]` for the structured `Input` type
@@ -124,7 +131,9 @@ export class Info extends Schema.Class<Info>("Skill.Info")({
   // ...
 }) {}
 
-export class EmbeddedSource extends Schema.Class<EmbeddedSource>("Skill.EmbeddedSource")({
+export class EmbeddedSource extends Schema.Class<EmbeddedSource>(
+  "Skill.EmbeddedSource",
+)({
   type: Schema.Literal("embedded"),
   skill: Schema.suspend(() => Info), // forward reference to a Schema.Class
 }) {}
@@ -143,25 +152,42 @@ export class EmbeddedSource extends Schema.Class<EmbeddedSource>("Skill.Embedded
 `Schema.TaggedClass` provides `_tag`, `instanceof`, and a `.make()` factory. Use zero-arg leaves (`{}`) for variants that carry no data:
 
 ```ts
-export class PollSuccess extends Schema.TaggedClass<PollSuccess>()("PollSuccess", {
-  email: Schema.String,
-}) {}
+export class PollSuccess extends Schema.TaggedClass<PollSuccess>()(
+  "PollSuccess",
+  {
+    email: Schema.String,
+  },
+) {}
 
-export class PollPending extends Schema.TaggedClass<PollPending>()("PollPending", {}) {}
-export class PollExpired extends Schema.TaggedClass<PollExpired>()("PollExpired", {}) {}
+export class PollPending extends Schema.TaggedClass<PollPending>()(
+  "PollPending",
+  {},
+) {}
+export class PollExpired extends Schema.TaggedClass<PollExpired>()(
+  "PollExpired",
+  {},
+) {}
 export class PollError extends Schema.TaggedClass<PollError>()("PollError", {
   cause: Schema.Defect,
 }) {}
 
-export const PollResult = Schema.Union([PollSuccess, PollPending, PollExpired, PollError])
+export const PollResult = Schema.Union([
+  PollSuccess,
+  PollPending,
+  PollExpired,
+  PollError,
+]);
 ```
 
 Consumers narrow with `instanceof`:
 
 ```ts
-const result = Schema.decodeUnknownSync(PollResult)(raw)
-if (result instanceof PollSuccess) { /* result.email is typed */ }
-else if (result instanceof PollPending) { /* no fields, just identity */ }
+const result = Schema.decodeUnknownSync(PollResult)(raw);
+if (result instanceof PollSuccess) {
+  /* result.email is typed */
+} else if (result instanceof PollPending) {
+  /* no fields, just identity */
+}
 ```
 
 For non-`TaggedClass` discriminators (when you need `Schema.Class` behavior **and** a `_tag`), add `Schema.tag("Name")` as a field on a regular `Schema.Class`.
@@ -171,21 +197,26 @@ For non-`TaggedClass` discriminators (when you need `Schema.Class` behavior **an
 ### Enum-Like Unions
 
 ```ts
-export const Effect = Schema.Literals(["allow", "deny"]).annotate({ identifier: "Policy.Effect" })
-export type Effect = typeof Effect.Type
+export const Effect = Schema.Literals(["allow", "deny"]).annotate({
+  identifier: "Policy.Effect",
+});
+export type Effect = typeof Effect.Type;
 ```
 
 ### Decoding Variants
 
 ```ts
 // Effectful — fails into error channel
-Schema.decodeUnknownEffect(Message)(input)
+Schema.decodeUnknownEffect(Message)(input);
 
 // Option-based — returns Option.none() on failure, no error channel
-Schema.decodeUnknownOption(Info)(input, { errors: "all", onExcessProperty: "ignore" })
+Schema.decodeUnknownOption(Info)(input, {
+  errors: "all",
+  onExcessProperty: "ignore",
+});
 
 // Sync — throws on failure, use only at startup boundaries
-const decoded = Schema.decodeUnknownSync(Config)(raw)
+const decoded = Schema.decodeUnknownSync(Config)(raw);
 ```
 
 Prefer `Schema.decodeUnknownOption` for optional config parsing and `Schema.decodeUnknownEffect` for runtime data boundaries. Use `Schema.decodeUnknownSync` only at process startup where failure should crash. For recursive schemas, prefer `decodeUnknownEffect` / `decodeUnknownOption` (see `Schema.suspend` gotcha above).
@@ -193,7 +224,7 @@ Prefer `Schema.decodeUnknownOption` for optional config parsing and `Schema.deco
 ### Encoding
 
 ```ts
-const encoded = Schema.encodeSync(Message)(message)  // throws on failure
+const encoded = Schema.encodeSync(Message)(message); // throws on failure
 ```
 
 ### Schema Utilities
@@ -211,6 +242,18 @@ export const optionalNull = <const S extends Schema.Top>(schema: S) =>
 quote: optionalNull(FxEmbedTweet),
 ```
 
+#### `withConstructorDefault`
+
+Use `Schema.withConstructorDefault` to provide a default value for an optional field at construction time. This keeps the schema strict while letting callers omit the field:
+
+```ts
+workspaceID: Schema.optional(WorkspaceV2.ID).pipe(
+  Schema.withConstructorDefault(Effect.succeed(undefined)),
+);
+```
+
+The default is applied when the field is omitted during `new MyClass({ ... })` or schema decoding. It must be an `Effect` so defaults can be effectful if necessary.
+
 #### `withStatics` helper
 
 Attach static helpers to a `Schema.Struct` or `Schema.Union` after definition (useful when the schema shouldn't be promoted to a class):
@@ -218,18 +261,24 @@ Attach static helpers to a `Schema.Struct` or `Schema.Union` after definition (u
 ```ts
 // In a shared schema-utils file
 export const withStatics =
-  <S extends object, M extends Record<string, unknown>>(methods: (schema: S) => M) =>
+  <S extends object, M extends Record<string, unknown>>(
+    methods: (schema: S) => M,
+  ) =>
   (schema: S): S & M =>
-    Object.assign(schema, methods(schema))
+    Object.assign(schema, methods(schema));
 
 // Usage
-export const Source = Schema.Union([DirectorySource, UrlSource, EmbeddedSource]).pipe(
+export const Source = Schema.Union([
+  DirectorySource,
+  UrlSource,
+  EmbeddedSource,
+]).pipe(
   Schema.toTaggedUnion("type"),
   withStatics(() => ({
     equals: (a: Source, b: Source) => a._tag === b._tag && a.url === b.url,
     key: (source: Source) => source.url,
   })),
-)
+);
 ```
 
 **Opencode references:** `~/dev/opencode/packages/llm/src/protocols/shared.ts:L23`, `~/dev/opencode/packages/core/src/schema.ts:L85-L88`
@@ -243,14 +292,18 @@ For single-value types that need strong nominal identity (not just a brand), the
 export function Newtype<Self>() {
   return <Tag extends string, S extends Schema.Top>(tag: Tag, schema: S) => {
     abstract class Base {
-      readonly [TypeId]!: TypeId
+      readonly [TypeId]!: TypeId;
       constructor(readonly value: Schema.Schema.Type<S>) {}
-      toJSON() { return this.value }
-      toString() { return String(this.value) }
+      toJSON() {
+        return this.value;
+      }
+      toString() {
+        return String(this.value);
+      }
     }
     // ... static decode, encode, schema methods
-    return Base as unknown as Newtype<Tag, Schema.Schema.Type<S>>
-  }
+    return Base as unknown as Newtype<Tag, Schema.Schema.Type<S>>;
+  };
 }
 ```
 
@@ -285,7 +338,10 @@ Beyond the three common variants, the codebase uses these additional decode/enco
 Returns an `Exit` instead of failing into the error channel. Useful when you need to inspect or transform failures:
 
 ```ts
-const decoded = Schema.decodeUnknownExit(schema)(data, { errors: "all", propertyOrder: "original" })
+const decoded = Schema.decodeUnknownExit(schema)(data, {
+  errors: "all",
+  propertyOrder: "original",
+});
 // Returns Exit.Success(value) | Exit.Failure(cause)
 ```
 
@@ -302,12 +358,14 @@ encode: Schema.encodeUnknownSync(syncCodec(definition)),
 Wraps a Schema in JSON.parse semantics:
 
 ```ts
-const LockMetaJson = Schema.fromJsonString(Schema.Struct({
-  token: Schema.String,
-  pid: Schema.Number,
-  hostname: Schema.String,
-  createdAt: Schema.String,
-}))
+const LockMetaJson = Schema.fromJsonString(
+  Schema.Struct({
+    token: Schema.String,
+    pid: Schema.Number,
+    hostname: Schema.String,
+    createdAt: Schema.String,
+  }),
+);
 ```
 
 Use `Schema.fromJsonString` instead of `JSON.parse` wrapped in `Effect.try` when parsing JSON strings from external sources.
@@ -317,8 +375,8 @@ Use `Schema.fromJsonString` instead of `JSON.parse` wrapped in `Effect.try` when
 For constraining a union of specific string values:
 
 ```ts
-export const PolicyActions = Schema.Literals(["provider.use", "model.read"])
-export type PolicyActions = typeof PolicyActions.Type
+export const PolicyActions = Schema.Literals(["provider.use", "model.read"]);
+export type PolicyActions = typeof PolicyActions.Type;
 ```
 
 Also supports annotations:
@@ -326,8 +384,8 @@ Also supports annotations:
 ```ts
 export const Effect = Schema.Literals(["allow", "deny"]).annotate({
   identifier: "Policy.Effect",
-})
-export type Effect = typeof Effect.Type
+});
+export type Effect = typeof Effect.Type;
 ```
 
 ### `Schema.optionFromOption` — Lifting Option into Schema
