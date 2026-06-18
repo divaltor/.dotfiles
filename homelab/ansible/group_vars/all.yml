@@ -57,6 +57,10 @@ avahi_samba_advertise: false
 avahi_samba_service_name: DivaOS
 avahi_samba_device_model: TimeCapsule
 
+# Caddy reverse proxy
+caddy_proxy_server_name: "{{ avahi_hostname }}.local"
+caddy_proxy_upstream: https://127.0.0.1:8006
+
 # Common packages
 common_packages:
   - vim

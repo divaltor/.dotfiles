@@ -21,3 +21,7 @@
       vars:
         avahi_hostname: proxmox
         avahi_allow_interfaces: vmbr0
+    - role: caddy_proxy
+      vars:
+        caddy_proxy_server_name: proxmox.local
+        caddy_proxy_upstream: https://127.0.0.1:8006

@@ -1,0 +1,22 @@
+---
+# Caddy reverse proxy role — local HTTPS entrypoint for services
+
+- name: Install Caddy
+  ansible.builtin.package:
+    name: caddy
+    state: present
+
+- name: Deploy Caddyfile
+  ansible.builtin.template:
+    src: Caddyfile.j2
+    dest: /etc/caddy/Caddyfile
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Reload Caddy
+
+- name: Ensure Caddy is running
+  ansible.builtin.service:
+    name: caddy
+    state: started
+    enabled: true
