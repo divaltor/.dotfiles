@@ -30,3 +30,4 @@ Required 1Password environment variables for Ansible:
 
 - `TF_VAR_ssh_public_key` — public key installed into root `authorized_keys`.
 - `SAMBA_PASSWORD` or `TF_VAR_samba_password` — password for Samba user `divaltor`.
+- `TAILSCALE_AUTH_KEY` or `TF_VAR_tailscale_auth_key` — auth key used only when a host is not already joined to Tailscale.

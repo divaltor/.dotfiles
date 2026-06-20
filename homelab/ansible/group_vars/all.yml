@@ -61,6 +61,13 @@ avahi_samba_device_model: TimeCapsule
 caddy_proxy_server_name: "{{ avahi_hostname }}.local"
 caddy_proxy_upstream: https://127.0.0.1:8006
 
+# Tailscale
+tailscale_auth_key: "{{ lookup('env', 'TAILSCALE_AUTH_KEY') | default(lookup('env', 'TF_VAR_tailscale_auth_key'), true) }}"
+tailscale_hostname: "{{ inventory_hostname }}"
+tailscale_apt_distribution: "{{ 'debian' if ansible_os_family == 'Debian' else ansible_distribution | lower }}"
+tailscale_apt_release: "{{ ansible_distribution_release }}"
+tailscale_up_args: []
+
 # Common packages
 common_packages:
   - vim

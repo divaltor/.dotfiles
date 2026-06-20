@@ -176,6 +176,11 @@ resource "proxmox_virtual_environment_container" "smb" {
     nesting = true
   }
 
+  # Required for Tailscale to create tailscale0 inside the LXC.
+  device_passthrough {
+    path = "/dev/net/tun"
+  }
+
   # ZFS pool bind mount: /media/cold on host → /mnt/share in container
   mount_point {
     volume = "/media/cold"

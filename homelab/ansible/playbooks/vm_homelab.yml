@@ -12,6 +12,7 @@
   roles:
     - ssh
     - common
+    - tailscale
     - role: avahi
       vars:
         avahi_allow_interfaces: ens18

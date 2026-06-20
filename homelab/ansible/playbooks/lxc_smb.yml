@@ -15,6 +15,7 @@
   roles:
     - ssh
     - common
+    - tailscale
     - role: samba
     - role: avahi
       vars:
