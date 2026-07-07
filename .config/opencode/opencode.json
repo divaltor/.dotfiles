@@ -41,6 +41,6 @@
       "description": "Official repo of Opencode"
     }
   },
-  "default_agent": "morney",
+  "default_agent": "scarlet",
   "$schema": "https://opencode.ai/config.json"
 }
