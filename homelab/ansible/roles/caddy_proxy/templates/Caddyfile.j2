@@ -3,6 +3,10 @@
 {{ caddy_proxy_server_name }} {
   tls internal
 
+{% if caddy_proxy_redirect_root_to is defined %}
+  redir / {{ caddy_proxy_redirect_root_to }}
+{% endif %}
+
   reverse_proxy {{ caddy_proxy_upstream }} {
 {% if caddy_proxy_upstream.startswith('https://') %}
     transport http {
