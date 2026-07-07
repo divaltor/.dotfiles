@@ -1,0 +1,52 @@
+---
+# ============================================================
+# LXC bootstrap — install root SSH key through Proxmox host
+# ============================================================
+# Runs before direct container SSH is available. Proxmox can enter
+# containers with pct exec, so use it to seed authorized_keys.
+# ============================================================
+
+- name: Bootstrap LXC SSH access
+  hosts: proxmox_host
+  gather_facts: false
+  become: false
+  vars_files:
+    - ../group_vars/all.yml
+
+  tasks:
+    - name: Ensure SSH public key is provided
+      ansible.builtin.assert:
+        that:
+          - ssh_public_key | length > 0
+        fail_msg: "TF_VAR_ssh_public_key is not set"
+
+    - name: Install root SSH key in LXC containers
+      ansible.builtin.command:
+        argv:
+          - pct
+          - exec
+          - "{{ hostvars[item].lxc_vmid | string }}"
+          - --
+          - env
+          - "SSH_PUBLIC_KEY={{ ssh_public_key }}"
+          - sh
+          - -c
+          - |
+            set -eu
+            mkdir -p /root/.ansible/tmp
+            chmod 700 /root/.ansible /root/.ansible/tmp
+            mkdir -p /root/.ssh
+            touch /root/.ssh/authorized_keys
+            if grep -qxF "$SSH_PUBLIC_KEY" /root/.ssh/authorized_keys; then
+              echo unchanged
+            else
+              printf '%s\n' "$SSH_PUBLIC_KEY" >> /root/.ssh/authorized_keys
+              echo changed
+            fi
+            chmod 700 /root/.ssh
+            chmod 600 /root/.ssh/authorized_keys
+      loop: "{{ lxc_bootstrap_targets | default(groups['containers']) }}"
+      loop_control:
+        label: "{{ item }} ({{ hostvars[item].lxc_vmid }})"
+      register: lxc_bootstrap_authorized_key
+      changed_when: lxc_bootstrap_authorized_key.stdout == 'changed'

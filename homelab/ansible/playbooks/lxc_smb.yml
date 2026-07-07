@@ -6,6 +6,11 @@
 # storage from the Proxmox host via bind mount (/mnt/share).
 # ============================================================
 
+- import_playbook: lxc_bootstrap.yml
+  vars:
+    lxc_bootstrap_targets:
+      - smb
+
 - name: Configure Samba LXC
   hosts: smb
   gather_facts: true

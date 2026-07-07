@@ -6,6 +6,11 @@
 # from the Proxmox host via bind mounts (/media/films, /media/shows).
 # ============================================================
 
+- import_playbook: lxc_bootstrap.yml
+  vars:
+    lxc_bootstrap_targets:
+      - kino
+
 - name: Configure Plex LXC
   hosts: kino
   gather_facts: true
