@@ -166,6 +166,12 @@ resource "proxmox_virtual_environment_container" "smb" {
   initialization {
     hostname = "smb"
 
+    ip_config {
+      ipv4 {
+        address = "dhcp"
+      }
+    }
+
     dns {
       servers = ["1.1.1.1", "8.8.8.8"]
     }
@@ -243,6 +249,12 @@ resource "proxmox_virtual_environment_container" "kino" {
 
   initialization {
     hostname = "kino"
+
+    ip_config {
+      ipv4 {
+        address = "dhcp"
+      }
+    }
 
     dns {
       servers = ["1.1.1.1", "8.8.8.8"]
