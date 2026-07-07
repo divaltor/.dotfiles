@@ -6,4 +6,5 @@
 
 - import_playbook: proxmox_host.yml
 - import_playbook: lxc_smb.yml
+- import_playbook: lxc_kino.yml
 - import_playbook: vm_homelab.yml

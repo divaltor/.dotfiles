@@ -198,6 +198,88 @@ resource "proxmox_virtual_environment_container" "smb" {
   }
 }
 
+# ─── LXC: kino (102) — Plex media server ────────────────────
+
+resource "proxmox_virtual_environment_container" "kino" {
+  node_name     = "divaltor-dc"
+  vm_id         = 102
+  started       = true
+  start_on_boot = true
+  unprivileged  = false
+
+  description = "Plex media server — ZFS-backed media via bind mounts"
+
+  operating_system {
+    type             = "debian"
+    template_file_id = proxmox_download_file.debian_13_lxc_template.id
+  }
+
+  cpu {
+    architecture = "amd64"
+    cores        = 4
+  }
+
+  console {
+    enabled   = true
+    tty_count = 2
+    type      = "tty"
+  }
+
+  memory {
+    dedicated = 4096
+    swap      = 1024
+  }
+
+  disk {
+    datastore_id = "fast-nvme"
+    size         = 16
+  }
+
+  network_interface {
+    name     = "eth0"
+    bridge   = "vmbr0"
+    firewall = false
+  }
+
+  initialization {
+    hostname = "kino"
+
+    dns {
+      servers = ["1.1.1.1", "8.8.8.8"]
+    }
+  }
+
+  features {
+    nesting = true
+  }
+
+  # Required for Tailscale to create tailscale0 inside the LXC.
+  device_passthrough {
+    path = "/dev/net/tun"
+  }
+
+  # ZFS media bind mounts: host paths → Plex library paths in container
+  mount_point {
+    volume = "/media/cold/films"
+    path   = "/media/films"
+  }
+
+  mount_point {
+    volume = "/media/cold/shows"
+    path   = "/media/shows"
+  }
+
+  lifecycle {
+    ignore_changes = [
+      operating_system,  # template_file_id mismatch with state
+      features[0].mount, # managed outside provider
+      features[0].fuse,
+      features[0].keyctl,
+      features[0].mknod,
+    ]
+  }
+}
+
 # ─── Storage layout (managed at host level) ─────────────────
 # Host disk (128 GB): ext4 root on pve/root, no LVM-Thin.
 #   local-lvm was removed — all space given to root for host packages.

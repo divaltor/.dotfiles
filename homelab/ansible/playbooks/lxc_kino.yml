@@ -1,0 +1,20 @@
+---
+# ============================================================
+# LXC: kino (102) — Plex media server + Avahi mDNS
+# ============================================================
+# The container runs Debian with Plex reading ZFS-backed media
+# from the Proxmox host via bind mounts (/media/films, /media/shows).
+# ============================================================
+
+- name: Configure Plex LXC
+  hosts: kino
+  gather_facts: true
+  vars_files:
+    - ../group_vars/all.yml
+
+  roles:
+    - ssh
+    - common
+    - tailscale
+    - plex
+    - avahi

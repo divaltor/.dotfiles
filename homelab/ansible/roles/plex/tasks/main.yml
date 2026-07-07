@@ -1,0 +1,34 @@
+---
+# Plex role — install Plex Media Server from the official APT repository.
+
+- name: Install Plex APT prerequisites
+  ansible.builtin.package:
+    name:
+      - apt-transport-https
+    state: present
+
+- name: Add Plex APT signing key
+  ansible.builtin.get_url:
+    url: https://downloads.plex.tv/plex-keys/PlexSign.key
+    dest: /usr/share/keyrings/plexmediaserver.asc
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Add Plex APT repository
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by=/usr/share/keyrings/plexmediaserver.asc] https://downloads.plex.tv/repo/deb public main"
+    filename: plexmediaserver
+    state: present
+    update_cache: true
+
+- name: Install Plex Media Server
+  ansible.builtin.package:
+    name: plexmediaserver
+    state: present
+
+- name: Ensure Plex Media Server is running
+  ansible.builtin.service:
+    name: plexmediaserver
+    state: started
+    enabled: true

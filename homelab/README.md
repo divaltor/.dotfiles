@@ -20,7 +20,7 @@ mise run ansible:check
 mise run ansible:apply
 ```
 
-Hosts default to mDNS (`proxmox.local`, `homelab.local`, `smb.local`). For first bootstrap before Avahi works, override DHCP IPs and use SSH password auth:
+Hosts default to mDNS (`proxmox.local`, `homelab.local`, `smb.local`, `kino.local`). For first bootstrap before Avahi works, override DHCP IPs and use SSH password auth:
 
 ```sh
 mise run playbook -- playbooks/site.yml --ask-pass -e proxmox_ansible_host=192.168.1.x -e homelab_ansible_host=192.168.1.y -e smb_ansible_host=192.168.1.z
