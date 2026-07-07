@@ -5,6 +5,7 @@
   ansible.builtin.package:
     name:
       - apt-transport-https
+      - curl
     state: present
 
 - name: Ensure APT keyrings directory exists
@@ -45,6 +46,69 @@
     state: present
 
 - name: Ensure Plex Media Server is running
+  ansible.builtin.service:
+    name: plexmediaserver
+    state: started
+    enabled: true
+
+- name: Wait for Plex preferences to be created
+  ansible.builtin.wait_for:
+    path: /var/lib/plexmediaserver/Library/Application Support/Plex Media Server/Preferences.xml
+    timeout: 60
+
+- name: Stop Plex Media Server before editing preferences
+  ansible.builtin.service:
+    name: plexmediaserver
+    state: stopped
+
+- name: Allow local LAN setup and advertise local Plex URL
+  ansible.builtin.command:
+    argv:
+      - /usr/bin/perl
+      - -0pi
+      - -e
+      - >-
+        BEGIN { $allowed='{{ plex_allowed_networks | default("192.168.0.0/16,10.0.0.0/8,172.16.0.0/12") }}'; $custom='{{ plex_custom_connections | default("https://" ~ inventory_hostname ~ ".local,http://" ~ inventory_hostname ~ ".local:32400") }}'; }
+        s/\sallowedNetworks="[^"]*"//g;
+        s/\scustomConnections="[^"]*"//g;
+        s/<Preferences\b([^>]*)\/>/<Preferences$1 allowedNetworks="$allowed" customConnections="$custom"\/>/;
+      - /var/lib/plexmediaserver/Library/Application Support/Plex Media Server/Preferences.xml
+
+- name: Claim Plex Media Server when PLEX_CLAIM_TOKEN is provided
+  ansible.builtin.shell:
+    cmd: |
+      set -eu
+
+      pref='/var/lib/plexmediaserver/Library/Application Support/Plex Media Server/Preferences.xml'
+      claim_token="$PLEX_CLAIM_TOKEN"
+
+      if grep -q 'PlexOnlineToken=' "$pref"; then
+        exit 0
+      fi
+
+      client_id="$(sed -n 's/.*ProcessedMachineIdentifier="\([^"]*\)".*/\1/p' "$pref")"
+      login_info="$(curl --fail --silent --show-error --request POST \
+        --header "X-Plex-Client-Identifier: ${client_id}" \
+        --header 'X-Plex-Product: Plex Media Server' \
+        --header 'X-Plex-Version: 1.1' \
+        --header 'X-Plex-Provides: server' \
+        --header 'X-Plex-Platform: Linux' \
+        --header 'X-Plex-Platform-Version: 1.0' \
+        --header 'X-Plex-Device-Name: PlexMediaServer' \
+        --header 'X-Plex-Device: Linux' \
+        "https://plex.tv/api/claim/exchange?token=${claim_token}")"
+      server_token="$(printf '%s' "$login_info" | sed -n 's/.*<authentication-token>\(.*\)<\/authentication-token>.*/\1/p')"
+
+      test -n "$server_token"
+      perl -0pi -e "s/\sPlexOnlineToken=\"[^\"]*\"//g; s/<Preferences\b([^>]*)\/>/<Preferences\$1 PlexOnlineToken=\"$server_token\"\/>/;" "$pref"
+
+    executable: /bin/sh
+  environment:
+    PLEX_CLAIM_TOKEN: "{{ plex_claim_token | default(lookup('env', 'PLEX_CLAIM_TOKEN'), true) }}"
+  no_log: true
+  when: (plex_claim_token | default(lookup("env", "PLEX_CLAIM_TOKEN"), true) | length) > 0
+
+- name: Ensure Plex Media Server is running after configuration
   ansible.builtin.service:
     name: plexmediaserver
     state: started

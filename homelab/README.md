@@ -32,3 +32,14 @@ Required 1Password environment variables for Ansible:
 - `TF_VAR_proxmox_password` — password for OpenTofu `root@pam` Proxmox authentication.
 - `SAMBA_PASSWORD` or `TF_VAR_samba_password` — password for Samba user `divaltor`.
 - `TAILSCALE_AUTH_KEY` or `TF_VAR_tailscale_auth_key` — auth key used only when a host is not already joined to Tailscale.
+
+### Plex first-run claim
+
+The `kino` LXC installs Plex Media Server and serves it at `https://kino.local/web`.
+For first setup, or if the server appears as only the generic Plex web UI, claim it with a fresh short-lived token from <https://plex.tv/claim>:
+
+```sh
+PLEX_CLAIM_TOKEN=claim-xxxx mise run ansible:apply
+```
+
+The claim token expires quickly, so generate it immediately before running Ansible.

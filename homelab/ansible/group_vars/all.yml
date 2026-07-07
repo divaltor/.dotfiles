@@ -1,6 +1,9 @@
 ---
 # Group variables — all hosts
 
+# Avoid Ansible interpreter discovery warnings when distro Python minor versions change.
+ansible_python_interpreter: /usr/bin/python3
+
 # ZFS pool configuration (managed on Proxmox host)
 zfs_pool_name: pool
 zfs_pool_mountpoint: /media
