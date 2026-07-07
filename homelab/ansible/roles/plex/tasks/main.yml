@@ -7,10 +7,18 @@
       - apt-transport-https
     state: present
 
+- name: Ensure APT keyrings directory exists
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
 - name: Add Plex APT signing key
   ansible.builtin.get_url:
-    url: https://downloads.plex.tv/plex-keys/PlexSign.key
-    dest: /usr/share/keyrings/plexmediaserver.asc
+    url: https://downloads.plex.tv/plex-keys/PlexSign.v2.key
+    dest: /etc/apt/keyrings/plexmediaserver.v2.asc
     owner: root
     group: root
     mode: "0644"
@@ -19,10 +27,10 @@
   ansible.builtin.deb822_repository:
     name: plexmediaserver
     types: deb
-    uris: https://downloads.plex.tv/repo/deb
+    uris: https://repo.plex.tv/deb/
     suites: public
     components: main
-    signed_by: /usr/share/keyrings/plexmediaserver.asc
+    signed_by: /etc/apt/keyrings/plexmediaserver.v2.asc
     state: present
   register: plex_apt_repository
 
