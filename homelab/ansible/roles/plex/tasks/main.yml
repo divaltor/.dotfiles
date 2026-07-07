@@ -16,11 +16,20 @@
     mode: "0644"
 
 - name: Add Plex APT repository
-  ansible.builtin.apt_repository:
-    repo: "deb [signed-by=/usr/share/keyrings/plexmediaserver.asc] https://downloads.plex.tv/repo/deb public main"
-    filename: plexmediaserver
+  ansible.builtin.deb822_repository:
+    name: plexmediaserver
+    types: deb
+    uris: https://downloads.plex.tv/repo/deb
+    suites: public
+    components: main
+    signed_by: /usr/share/keyrings/plexmediaserver.asc
     state: present
+  register: plex_apt_repository
+
+- name: Update APT cache after adding Plex repository
+  ansible.builtin.apt:
     update_cache: true
+  when: plex_apt_repository is changed
 
 - name: Install Plex Media Server
   ansible.builtin.package:
