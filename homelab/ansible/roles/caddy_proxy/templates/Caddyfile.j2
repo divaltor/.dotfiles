@@ -4,8 +4,10 @@
   tls internal
 
   reverse_proxy {{ caddy_proxy_upstream }} {
+{% if caddy_proxy_upstream.startswith('https://') %}
     transport http {
       tls_insecure_skip_verify
     }
+{% endif %}
   }
 }

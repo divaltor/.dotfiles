@@ -22,4 +22,8 @@
     - common
     - tailscale
     - plex
+    - role: caddy_proxy
+      vars:
+        caddy_proxy_server_name: kino.local
+        caddy_proxy_upstream: http://127.0.0.1:32400
     - avahi
