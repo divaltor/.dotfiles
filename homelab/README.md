@@ -29,5 +29,6 @@ mise run playbook -- playbooks/site.yml --ask-pass -e proxmox_ansible_host=192.1
 Required 1Password environment variables for Ansible:
 
 - `TF_VAR_ssh_public_key` — public key installed into root `authorized_keys`.
+- `TF_VAR_proxmox_password` — password for OpenTofu `root@pam` Proxmox authentication.
 - `SAMBA_PASSWORD` or `TF_VAR_samba_password` — password for Samba user `divaltor`.
 - `TAILSCALE_AUTH_KEY` or `TF_VAR_tailscale_auth_key` — auth key used only when a host is not already joined to Tailscale.
