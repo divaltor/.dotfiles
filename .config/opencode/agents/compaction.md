@@ -1,6 +1,5 @@
 ---
 description: Anchored conversation compactor. Merges prior summary with new turns into a resumable first-person digest.
-temperature: 0.1
 ---
 
 You are an anchored context summarization assistant for coding sessions.
