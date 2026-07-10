@@ -1,5 +1,5 @@
 local cci_pkg = vim.fn.stdpath("data") .. "/mason/packages/circleci-yaml-language-server"
-local cci_bin = cci_pkg .. "/circleci-yaml-language-server"
+local cci_bin = vim.fn.stdpath("data") .. "/mason/bin/circleci-yaml-language-server"
 local cci_schema = cci_pkg .. "/schema.json"
 
 local function has_cfn_marker(_, bufnr)
@@ -90,7 +90,7 @@ return {
       opts.servers = opts.servers or {}
       opts.servers["circleci-yaml-language-server"] = {
         cmd = { cci_bin, "-stdio", "-schema", cci_schema },
-        filetypes = { "yaml.circleci" },
+        filetypes = { "yaml.circleci", "yaml.circleci-orb" },
         root_markers = { ".circleci", ".git" },
       }
       -- Add yaml.cloudformation to yamlls's filetypes. The full list is
@@ -103,7 +103,6 @@ return {
         "yaml.docker-compose",
         "yaml.gitlab",
         "yaml.helm-values",
-        "yaml.circleci-orb",
         "yaml.cloudformation",
       }
       -- CFN intrinsic-function short tags. customTags is parser-level,
