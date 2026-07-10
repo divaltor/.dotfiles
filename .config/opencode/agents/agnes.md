@@ -1,7 +1,7 @@
 ---
 description: "Read-only technical advisor for architecture, code review, debugging, and planning."
 mode: subagent
-model: openai/gpt-5.6
+model: openai/gpt-5.6-sol
 variant: high
 color: "#db696b"
 permission:
