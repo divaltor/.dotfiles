@@ -2,7 +2,7 @@
 description: "External research for documentation, API behavior, and current best practices."
 mode: subagent
 model: openai/gpt-5.6-terra
-variant: medium
+variant: high
 color: "#484951"
 permission:
   edit: deny
