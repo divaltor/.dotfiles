@@ -1,8 +1,7 @@
 ---
 description: "GPT-5.6 primary agent for scoped implementation, research, and delegation."
 mode: primary
-model: openai/gpt-5.6-sol
-color: "#8BA8D6"
+color: "#8994B8"
 permission:
   todowrite: deny
   websearch: allow
