@@ -65,6 +65,9 @@ avahi_aliases: []
 caddy_proxy_server_name: "{{ avahi_hostname }}.local"
 caddy_proxy_upstream: https://127.0.0.1:8006
 
+# qBittorrent
+qbittorrent_webui_password: "{{ lookup('env', 'QBITTORRENT_PASSWORD') }}"
+
 # Tailscale
 tailscale_auth_key: "{{ lookup('env', 'TAILSCALE_AUTH_KEY') | default(lookup('env', 'TF_VAR_tailscale_auth_key'), true) }}"
 tailscale_hostname: "{{ inventory_hostname }}"

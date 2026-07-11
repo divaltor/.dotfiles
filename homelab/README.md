@@ -31,6 +31,7 @@ Required 1Password environment variables for Ansible:
 - `TF_VAR_ssh_public_key` — public key installed into root `authorized_keys`.
 - `TF_VAR_proxmox_password` — password for OpenTofu `root@pam` Proxmox authentication.
 - `SAMBA_PASSWORD` or `TF_VAR_samba_password` — password for Samba user `divaltor`.
+- `QBITTORRENT_PASSWORD` — password for the qBittorrent Web UI `admin` user.
 - `TAILSCALE_AUTH_KEY` or `TF_VAR_tailscale_auth_key` — auth key used only when a host is not already joined to Tailscale.
 
 ### Plex first-run claim
@@ -44,15 +45,11 @@ PLEX_CLAIM_TOKEN=claim-xxxx mise run ansible:apply
 
 The claim token expires quickly, so generate it immediately before running Ansible.
 
-### qBittorrent first login
+### qBittorrent login
 
 The qBittorrent Web UI is available at `https://qt.local` and `https://torrent.local`.
-On its first start, qBittorrent generates a temporary password for the `admin` user.
-Retrieve it from the container journal and then set a permanent password in the Web UI:
-
-```sh
-ssh root@qbittorrent.local journalctl -u qbittorrent -b
-```
+Sign in as `admin` using `QBITTORRENT_PASSWORD` from the 1Password environment.
+Ansible stores only qBittorrent's salted PBKDF2 hash and updates it when the secret changes.
 
 Downloads are written to `/media/cold/downloads`. qBittorrent preallocates files and
 stops each torrent when its download completes (global share ratio `0`, action `Stop`).

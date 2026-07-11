@@ -1,6 +1,13 @@
 ---
 # qBittorrent role — install and configure the headless server.
 
+- name: Ensure qBittorrent Web UI password is provided
+  ansible.builtin.assert:
+    that:
+      - qbittorrent_webui_password | length > 0
+    fail_msg: QBITTORRENT_PASSWORD is not set
+  no_log: true
+
 - name: Install qBittorrent
   ansible.builtin.package:
     name: qbittorrent-nox
@@ -63,7 +70,92 @@
     - { section: Preferences, option: 'WebUI\Port', value: '8080' }
     - { section: Preferences, option: 'WebUI\ServerDomains', value: 'qt.local;torrent.local' }
     - { section: Preferences, option: 'WebUI\UseUPnP', value: 'false' }
+    - { section: Preferences, option: 'WebUI\Username', value: admin }
   notify: Restart qBittorrent
+
+- name: Check configured qBittorrent Web UI password
+  ansible.builtin.command:
+    argv:
+      - python3
+      - -c
+      - |
+        import base64
+        import hashlib
+        import hmac
+        import pathlib
+        import re
+        import sys
+
+        password = sys.stdin.buffer.read()
+        config = pathlib.Path("/var/lib/qbittorrent/.config/qBittorrent/qBittorrent.conf").read_text()
+        match = re.search(r"^WebUI\\Password_PBKDF2=(.*)$", config, re.MULTILINE)
+        if not match:
+            sys.exit(10)
+
+        value = match.group(1).strip().strip('"')
+        if not (value.startswith("@ByteArray(") and value.endswith(")")):
+            sys.exit(10)
+
+        try:
+            salt_value, hash_value = value[11:-1].split(":", 1)
+            salt = base64.b64decode(salt_value, validate=True)
+            expected = base64.b64decode(hash_value, validate=True)
+            actual = hashlib.pbkdf2_hmac("sha512", password, salt, 100000, dklen=64)
+        except (ValueError, TypeError):
+            sys.exit(10)
+
+        sys.exit(0 if hmac.compare_digest(actual, expected) else 10)
+    stdin: "{{ qbittorrent_webui_password }}"
+    stdin_add_newline: false
+  register: qbittorrent_password_check
+  changed_when: false
+  failed_when: qbittorrent_password_check.rc not in [0, 10]
+  no_log: true
+
+- name: Check whether qBittorrent service is installed
+  ansible.builtin.stat:
+    path: /etc/systemd/system/qbittorrent.service
+  register: qbittorrent_service_unit
+
+- name: Stop qBittorrent before changing its password
+  ansible.builtin.systemd_service:
+    name: qbittorrent
+    state: stopped
+  when:
+    - qbittorrent_password_check.rc == 10
+    - qbittorrent_service_unit.stat.exists
+
+- name: Set qBittorrent Web UI password
+  ansible.builtin.command:
+    argv:
+      - python3
+      - -c
+      - |
+        import base64
+        import hashlib
+        import os
+        import pathlib
+        import re
+        import sys
+
+        password = sys.stdin.buffer.read()
+        salt = os.urandom(16)
+        derived = hashlib.pbkdf2_hmac("sha512", password, salt, 100000, dklen=64)
+        payload = base64.b64encode(salt).decode() + ":" + base64.b64encode(derived).decode()
+        setting = 'WebUI\\Password_PBKDF2="@ByteArray(' + payload + ')"'
+
+        path = pathlib.Path("/var/lib/qbittorrent/.config/qBittorrent/qBittorrent.conf")
+        config = path.read_text()
+        if re.search(r"^WebUI\\Password_PBKDF2=.*$", config, re.MULTILINE):
+            config = re.sub(r"^WebUI\\Password_PBKDF2=.*$", lambda _: setting, config, count=1, flags=re.MULTILINE)
+        else:
+            config = re.sub(r"^\[Preferences\]\s*$", lambda match: match.group(0) + "\n" + setting, config, count=1, flags=re.MULTILINE)
+        path.write_text(config)
+    stdin: "{{ qbittorrent_webui_password }}"
+    stdin_add_newline: false
+  when: qbittorrent_password_check.rc == 10
+  changed_when: true
+  no_log: true
 
 - name: Deploy qBittorrent systemd service
   ansible.builtin.copy:
