@@ -1,0 +1,33 @@
+---
+# ============================================================
+# LXC: qbittorrent (103) — qBittorrent server + Avahi mDNS
+# ============================================================
+# qBittorrent writes downloads directly to the ZFS-backed bind mount at
+# /media/cold/downloads and is served locally as qt.local and torrent.local.
+# ============================================================
+
+- import_playbook: lxc_bootstrap.yml
+  vars:
+    lxc_bootstrap_targets:
+      - qbittorrent
+
+- name: Configure qBittorrent LXC
+  hosts: qbittorrent
+  gather_facts: true
+  vars_files:
+    - ../group_vars/all.yml
+
+  roles:
+    - ssh
+    - common
+    - tailscale
+    - qbittorrent
+    - role: caddy_proxy
+      vars:
+        caddy_proxy_server_name: qt.local, torrent.local
+        caddy_proxy_upstream: http://127.0.0.1:8080
+    - role: avahi
+      vars:
+        avahi_aliases:
+          - qt
+          - torrent

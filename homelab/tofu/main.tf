@@ -292,6 +292,89 @@ resource "proxmox_virtual_environment_container" "kino" {
   }
 }
 
+# ─── LXC: qbittorrent (103) — BitTorrent server ─────────────
+
+resource "proxmox_virtual_environment_container" "qbittorrent" {
+  node_name     = "divaltor-dc"
+  vm_id         = 103
+  started       = true
+  start_on_boot = true
+  unprivileged  = false
+
+  description = "qBittorrent server — ZFS-backed downloads via bind mount"
+
+  operating_system {
+    type             = "debian"
+    template_file_id = proxmox_download_file.debian_13_lxc_template.id
+  }
+
+  cpu {
+    architecture = "amd64"
+    cores        = 2
+  }
+
+  console {
+    enabled   = true
+    tty_count = 2
+    type      = "tty"
+  }
+
+  memory {
+    dedicated = 2048
+    swap      = 512
+  }
+
+  disk {
+    datastore_id = "fast-nvme"
+    size         = 16
+  }
+
+  network_interface {
+    name     = "eth0"
+    bridge   = "vmbr0"
+    firewall = false
+  }
+
+  initialization {
+    hostname = "qbittorrent"
+
+    ip_config {
+      ipv4 {
+        address = "dhcp"
+      }
+    }
+
+    dns {
+      servers = ["1.1.1.1", "8.8.8.8"]
+    }
+  }
+
+  features {
+    nesting = true
+  }
+
+  # Required for Tailscale to create tailscale0 inside the LXC.
+  device_passthrough {
+    path = "/dev/net/tun"
+  }
+
+  # Keep the ZFS-backed host and container download paths identical.
+  mount_point {
+    volume = "/media/cold/downloads"
+    path   = "/media/cold/downloads"
+  }
+
+  lifecycle {
+    ignore_changes = [
+      operating_system,  # template_file_id mismatch with state
+      features[0].mount, # managed outside provider
+      features[0].fuse,
+      features[0].keyctl,
+      features[0].mknod,
+    ]
+  }
+}
+
 # ─── Storage layout (managed at host level) ─────────────────
 # Host disk (128 GB): ext4 root on pve/root, no LVM-Thin.
 #   local-lvm was removed — all space given to root for host packages.

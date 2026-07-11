@@ -24,6 +24,48 @@
     state: started
     enabled: true
 
+- name: Deploy Avahi alias publisher
+  ansible.builtin.template:
+    src: avahi-publish-aliases.j2
+    dest: /usr/local/sbin/avahi-publish-aliases
+    owner: root
+    group: root
+    mode: "0755"
+  notify: Restart Avahi aliases
+  when: avahi_aliases | length > 0
+
+- name: Deploy Avahi alias service
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/avahi-aliases.service
+    content: |
+      [Unit]
+      Description=Publish additional Avahi hostnames
+      Requires=avahi-daemon.service
+      After=avahi-daemon.service network-online.target
+
+      [Service]
+      Type=simple
+      ExecStart=/usr/local/sbin/avahi-publish-aliases
+      Restart=on-failure
+
+      [Install]
+      WantedBy=multi-user.target
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - Reload systemd for Avahi aliases
+    - Restart Avahi aliases
+  when: avahi_aliases | length > 0
+
+- name: Ensure Avahi aliases are published
+  ansible.builtin.systemd_service:
+    name: avahi-aliases
+    state: started
+    enabled: true
+    daemon_reload: true
+  when: avahi_aliases | length > 0
+
 - name: Announce Samba service via Avahi
   ansible.builtin.copy:
     dest: /etc/avahi/services/samba.service

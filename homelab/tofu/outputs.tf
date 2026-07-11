@@ -21,6 +21,15 @@ output "ct_smb_info" {
   }
 }
 
+output "ct_qbittorrent_info" {
+  description = "qBittorrent LXC details"
+  value = {
+    vmid     = proxmox_virtual_environment_container.qbittorrent.vm_id
+    hostname = "qbittorrent"
+    node     = proxmox_virtual_environment_container.qbittorrent.node_name
+  }
+}
+
 output "all_ips" {
   description = "All static IPs for inventory (DHCP VMs use mDNS hostnames)"
   value = {

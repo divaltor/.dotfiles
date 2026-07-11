@@ -5,3 +5,13 @@
   ansible.builtin.service:
     name: avahi-daemon
     state: restarted
+
+- name: Reload systemd for Avahi aliases
+  ansible.builtin.systemd_service:
+    daemon_reload: true
+
+- name: Restart Avahi aliases
+  ansible.builtin.systemd_service:
+    name: avahi-aliases
+    state: restarted
+  when: avahi_aliases | length > 0

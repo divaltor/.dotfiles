@@ -59,6 +59,7 @@ avahi_reflector: false
 avahi_samba_advertise: false
 avahi_samba_service_name: DivaOS
 avahi_samba_device_model: TimeCapsule
+avahi_aliases: []
 
 # Caddy reverse proxy
 caddy_proxy_server_name: "{{ avahi_hostname }}.local"

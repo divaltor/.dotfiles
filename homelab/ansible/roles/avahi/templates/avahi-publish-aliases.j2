@@ -1,0 +1,10 @@
+#!/bin/sh
+set -eu
+
+address="$(hostname -I | awk '{print $1}')"
+test -n "$address"
+
+{% for alias in avahi_aliases %}
+avahi-publish-address --no-reverse {{ (alias ~ '.local') | quote }} "$address" &
+{% endfor %}
+wait

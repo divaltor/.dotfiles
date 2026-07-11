@@ -1,0 +1,100 @@
+---
+# qBittorrent role — install and configure the headless server.
+
+- name: Install qBittorrent
+  ansible.builtin.package:
+    name: qbittorrent-nox
+    state: present
+
+- name: Create qBittorrent service account
+  ansible.builtin.user:
+    name: qbittorrent
+    home: /var/lib/qbittorrent
+    create_home: true
+    system: true
+    shell: /usr/sbin/nologin
+
+- name: Ensure qBittorrent configuration directory exists
+  ansible.builtin.file:
+    path: /var/lib/qbittorrent/.config/qBittorrent
+    state: directory
+    owner: qbittorrent
+    group: qbittorrent
+    mode: "0750"
+
+- name: Ensure qBittorrent can write downloads
+  ansible.builtin.file:
+    path: /media/cold/downloads
+    state: directory
+    owner: qbittorrent
+    group: qbittorrent
+    mode: "0775"
+
+- name: Deploy qBittorrent configuration
+  ansible.builtin.template:
+    src: qBittorrent.conf.j2
+    dest: /var/lib/qbittorrent/.config/qBittorrent/qBittorrent.conf
+    owner: qbittorrent
+    group: qbittorrent
+    mode: "0600"
+    force: false
+  notify: Restart qBittorrent
+
+- name: Enforce managed qBittorrent preferences
+  community.general.ini_file:
+    path: /var/lib/qbittorrent/.config/qBittorrent/qBittorrent.conf
+    section: "{{ item.section }}"
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+    owner: qbittorrent
+    group: qbittorrent
+    mode: "0600"
+    no_extra_spaces: true
+  loop:
+    - { section: BitTorrent, option: 'Session\DefaultSavePath', value: /media/cold/downloads }
+    - { section: BitTorrent, option: 'Session\GlobalMaxRatio', value: '0' }
+    - { section: BitTorrent, option: 'Session\Preallocation', value: 'true' }
+    - { section: BitTorrent, option: 'Session\ShareLimitAction', value: Stop }
+    - { section: LegalNotice, option: Accepted, value: 'true' }
+    - { section: Preferences, option: 'WebUI\Address', value: 127.0.0.1 }
+    - { section: Preferences, option: 'WebUI\Enabled', value: 'true' }
+    - { section: Preferences, option: 'WebUI\HostHeaderValidation', value: 'true' }
+    - { section: Preferences, option: 'WebUI\LocalHostAuth', value: 'true' }
+    - { section: Preferences, option: 'WebUI\Port', value: '8080' }
+    - { section: Preferences, option: 'WebUI\ServerDomains', value: 'qt.local;torrent.local' }
+    - { section: Preferences, option: 'WebUI\UseUPnP', value: 'false' }
+  notify: Restart qBittorrent
+
+- name: Deploy qBittorrent systemd service
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/qbittorrent.service
+    content: |
+      [Unit]
+      Description=qBittorrent headless server
+      Wants=network-online.target
+      After=network-online.target
+
+      [Service]
+      Type=simple
+      User=qbittorrent
+      Group=qbittorrent
+      Environment=HOME=/var/lib/qbittorrent
+      ExecStart=/usr/bin/qbittorrent-nox
+      Restart=on-failure
+      UMask=0002
+
+      [Install]
+      WantedBy=multi-user.target
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - Reload systemd
+    - Restart qBittorrent
+
+- name: Ensure qBittorrent is running
+  ansible.builtin.systemd_service:
+    name: qbittorrent
+    state: started
+    enabled: true
+    daemon_reload: true

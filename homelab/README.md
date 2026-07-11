@@ -20,10 +20,10 @@ mise run ansible:check
 mise run ansible:apply
 ```
 
-Hosts default to mDNS (`proxmox.local`, `homelab.local`, `smb.local`, `kino.local`). For first bootstrap before Avahi works, override DHCP IPs and use SSH password auth:
+Hosts default to mDNS (`proxmox.local`, `homelab.local`, `smb.local`, `kino.local`, `qbittorrent.local`). qBittorrent's Web UI is also published as `qt.local` and `torrent.local`. For first bootstrap before Avahi works, override DHCP IPs and use SSH password auth:
 
 ```sh
-mise run playbook -- playbooks/site.yml --ask-pass -e proxmox_ansible_host=192.168.1.x -e homelab_ansible_host=192.168.1.y -e smb_ansible_host=192.168.1.z
+mise run playbook -- playbooks/site.yml --ask-pass -e proxmox_ansible_host=192.168.1.x -e homelab_ansible_host=192.168.1.y -e smb_ansible_host=192.168.1.z -e qbittorrent_ansible_host=192.168.1.w
 ```
 
 Required 1Password environment variables for Ansible:
@@ -43,3 +43,16 @@ PLEX_CLAIM_TOKEN=claim-xxxx mise run ansible:apply
 ```
 
 The claim token expires quickly, so generate it immediately before running Ansible.
+
+### qBittorrent first login
+
+The qBittorrent Web UI is available at `https://qt.local` and `https://torrent.local`.
+On its first start, qBittorrent generates a temporary password for the `admin` user.
+Retrieve it from the container journal and then set a permanent password in the Web UI:
+
+```sh
+ssh root@qbittorrent.local journalctl -u qbittorrent -b
+```
+
+Downloads are written to `/media/cold/downloads`. qBittorrent preallocates files and
+stops each torrent when its download completes (global share ratio `0`, action `Stop`).
