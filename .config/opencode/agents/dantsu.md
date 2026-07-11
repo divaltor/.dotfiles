@@ -1,7 +1,7 @@
 ---
 description: "Read-only codebase search for symbols, strings, and behavior."
 mode: subagent
-model: openai/gpt-5.6-luna
+model: openai/gpt-5.6-terra
 variant: high
 color: "#eb6f92"
 permission:
