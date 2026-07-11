@@ -50,3 +50,31 @@
         label: "{{ item }} ({{ hostvars[item].lxc_vmid }})"
       register: lxc_bootstrap_authorized_key
       changed_when: lxc_bootstrap_authorized_key.stdout == 'changed'
+
+    - name: Discover LXC DHCP addresses
+      ansible.builtin.command:
+        argv:
+          - pct
+          - exec
+          - "{{ hostvars[item].lxc_vmid | string }}"
+          - --
+          - sh
+          - -c
+          - ip -4 -o address show dev eth0 scope global | tr -s ' ' | cut -d ' ' -f4 | cut -d/ -f1 | head -n1
+      loop: "{{ lxc_bootstrap_targets | default(groups['containers']) }}"
+      loop_control:
+        label: "{{ item }} ({{ hostvars[item].lxc_vmid }})"
+      register: lxc_bootstrap_addresses
+      changed_when: false
+      until: lxc_bootstrap_addresses.stdout | length > 0
+      retries: 12
+      delay: 5
+
+    - name: Use discovered addresses for this playbook run
+      ansible.builtin.add_host:
+        name: "{{ item.item }}"
+        ansible_host: "{{ item.stdout }}"
+      loop: "{{ lxc_bootstrap_addresses.results }}"
+      loop_control:
+        label: "{{ item.item }} ({{ item.stdout }})"
+      when: item.stdout | length > 0
