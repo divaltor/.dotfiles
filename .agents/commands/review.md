@@ -1,8 +1,8 @@
 ---
 description: Strict structural review of a diff vs an optional base ref (e.g. /review main, /review origin/dev). Defaults to working tree vs HEAD. Flags abstraction, spaghetti, and size regressions with a standardized verdict.
-model: github-copilot/claude-opus-4.8-fast
+model: openai/gpt-5.6-sol
 subtask: true
-variant: high
+variant: medium
 ---
 
 # Target
