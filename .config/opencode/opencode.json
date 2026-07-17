@@ -45,5 +45,8 @@
     }
   },
   "default_agent": "diana",
+  "disabled_providers": [
+    "amazon-bedrock"
+  ],
   "$schema": "https://opencode.ai/config.json"
 }
