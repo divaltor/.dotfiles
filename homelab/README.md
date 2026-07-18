@@ -32,7 +32,7 @@ Required 1Password environment variables for Ansible:
 - `TF_VAR_proxmox_password` — password for OpenTofu `root@pam` Proxmox authentication.
 - `SAMBA_PASSWORD` or `TF_VAR_samba_password` — password for Samba user `divaltor`.
 - `QBITTORRENT_PASSWORD` — password for the qBittorrent Web UI `admin` user.
-- `TAILSCALE_AUTH_KEY` or `TF_VAR_tailscale_auth_key` — auth key used only when a host is not already joined to Tailscale.
+- `TAILSCALE_AUTH_KEY` or `TF_VAR_tailscale_auth_key` — reusable auth key with the `tag:homelab` tag, used only when a host is not already joined to Tailscale. Tagged devices have node-key expiry disabled by default.
 
 ### Plex first-run claim
 
