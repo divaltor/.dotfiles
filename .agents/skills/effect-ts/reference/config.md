@@ -1,127 +1,62 @@
-# Configuration Patterns
+# Configuration
 
-This document covers how to load typed configuration in Effect services. The official Effect docs are at <https://effect.website/docs/configuration/>.
-
-## Config Module Basics
-
-Use `Config` from `effect` for typed environment configuration. Each config value has a type and can be composed, defaulted, or made optional.
+Use Effect `Config` as the source of truth for environment names, parsing, defaults, and validation.
 
 ```ts
-import { Config } from "effect"
-
-// Required config
-const port = Config.integer("PORT")
-
-// With default
-const port = Config.integer("PORT").pipe(Config.withDefault(3000))
-
-// Optional
-const flag = Config.boolean("FEATURE_FLAG").pipe(Config.option)
-
-// With validation
-const url = Config.string("URL").pipe(Config.withDefault("http://localhost:3000"))
-```
-
-### Composite Config with Config.all
-
-```ts
-const appConfig = Config.all({
+const AppConfig = Config.all({
   port: Config.integer("PORT").pipe(Config.withDefault(3000)),
-  publicUrl: Config.string("PUBLIC_URL").pipe(Config.withDefault("http://localhost:3000")),
-  stage: Config.string("STAGE").pipe(Config.withDefault("development")),
-})
+  enabled: Config.boolean("FEATURE_ENABLED").pipe(Config.withDefault(false)),
+  token: Config.string("TOKEN").pipe(Config.option),
+});
 ```
 
-### Providing Config in Tests
+Read configuration while constructing a layer so service methods receive parsed values rather than repeatedly consulting process state.
 
-Override config values with `ConfigProvider` layers:
+## Config-backed service
+
+Wrap configuration in a service when many consumers need the parsed values or tests benefit from direct substitution:
 
 ```ts
-import { ConfigProvider, Layer } from "effect"
+export interface AppConfigShape {
+  readonly port: number;
+  readonly token: Option.Option<string>;
+}
 
-const testConfigLayer = ConfigProvider.layer(
-  ConfigProvider.fromUnknown({ PORT: 8080, STAGE: "test" }),
-)
+export class AppConfigService extends Context.Service<
+  AppConfigService,
+  AppConfigShape
+>()("app/AppConfig") {}
 
-const testLayer = MyService.defaultLayer.pipe(
-  Layer.provide(testConfigLayer),
-)
+export const AppConfigLayer = Layer.effect(
+  AppConfigService,
+  Config.all({
+    port: Config.integer("PORT").pipe(Config.withDefault(3000)),
+    token: Config.string("TOKEN").pipe(Config.option),
+  }).pipe(Effect.map(AppConfigService.of)),
+);
 ```
 
-## ConfigService Custom Factory
+For a small service with one configuration value, yielding the Config directly during layer construction may be simpler.
 
-The opencode codebase has a custom `ConfigService` factory (`packages/opencode/src/effect/config-service.ts`) that wraps `Config.all` into a `Context.Service`. This lets config be yielded as a typed service instead of raw `Config` values.
+## Tests
 
-### Factory Definition
+Use `ConfigProvider` when testing parsing behavior:
 
 ```ts
-// Example shape (simplified from packages/opencode/src/effect/config-service.ts)
-export const Service =
-  <Self>() =>
-  <const Id extends string, const Fields extends ConfigMap>(id: Id, fields: Fields) => {
-    class ConfigTag extends Context.Service<Self, Shape<Fields>>()(id) {
-      static layer(input: Shape<Fields>) {
-        return Layer.succeed(this, this.of(input))
-      }
-      static get defaultLayer() {
-        return Layer.effect(this, Effect.gen(function* () {
-          const config = yield* Config.all(fields)
-          return this.of(config)
-        }))
-      }
-    }
-    return ConfigTag
-  }
+const providerLayer = ConfigProvider.layer(
+  ConfigProvider.fromUnknown({ PORT: 8080 }),
+);
+
+const testLayer = AppConfigLayer.pipe(Layer.provide(providerLayer));
 ```
 
-### Usage: RuntimeFlags
+When parsing is not under test, provide the already-parsed config service directly:
 
 ```ts
-// packages/opencode/src/effect/runtime-flags.ts
-export class Service extends ConfigService.Service<Service>()("@opencode/RuntimeFlags", {
-  autoShare: Config.boolean("OPENCODE_AUTO_SHARE").pipe(Config.withDefault(false)),
-  pure: Config.boolean("OPENCODE_PURE").pipe(Config.withDefault(false)),
-  disableDefaultPlugins: Config.boolean("OPENCODE_DISABLE_DEFAULT_PLUGINS").pipe(Config.withDefault(false)),
-}) {}
+const testConfig = Layer.succeed(
+  AppConfigService,
+  AppConfigService.of({ port: 8080, token: Option.none() }),
+);
 ```
 
-Consumers yield `RuntimeFlags.Service` and get typed access to all flags:
-
-```ts
-const flags = yield* RuntimeFlags.Service
-if (flags.pure) { /* ... */ }
-```
-
-### Test Layer Overrides
-
-```ts
-// Override specific flags in tests via layer succeed
-export const layerWith = (overrides: Partial<typeof Service.Type>) =>
-  Layer.provideMerge(
-    Service.defaultLayer,
-    Layer.succeed(Service, Service.of({ ...defaults, ...overrides })),
-  )
-
-// Or with explicit values
-const flagLayer = Service.layer({ autoShare: false, pure: true })
-```
-
-### ConfigProvider for Zero-Env Tests
-
-```ts
-const emptyConfigLayer = Service.defaultLayer.pipe(
-  Layer.provide(ConfigProvider.layer(ConfigProvider.fromUnknown({}))),
-  Layer.orDie,
-)
-```
-
-## Config.succeed — Inline Constants
-
-When Layer construction needs config values that aren't environment-driven, use `Config.succeed`:
-
-```ts
-const config = Config.all({
-  stage: Config.succeed(Resource.App.stage),
-  publicUrl: Config.string("PUBLIC_URL").pipe(Config.withDefault("http://localhost:3000")),
-})
-```
+Do not mutate `process.env`, feature flags, or module globals after dependent layers are built. Configuration is normally captured during layer construction.

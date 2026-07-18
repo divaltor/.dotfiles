@@ -1,227 +1,85 @@
+# Runtime boundaries
+
 ## ManagedRuntime
 
-### Creating a Runtime
+Create a `ManagedRuntime` at a genuine boundary where Promise-, callback-, or framework-driven code must run an assembled Effect application:
 
 ```ts
-import { ManagedRuntime } from "effect";
+const runtime = ManagedRuntime.make(AppLayer);
 
-export const AppRuntime = ManagedRuntime.make(AppLayer, { memoMap });
-
-// Extract the service type for type annotations
-export type AppServices = ManagedRuntime.ManagedRuntime.Services<
-  typeof AppRuntime
->;
+await runtime.runPromise(program);
+const fiber = runtime.runFork(backgroundProgram);
 ```
 
-The `memoMap` option is important — it enables memoization across layers built from the same runtime, avoiding duplicate resource initialization when a layer is used by multiple consumers.
+Keep the runtime's lifetime explicit and dispose it during application shutdown. Avoid constructing runtimes inside service methods, request handlers, or tests merely to satisfy dependencies.
 
-### Runtime Wrappers
+## Layer memoization
 
-Wrap the raw `ManagedRuntime` methods for ergonomic access:
+Layers are memoized within a runtime. Shared memo maps can intentionally share layer resources across related runtimes, but they also widen resource lifetime and identity. Use them only when that sharing is part of the architecture.
+
+Do not use shared memoization for state that should be isolated by tenant, request, project, workspace, or another domain key. Model that lifetime explicitly with scoped caches or keyed resource services.
+
+## Promise boundaries
+
+Stay inside Effect whenever possible:
 
 ```ts
-const rt = ManagedRuntime.make(AppLayer, { memoMap });
-
-export const AppRuntime = {
-  runSync: <A, E>(effect: Effect.Effect<A, E, AppServices>) =>
-    rt.runSync(effect),
-  runPromise: <A, E>(effect: Effect.Effect<A, E, AppServices>) =>
-    rt.runPromise(effect),
-  runFork: <A, E>(effect: Effect.Effect<A, E, AppServices>) =>
-    rt.runFork(effect),
-  dispose: () => rt.dispose(),
-};
+const value = yield * Effect.promise(() => externalPromise());
 ```
 
-### Lazy Singleton Runtime
-
-When runtime creation is expensive and may not always be needed, defer initialization:
+Use `Effect.tryPromise` when Promise rejection should become a typed error:
 
 ```ts
-export function makeRuntime<I, S, E>(
-  service: Context.Service<I, S>,
-  layer: Layer.Layer<I, E>,
-) {
-  let rt: ManagedRuntime.ManagedRuntime<I, E> | undefined;
-
-  const getRuntime = () =>
-    (rt ??= ManagedRuntime.make(
-      Layer.provideMerge(layer, Observability.layer),
-      { memoMap },
-    ));
-
-  return {
-    runSync: <A, Err>(fn: (svc: S) => Effect.Effect<A, Err, I>) =>
-      getRuntime().runSync(service.use(fn)),
-    runPromise: <A, Err>(
-      fn: (svc: S) => Effect.Effect<A, Err, I>,
-      options?: Effect.RunOptions,
-    ) => getRuntime().runPromise(service.use(fn), options),
-  };
-}
+const value =
+  yield *
+  Effect.tryPromise({
+    try: () => externalPromise(),
+    catch: (cause) => new ExternalError({ cause }),
+  });
 ```
 
-The first call to `runSync` or `runPromise` triggers runtime construction; subsequent calls reuse the cached instance.
+Avoid calling global `Effect.runPromise` from inside application modules when an assembled runtime already exists.
 
-### CLI Entry Point
+## Callback boundaries
 
-For CLI tools, use `NodeRuntime.runMain`:
+Use `Effect.callback` when an external API completes through callbacks:
 
 ```ts
-import { NodeRuntime } from "@effect/platform-node"
-import { Command, Effect, Layer } from "effect"
-
-const cli = Command.make("my-app", ...)
-const layer = Layer.mergeAll(AppLayer, NodeServices.layer)
-
-Command.run(cli, { version: "1.0.0" }).pipe(
-  Effect.provide(layer),
-  Effect.scoped,
-  NodeRuntime.runMain,
-)
+const value =
+  yield *
+  Effect.callback<Value, CallbackError>((resume) => {
+    const cancel = external.start((result) => resume(decode(result)));
+    return Effect.sync(cancel);
+  });
 ```
 
-## Appendix: `Effect.Service` in Upstream Effect v4
+Return a cleanup Effect when cancellation should unregister listeners or stop native work.
 
-The upstream `Effect-TS/effect` v4 package ships a convenience API `Effect.Service<Self>()(key, options)` that bundles `Context.Tag` creation and layer construction. It auto-generates `Service.Default` (dependencies wired) and `Service.Layer` (dependencies exposed), and accepts options like `sync`, `effect`, `scoped`, or `dependencies`.
+When a callback registered now will re-enter the application later, create a small adapter that explicitly captures:
+
+- the intended runtime
+- required services or context values
+- cancellation ownership
+- any framework-local context that must be restored
+
+Do not depend on accidental ambient state.
+
+## Scoped resources
+
+Use `Effect.acquireRelease`, `Effect.addFinalizer`, and scoped layers for resources:
 
 ```ts
-// Upstream-only example — NOT used in this codebase
-class Prefix extends Effect.Service<Prefix>()("Prefix", {
-  sync: () => ({ prefix: "PRE" }),
-}) {}
+const connection =
+  yield * Effect.acquireRelease(openConnection, closeConnection);
 ```
 
-**Important:** `Effect.Service` is **not** present in the `effect-smol` source that this project uses as its source of truth, and it is **not used** anywhere in the opencode codebase. Prefer `Context.Service` + explicit `Layer.effect` here. If you are porting upstream Effect examples, translate `Effect.Service` declarations into the `Context.Service` pattern used throughout this repo.
+Place background fibers associated with the resource in the same scope with `Effect.forkScoped` or `Effect.forkIn(scope)`. The scope should own both the resource and its background work.
 
-## Global memoMap
+## Entry points
 
-The opencode codebase shares a single `memoMap` across all runtimes to deduplicate layer instances globally:
+At a CLI, worker, or server entry point:
 
-```ts
-// packages/core/src/effect/memo-map.ts
-import { Layer } from "effect";
-export const memoMap = Layer.makeMemoMapUnsafe();
-```
-
-Every `ManagedRuntime.make` call in the codebase passes `{ memoMap }`. This ensures that services like `Bus`, `Cache`, and `Observability` are created once and shared across all runtimes in the process.
-
-## EffectBridge — Promise/Callback Interop
-
-`EffectBridge` (`packages/opencode/src/effect/bridge.ts`) is the sanctioned helper for crossing from non-Effect code (callbacks, native APIs, plugin systems) back into Effect while preserving instance/workspace context.
-
-### Why It's Needed
-
-When a non-Effect callback (e.g., `@parcel/watcher`, `node-pty`, plugin hooks) needs to run Effect code, it must restore the `InstanceRef` and `WorkspaceRef` that existed when the callback was registered. Without this, code like `Effect.runPromise(someEffect)` runs without instance context and fails on any service that depends on per-directory state.
-
-### How It Works
-
-```ts
-import { EffectBridge } from "@/effect/bridge";
-
-// Capture happens inside an Effect fiber (has instance/workspace context)
-const bridge = yield * EffectBridge.make();
-
-// Later, from a non-Effect callback:
-await bridge.promise(someEffect); // runs with original instance/workspace context
-bridge.fork(someEffect); // fire-and-forget with restored context
-bridge.bind((x) => compute(x))(); // sync binding with restored context
-```
-
-Internally, `EffectBridge.make()` captures:
-
-1. The current fiber's `InstanceRef` (per-directory instance identity)
-2. The current fiber's `WorkspaceRef` (workspace identity)
-3. The fiber context itself
-
-When `bridge.promise(effect)` is called later, it wraps the effect with the captured context before running it.
-
-### When to Use
-
-Use `EffectBridge` for:
-
-- Native callback APIs (`@parcel/watcher`, `node-pty`, `fs.watch`)
-- Plugin systems that call back into Effect code
-- Any boundary where non-Effect code needs to re-enter Effect with context
-
-Do not use `EffectBridge` for:
-
-- Plain async code that can stay inside an Effect fiber — yield `Effect.promise(...)` instead
-- Code that doesn't depend on instance/workspace context
-- Test code — use `testEffect` / `it.effect` / `it.instance` instead
-
-## InstanceState — Per-Directory ScopedCache
-
-`InstanceState` (`packages/opencode/src/effect/instance-state.ts`) wraps `ScopedCache` to provide per-directory state with automatic disposal. When two open directories should not share one copy of a service's state, use `InstanceState`.
-
-### When to Use InstanceState
-
-Use `InstanceState` when:
-
-- Two open project directories in the same process should have independent service state
-- The state requires cleanup when a directory instance is unloaded (subscriptions, file watchers, connection pools)
-- The state has per-instance finalizers (`Effect.addFinalizer`, `Effect.acquireRelease`)
-
-### Pattern
-
-```ts
-import { InstanceState } from "@/effect/instance-state";
-
-const stateImpl = Effect.fn("Service.state")(function* () {
-  // Subscribe to events — cleaned up when instance is disposed
-  const bus = yield* Bus.Service;
-  yield* bus.subscribeAll().pipe(
-    Stream.runForEach((event) => handleEvent(event)),
-    Effect.forkScoped,
-  );
-
-  // Acquire a resource — released on disposal
-  yield* Effect.acquireRelease(openConnection, closeConnection);
-
-  return yield* loadInitialState();
-});
-
-// In the layer:
-const state = yield * InstanceState.make<MyState>(stateImpl);
-
-// In methods:
-const methods = {
-  read: (key: string) =>
-    Effect.gen(function* () {
-      const s = yield* InstanceState.get(state);
-      return s.get(key);
-    }),
-};
-```
-
-### Rules
-
-- Do the work directly in the `InstanceState.make(...)` closure — `ScopedCache` handles run-once and concurrent deduplication.
-- Do not add ad hoc `started` flags, `ensure()` callbacks, or separate `init()` fibers on top of `InstanceState`.
-- Put subscriptions, finalizers, and scoped background work inside the `InstanceState.make(...)` initializer.
-- Use `Effect.forkScoped` inside the closure for background stream consumers — the fiber is interrupted when the instance is disposed.
-- To make `init()` non-blocking, fork at the caller/bootstrap boundary (e.g., `Effect.forkIn(scope)`), not inside `InstanceState.make(...)`. Forking inside the closure leaves state incomplete.
-
-### InstanceRef & WorkspaceRef
-
-`Context.Reference` values carry instance and workspace identity through the fiber context:
-
-```ts
-// packages/opencode/src/effect/instance-ref.ts
-export const InstanceRef = Context.Reference<InstanceContext | undefined>(
-  "~opencode/InstanceRef",
-  { defaultValue: () => undefined },
-);
-export const WorkspaceRef = Context.Reference<WorkspaceV2.ID | undefined>(
-  "~opencode/WorkspaceRef",
-  { defaultValue: () => undefined },
-);
-```
-
-These are set when an instance is loaded and restored by `EffectBridge` when crossing boundaries.
-
-## Configuration
-
-For typed config loading, use `Config` from `effect` directly, or the opencode-specific `ConfigService` custom factory for compile-time-typed config layers. See [reference/config.md](reference/config.md).
-
-For graph-based layer wiring with cycle detection, see [reference/layer-node.md](reference/layer-node.md). For concurrency patterns, see [reference/concurrency.md](reference/concurrency.md).
+1. Build the complete application layer once.
+2. Run one scoped main Effect with the platform runtime.
+3. Convert failures to process exit behavior only at the outermost boundary.
+4. Dispose managed runtimes and scoped resources during shutdown.
