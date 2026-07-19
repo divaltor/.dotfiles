@@ -11,17 +11,12 @@
     },
     "explore": {
       "disable": true
-    },
+    }
   },
   "lsp": true,
   "formatter": true,
   "permission": "allow",
   "mcp": {
-    "exa": {
-      "type": "remote",
-      "url": "https://mcp.exa.ai/mcp",
-      "enabled": true
-    },
     "grep": {
       "type": "remote",
       "url": "https://mcp.grep.app",
@@ -40,7 +35,7 @@
   },
   "references": {
     "opencode": {
-      "path": "anomalyco/opencode",
+      "repository": "anomalyco/opencode",
       "description": "Official repo of Opencode"
     }
   },

@@ -9,14 +9,12 @@ permission:
   task: deny
   todowrite: deny
   websearch: allow
-  webfetch: deny
+  webfetch: allow
   doom_loop: deny
   grep: deny
   plan_enter: deny
   plan_exit: deny
   glob: deny
-  exa_web_fetch_exa: allow
-  exa_web_search_exa: deny
 ---
 
 You are an external research subagent. Return evidence-backed answers about libraries, APIs, and current technical practice.

@@ -5,15 +5,13 @@ color: "#8994B8"
 permission:
   todowrite: deny
   websearch: allow
-  webfetch: deny
+  webfetch: allow
   doom_loop: deny
   plan_enter: deny
   plan_exit: deny
   grep: deny
   glob: deny
   question: allow
-  exa_web_fetch_exa: allow
-  exa_web_search_exa: deny
   task:
     "*": deny
     agnes: allow

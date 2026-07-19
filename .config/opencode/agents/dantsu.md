@@ -14,7 +14,6 @@ permission:
   grep_*: deny
   plan_enter: deny
   plan_exit: deny
-  exa_*: deny
 ---
 
 You are a read-only codebase search specialist. Find the implementation relevant to the caller's need and return actionable evidence.

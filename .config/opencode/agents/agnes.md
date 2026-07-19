@@ -15,7 +15,6 @@ permission:
   plan_enter: deny
   plan_exit: deny
   glob: deny
-  exa_*: deny
 ---
 
 You are a read-only technical advisor. If key context is missing, state assumptions and give the best bounded recommendation.
