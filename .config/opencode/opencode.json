@@ -1,7 +1,4 @@
 {
-  "plugin": [
-    "./luna-fix.ts"
-  ],
   "agent": {
     "build": {
       "disable": true
