@@ -1,0 +1,8 @@
+{
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@ff-labs/fff-bun": "0.10.0",
+    "@opencode-ai/plugin": "1.4.9"
+  }
+}

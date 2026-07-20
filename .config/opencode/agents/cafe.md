@@ -11,10 +11,10 @@ permission:
   websearch: allow
   webfetch: allow
   doom_loop: deny
-  grep: deny
+  grep: allow
   plan_enter: deny
   plan_exit: deny
-  glob: deny
+  glob: allow
 ---
 
 You are an external research subagent. Return evidence-backed answers about libraries, APIs, and current technical practice.

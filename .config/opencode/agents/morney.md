@@ -9,8 +9,8 @@ permission:
   doom_loop: deny
   plan_enter: deny
   plan_exit: deny
-  grep: deny
-  glob: deny
+  grep: allow
+  glob: allow
   question: allow
   task:
     "*": deny
@@ -57,7 +57,7 @@ Act once you have enough evidence to proceed without guessing—for example, whe
 
 `bash` is **only** for: build/test/lint/typecheck commands, package management, non-destructive git, auto-generated outputs (lockfiles, codegen, formatters with `--fix`), and bulk metadata ops (`mv`, `rm`, `cp`). Never use background processes with `&`.
 
-Prefer `fff_grep` / `fff_multi_grep` for exact text, symbols, imports, error strings, and iterative discovery. Prefer `fff_find_files` for file discovery by name or path. Start with 1-2 high-signal searches, and only fall back to another available search path when the focused `fff` route is unavailable or clearly the wrong fit.
+Prefer `grep` for exact text, symbols, imports, error strings, and iterative discovery. Prefer `glob` for file discovery by name or path, and use grep's `multi` mode for literal OR searches. Start with 1-2 high-signal searches, and only fall back to another available search path when the focused route is unavailable or clearly the wrong fit.
 
 Use the configured web search/fetch tools for external discovery and specific URLs: unclear APIs, security-sensitive behavior, migrations, performance-critical paths, or current documentation. Prefer official docs first, then source.
 
