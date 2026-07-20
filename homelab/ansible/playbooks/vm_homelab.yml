@@ -16,3 +16,9 @@
     - role: avahi
       vars:
         avahi_allow_interfaces: ens18
+
+  tasks:
+    - name: Install AMD GPU firmware
+      ansible.builtin.package:
+        name: firmware-amd-graphics
+        state: present

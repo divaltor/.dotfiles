@@ -97,6 +97,12 @@ resource "proxmox_virtual_environment_vm" "homelab" {
     model  = "virtio"
   }
 
+  hostpci {
+    device = "hostpci0"
+    id     = "0000:c6:00.0"
+    pcie   = true
+  }
+
   scsi_hardware = "virtio-scsi-single"
 
   serial_device {}
