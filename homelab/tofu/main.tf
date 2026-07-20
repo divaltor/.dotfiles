@@ -17,6 +17,33 @@ import {
   id = "local"
 }
 
+locals {
+  amd_gpu_vbios_path   = "/usr/share/kvm/strix-gfx1150.rom"
+  amd_gpu_vbios_sha256 = "ee1aa9f76168cc9ac1318102fa60bfe72e371741877a4b83898d8d8110e3ecbf"
+  proxmox_ssh_host     = regex("^https?://([^/:]+)", var.proxmox_endpoint)[0]
+}
+
+resource "terraform_data" "amd_gpu_vbios" {
+  triggers_replace = {
+    checksum    = local.amd_gpu_vbios_sha256
+    script_hash = filesha256("${path.module}/scripts/extract_vfct_vbios.py")
+  }
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      ssh -o BatchMode=yes -o ConnectTimeout=30 root@"$PROXMOX_SSH_HOST" \
+        "python3 - --output '$VBIOS_PATH' --sha256 '$VBIOS_SHA256'" \
+        < "${path.module}/scripts/extract_vfct_vbios.py"
+    EOT
+
+    environment = {
+      PROXMOX_SSH_HOST = local.proxmox_ssh_host
+      VBIOS_PATH       = local.amd_gpu_vbios_path
+      VBIOS_SHA256     = local.amd_gpu_vbios_sha256
+    }
+  }
+}
+
 resource "proxmox_storage_directory" "local" {
   id      = "local"
   path    = "/var/lib/vz"
@@ -98,9 +125,11 @@ resource "proxmox_virtual_environment_vm" "homelab" {
   }
 
   hostpci {
-    device = "hostpci0"
-    id     = "0000:c6:00.0"
-    pcie   = true
+    device   = "hostpci0"
+    id       = "0000:c6:00.0"
+    pcie     = true
+    rom_file = "strix-gfx1150.rom"
+    rombar   = true
   }
 
   scsi_hardware = "virtio-scsi-single"
@@ -114,6 +143,8 @@ resource "proxmox_virtual_environment_vm" "homelab" {
       disk[0].file_id, # auto-assigned by Proxmox
     ]
   }
+
+  depends_on = [terraform_data.amd_gpu_vbios]
 }
 
 # ─── LXC: smb (101) — Samba NAS container ───────────────────
