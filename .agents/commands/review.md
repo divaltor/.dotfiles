@@ -17,7 +17,7 @@ Resolve what to review before judging it:
 - GitHub PR URL or `pr <number>`: use `gh pr view` and `gh pr diff`.
 - Otherwise treat the input as a custom review instruction.
 
-State the resolved scope in the final `Checked` section. Do not modify files.
+State the resolved scope in the final `Checked` section. This command is advisory only: do not modify files, dispatch implementation work, or start fixing reported issues. Stop after presenting the review and wait for the user to choose the next action.
 
 # Process
 
@@ -96,4 +96,4 @@ Use `None.` under an empty section. Categories are descriptive, for example `COR
 - **NEEDS_ATTENTION** — only non-blocking findings or simplifications.
 - **NEEDS_WORK** — at least one high-impact correctness, security, data-loss, or material design problem.
 
-No preamble, praise, diff recap, or unsupported claim. Be terse.
+No preamble, praise, diff recap, or unsupported claim. Be terse. After the review, stop and wait for explicit implementation instructions.
