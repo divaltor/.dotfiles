@@ -1,5 +1,5 @@
 ---
-description: Review a working tree, commit, branch, PR, or MR for correctness and high-leverage simplifications, including dead code and unnecessary compatibility.
+description: Review a working tree, commit, branch, or GitHub PR for correctness and high-leverage simplifications, including dead code and unnecessary compatibility.
 model: openai/gpt-5.6-terra
 subtask: true
 variant: high
@@ -24,7 +24,8 @@ State the resolved scope in the final `Checked` section. This command is advisor
 1. **Recon** — Read applicable `AGENTS.md`, README, contribution/architecture docs, and project configuration. Identify the relevant test, lint, and typecheck commands.
 2. **Context** — Read the complete changed files plus directly affected callers, implementations, tests, schemas, exports, and registrations. A diff alone is not enough.
 3. **Audit** — Review correctness and safety first, then make a separate simplification/deletion pass.
-4. **Vet** — Reopen every cited location. Reject duplicates, by-design behavior, speculative concerns, and changes that are not worth their risk or churn.
+4. **Validate** — Run the narrowest relevant validation when it is safe and reasonably fast. Do not run write-mode formatters, migrations, generators, or commands known to rewrite source files. If validation is skipped, state why.
+5. **Vet** — Reopen every cited location. Reject duplicates, by-design behavior, speculative concerns, and changes that are not worth their risk or churn.
 
 Review changed behavior, not unrelated legacy code. Mention pre-existing code only when the change depends on or materially worsens it, and label it `PRE-EXISTING`.
 
@@ -63,6 +64,7 @@ Before recommending deletion, check relevant callers, exports, tests, registrati
 - Use only `HIGH` or `MEDIUM` confidence. Investigate uncertainty before reporting it, and describe unresolved uncertainty as such rather than upgrading it to a blocker.
 - Rank by leverage: impact relative to effort, discounted by confidence and fix risk. “Not worth changing” is a valid conclusion.
 - Maximum 7 findings and 5 simplifications. Keep only the highest-value items.
+- Do not duplicate an issue across sections. If unnecessary complexity creates a material correctness or design risk, report it under `Findings`; reserve `Deletions and Simplifications` for worthwhile non-blocking opportunities.
 
 # Output (exact format)
 
@@ -71,7 +73,7 @@ Before recommending deletion, check relevant callers, exports, tests, registrati
 <one sentence stating the next action>
 
 ## Findings (N)
-1. **[HIGH | MEDIUM] [CATEGORY] [INTRODUCED | PRE-EXISTING]** `path/to/file:LINE` — <problem>
+1. **[SEVERITY: HIGH | MEDIUM] [CATEGORY] [INTRODUCED | PRE-EXISTING]** `path/to/file:LINE` — <problem>
    - **Impact:** <concrete failure or cost>
    - **Fix:** <smallest correct change>
    - **Confidence:** <HIGH | MEDIUM>
@@ -96,4 +98,4 @@ Use `None.` under an empty section. Categories are descriptive, for example `COR
 - **NEEDS_ATTENTION** — only non-blocking findings or simplifications.
 - **NEEDS_WORK** — at least one high-impact correctness, security, data-loss, or material design problem.
 
-No preamble, praise, diff recap, or unsupported claim. Be terse. After the review, stop and wait for explicit implementation instructions.
+No preamble, praise, diff recap, or unsupported claim. Be terse.
