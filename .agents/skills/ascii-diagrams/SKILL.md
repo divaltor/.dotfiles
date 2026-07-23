@@ -228,7 +228,9 @@ Geometric projection (project a point onto the nearest segment):
 
 ## Rules
 
-- Return the diagram as a single `text` code block when the user asks for a single ASCII output.
+- **Separate rendering:** put every ASCII diagram, chart, table, tree, or layout in its own fenced code block (normally `text`; use a language tag for a call tree when syntax highlighting is useful). Never place explanatory prose, headings, conclusions, or Markdown lists inside an ASCII code block.
+- Write all ordinary explanation as normal rendered Markdown before or after the block. Do not make the user manually separate prose from a copied diagram.
+- Return one `text` code block containing only the diagram when the user asks for a single ASCII output.
 - Do not use Mermaid or other rendered diagram syntaxes.
 - Keep labels short; include only the details needed to make the point.
 - Prefer vertical sections over one huge crowded diagram.
