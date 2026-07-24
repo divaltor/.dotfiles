@@ -174,13 +174,13 @@ resource "proxmox_virtual_environment_vm" "shared" {
   }
 
   cpu {
-    cores   = 8
+    cores   = 10
     type    = "host"
     sockets = 1
   }
 
   memory {
-    dedicated = 12288
+    dedicated = 16384
   }
 
   agent {

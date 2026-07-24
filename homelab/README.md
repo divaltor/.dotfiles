@@ -35,7 +35,7 @@ Required secrets:
 
 ### Shared NixOS VM
 
-The `shared` VM (ID 104) runs NixOS 26.05 with 8 host CPU cores, 12 GiB RAM, a 160 GiB disk, and 4 GiB swap. OpenTofu boots the pinned installer ISO, then `nixos-anywhere` installs the configuration from `nixos/` with Disko.
+The `shared` VM (ID 104) runs NixOS 26.05 with 10 host CPU cores, 16 GiB RAM, a 160 GiB disk, and 4 GiB swap. OpenTofu boots the pinned installer ISO, then `nixos-anywhere` installs the configuration from `nixos/` with Disko.
 
 ```sh
 mise run tofu:plan
