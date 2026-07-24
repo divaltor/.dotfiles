@@ -15,3 +15,9 @@ variable "ssh_public_key" {
   type        = string
   sensitive   = false
 }
+
+variable "friend_ssh_public_key" {
+  description = "Friend SSH public key installed into the shared VM root authorized_keys"
+  type        = string
+  sensitive   = false
+}

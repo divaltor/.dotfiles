@@ -1,0 +1,73 @@
+{
+  "nodes": {
+    "disko": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1781152676,
+        "narHash": "sha256-RxWs5ND31KzTG7wvMM+PMfUjyNpmIEr999lqNARaM5o=",
+        "ref": "master",
+        "rev": "ff8702b4de27f72b4c78573dfb89ec74e36abdf1",
+        "shallow": true,
+        "type": "git",
+        "url": "https://github.com/nix-community/disko.git"
+      },
+      "original": {
+        "ref": "master",
+        "rev": "ff8702b4de27f72b4c78573dfb89ec74e36abdf1",
+        "shallow": true,
+        "type": "git",
+        "url": "https://github.com/nix-community/disko.git"
+      }
+    },
+    "nixosAnywhereSrc": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1763045507,
+        "narHash": "sha256-61zO8zsFE8C104hCTv04z6a4H8U03OEMrRAXtGsszkE=",
+        "ref": "1.13.0",
+        "rev": "bad98b0685cf47eaeadcaf6787da8b51cf025693",
+        "shallow": true,
+        "type": "git",
+        "url": "https://github.com/nix-community/nixos-anywhere.git"
+      },
+      "original": {
+        "ref": "1.13.0",
+        "rev": "bad98b0685cf47eaeadcaf6787da8b51cf025693",
+        "shallow": true,
+        "type": "git",
+        "url": "https://github.com/nix-community/nixos-anywhere.git"
+      }
+    },
+    "nixpkgs": {
+      "locked": {
+        "lastModified": 1784707089,
+        "narHash": "sha256-2V/6imsUgB7mPZlHY54oeVBRDoZbPKnvzwkAHUSSufk=",
+        "ref": "nixos-26.05",
+        "rev": "b3fe9581c9061c749abef42b6d4ee7b7c05c33fa",
+        "shallow": true,
+        "type": "git",
+        "url": "https://github.com/NixOS/nixpkgs.git"
+      },
+      "original": {
+        "ref": "nixos-26.05",
+        "rev": "b3fe9581c9061c749abef42b6d4ee7b7c05c33fa",
+        "shallow": true,
+        "type": "git",
+        "url": "https://github.com/NixOS/nixpkgs.git"
+      }
+    },
+    "root": {
+      "inputs": {
+        "disko": "disko",
+        "nixosAnywhereSrc": "nixosAnywhereSrc",
+        "nixpkgs": "nixpkgs"
+      }
+    }
+  },
+  "root": "root",
+  "version": 7
+}

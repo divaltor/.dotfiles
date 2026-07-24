@@ -16,6 +16,11 @@ run = "mise run tofu -- plan"
 description = "Run OpenTofu apply"
 run = "mise run tofu -- apply"
 
+[tasks."nixos:install-shared"]
+description = "Install the shared VM with nixos-anywhere through 1Password"
+raw_args = true
+run = "op run --environment 5hfpicsmni2xf56r2dv5gumz5e -- homelab/nixos/install-shared.sh"
+
 [tasks.ansible]
 description = "Run ansible in homelab/ansible through 1Password"
 raw_args = true

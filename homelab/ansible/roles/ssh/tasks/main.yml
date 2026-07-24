@@ -4,11 +4,14 @@
 - name: Ensure SSH public key is provided
   ansible.builtin.assert:
     that:
-      - ssh_public_key | length > 0
-    fail_msg: "TF_VAR_ssh_public_key is not set"
+      - ssh_public_keys | length > 0
+      - ssh_public_keys | select('string') | reject('equalto', '') | list | length == ssh_public_keys | length
+    fail_msg: "Every configured SSH public key must be set"
 
-- name: Install authorized SSH key
+- name: Install authorized SSH keys
   ansible.posix.authorized_key:
     user: "{{ ssh_authorized_user }}"
-    key: "{{ ssh_public_key }}"
+    key: "{{ item }}"
     state: present
+  loop: "{{ ssh_public_keys }}"
+  no_log: true

@@ -147,6 +147,98 @@ resource "proxmox_virtual_environment_vm" "homelab" {
   depends_on = [terraform_data.amd_gpu_vbios]
 }
 
+# ─── VM: shared (104) — NixOS 26.05 ─────────────────────────
+
+resource "proxmox_download_file" "nixos_cloud_init_installer" {
+  content_type       = "iso"
+  datastore_id       = "local"
+  file_name          = "nixos-cloud-init-installer-v2.6.0-x86_64.iso"
+  node_name          = "divaltor-dc"
+  url                = "https://github.com/AnarchoBooleanism/nixos-cloud-init-installer/releases/download/v2.6.0/nixos-cloud-init-installer-v2.6.0-x86_64.iso"
+  checksum           = "f7fa6e800dd705f46e99526491cf873dc719d2c4d35fff4814687529d8abfb8a"
+  checksum_algorithm = "sha256"
+}
+
+resource "proxmox_virtual_environment_vm" "shared" {
+  node_name = "divaltor-dc"
+  vm_id     = 104
+  name      = "shared"
+  started   = true
+  on_boot   = true
+
+  bios    = "ovmf"
+  machine = "q35"
+
+  operating_system {
+    type = "l26"
+  }
+
+  cpu {
+    cores   = 8
+    type    = "host"
+    sockets = 1
+  }
+
+  memory {
+    dedicated = 12288
+  }
+
+  agent {
+    enabled = true
+  }
+
+  disk {
+    interface    = "scsi0"
+    datastore_id = "fast-nvme"
+    file_format  = "raw"
+    size         = 160
+    iothread     = true
+    discard      = "on"
+  }
+
+  cdrom {
+    interface = "ide0"
+    file_id   = proxmox_download_file.nixos_cloud_init_installer.id
+  }
+
+  efi_disk {
+    datastore_id = "fast-nvme"
+    type         = "4m"
+  }
+
+  initialization {
+    datastore_id = "fast-nvme"
+
+    ip_config {
+      ipv4 {
+        address = "dhcp"
+      }
+    }
+
+    user_account {
+      username = "root"
+      keys = [
+        trimspace(var.ssh_public_key),
+        trimspace(var.friend_ssh_public_key),
+      ]
+    }
+  }
+
+  network_device {
+    bridge = "vmbr0"
+    model  = "virtio"
+  }
+
+  scsi_hardware = "virtio-scsi-single"
+
+  serial_device {}
+
+  # Before installation the empty disk falls through to the installer ISO.
+  # After nixos-anywhere installs NixOS, the disk boots first.
+  boot_order = ["scsi0", "ide0", "net0"]
+
+}
+
 # ─── LXC: smb (101) — Samba NAS container ───────────────────
 
 resource "proxmox_download_file" "debian_13_lxc_template" {

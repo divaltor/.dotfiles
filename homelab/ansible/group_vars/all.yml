@@ -1,9 +1,6 @@
 ---
 # Group variables — all hosts
 
-# Avoid Ansible interpreter discovery warnings when distro Python minor versions change.
-ansible_python_interpreter: /usr/bin/python3
-
 # ZFS pool configuration (managed on Proxmox host)
 zfs_pool_name: pool
 zfs_pool_mountpoint: /media
@@ -90,3 +87,5 @@ common_packages:
 # SSH bootstrap
 ssh_authorized_user: root
 ssh_public_key: "{{ lookup('env', 'TF_VAR_ssh_public_key') }}"
+ssh_public_keys:
+  - "{{ ssh_public_key }}"

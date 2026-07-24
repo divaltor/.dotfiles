@@ -1,0 +1,68 @@
+---
+# ============================================================
+# VM: shared (104) — NixOS 26.05
+# ============================================================
+
+- name: Configure shared NixOS VM
+  hosts: shared
+  gather_facts: true
+  vars_files:
+    - ../group_vars/all.yml
+  pre_tasks:
+    - name: Verify the shared VM is running NixOS
+      ansible.builtin.assert:
+        that: ansible_facts['distribution'] == 'NixOS'
+        fail_msg: "The shared VM must be built from the NixOS image"
+
+  roles:
+    - role: ssh
+      vars:
+        ssh_public_keys:
+          - "{{ ssh_public_key }}"
+          - "{{ lookup('env', 'TF_VAR_friend_ssh_public_key') }}"
+
+  tasks:
+    - name: Read Tailscale status
+      ansible.builtin.command: tailscale status --json
+      register: shared_tailscale_status
+      changed_when: false
+      failed_when: false
+
+    - name: Determine whether Tailscale needs login
+      ansible.builtin.set_fact:
+        shared_tailscale_needs_login: >-
+          {{ shared_tailscale_status.rc != 0 or
+             (shared_tailscale_status.stdout | from_json).BackendState == 'NeedsLogin' }}
+
+    - name: Require the Tailscale auth key for first login
+      ansible.builtin.assert:
+        that: tailscale_auth_key | length > 0
+        fail_msg: "TAILSCALE_AUTH_KEY or TF_VAR_tailscale_auth_key is not set"
+      when: shared_tailscale_needs_login
+      no_log: true
+
+    - name: Join the shared VM to Tailscale
+      when: shared_tailscale_needs_login
+      block:
+        - name: Authenticate shared with Tailscale
+          ansible.builtin.command:
+            argv:
+              - tailscale
+              - up
+              - "--auth-key={{ tailscale_auth_key }}"
+              - --hostname=shared
+              - --advertise-tags=tag:shared
+          no_log: true
+      rescue:
+        - name: Read safe Tailscale failure details
+          ansible.builtin.command: tailscale status --json
+          register: shared_tailscale_failure_status
+          changed_when: false
+          failed_when: false
+
+        - name: Report Tailscale login failure
+          ansible.builtin.fail:
+            msg: >-
+              {{ ((shared_tailscale_failure_status.stdout | from_json).Health
+                  | default(['Tailscale login failed without a health message']))
+                 | join('; ') }}

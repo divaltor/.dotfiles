@@ -11,6 +11,15 @@ output "vm_homelab_info" {
   }
 }
 
+output "vm_shared_info" {
+  description = "shared NixOS VM details"
+  value = {
+    vmid = proxmox_virtual_environment_vm.shared.vm_id
+    name = proxmox_virtual_environment_vm.shared.name
+    node = proxmox_virtual_environment_vm.shared.node_name
+  }
+}
+
 output "ct_smb_info" {
   description = "Samba LXC details"
   value = {
