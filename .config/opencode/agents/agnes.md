@@ -6,7 +6,11 @@ variant: high
 color: "#db696b"
 permission:
   edit: deny
-  task: deny
+  bash: deny
+  task:
+    "*": deny
+    dantsu: allow
+    cafe: allow
   todowrite: deny
   websearch: deny
   webfetch: deny
