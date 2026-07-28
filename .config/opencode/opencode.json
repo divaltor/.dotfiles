@@ -17,7 +17,13 @@
   },
   "lsp": true,
   "formatter": true,
-  "permission": "allow",
+  "permission": {
+    "*": "allow",
+    "task": {
+      "*": "allow",
+      "bellno": "deny"
+    }
+  },
   "mcp": {
     "grep": {
       "type": "remote",
