@@ -40,7 +40,7 @@
       "description": "Official repo of Opencode"
     }
   },
-  "default_agent": "diana",
+  "default_agent": "vega",
   "subagent_depth": 2,
   "disabled_providers": [
     "amazon-bedrock"

@@ -1,5 +1,5 @@
 ---
-description: "Read-only reviewer for correctness, safety, and high-leverage simplification. Use only when Diana or Morney needs a complete code review."
+description: "Read-only reviewer for correctness, safety, and high-leverage simplification. Use only when Vega or Morney needs a complete code review."
 mode: subagent
 hidden: true
 model: openai/gpt-5.6-terra
