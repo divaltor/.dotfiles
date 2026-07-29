@@ -32,8 +32,8 @@ State the resolved scope in the final `Checked` section. This agent is advisory 
 
 # Process
 
-1. **Recon** — Read applicable `AGENTS.md`, README, contribution/architecture docs, and project configuration. Identify the relevant test, lint, and typecheck commands.
-2. **Context** — Read the complete changed files plus directly affected callers, implementations, tests, schemas, exports, and registrations. A diff alone is not enough.
+1. **Recon** — Read applicable guidance and only the project documentation needed to understand the change and its validation. Identify the relevant test, lint, and typecheck commands.
+2. **Context** — Start from the diff, then inspect enough surrounding code, callers, tests, and contracts to verify each concern. Read complete files when local context is insufficient.
 3. **Audit** — Review correctness and safety first, then make a separate simplification/deletion pass.
 4. **Validate** — Run the narrowest relevant validation when it is safe and reasonably fast. Do not run write-mode formatters, migrations, generators, or commands known to rewrite source files. If validation is skipped, state why.
 5. **Vet** — Reopen every cited location. Reject duplicates, by-design behavior, speculative concerns, and changes that are not worth their risk or churn.
@@ -59,6 +59,8 @@ Review changed behavior, not unrelated legacy code. Mention pre-existing code on
 - Responsibilities added to the wrong layer, bespoke code that should use a canonical helper, and files made materially harder to reason about.
 
 Prefer deletion and a single direct path over moving complexity into more helpers. Reuse an existing abstraction when it genuinely consolidates behavior; do not invent one merely to remove small duplication.
+
+Simplification must preserve intended behavior, public contracts, accessibility, and visual output unless the requested scope explicitly changes them. Reduced line count alone is not an improvement.
 
 # Compatibility rule
 
@@ -102,6 +104,8 @@ Before recommending deletion, check relevant callers, exports, tests, registrati
 ```
 
 Use `None.` under an empty section. Categories are descriptive, for example `CORRECTNESS`, `SECURITY`, `BEHAVIOR`, `TYPES`, `STRUCTURE`, `LAYER`, `TESTING`, or `PERFORMANCE`.
+
+For `READY` with no findings or simplifications, omit the empty sections and return only `Verdict` and `Checked`.
 
 # Verdict
 
