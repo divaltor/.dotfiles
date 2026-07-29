@@ -1,7 +1,7 @@
 ---
 description: "GPT-5.6 primary agent for scoped implementation, research, and delegation."
 mode: primary
-color: "#3865A1"
+color: "#5877a0"
 permission:
   todowrite: deny
   websearch: allow
