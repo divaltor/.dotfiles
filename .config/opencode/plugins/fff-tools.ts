@@ -43,6 +43,10 @@ function assertNotAborted(signal: AbortSignal) {
   if (signal.aborted) throw abortError(signal)
 }
 
+function displayPath(target: Target) {
+  return target.constraint ? path.join(target.root, target.constraint) : target.root
+}
+
 function normalizeFileConstraint(value: string | undefined) {
   if (!value) return
   const normalized = posix(value.trim())
@@ -211,6 +215,7 @@ export default (async ({ directory, worktree }) => {
 
           const target = await resolveTarget(args.path, context)
           if (target.kind !== "directory") throw new Error(`Glob path must be a directory: ${args.path}`)
+          context.metadata({ title: displayPath(target) })
           const result = await withFinder(target, context.abort, (finder) =>
             finder.glob(args.pattern, { pageIndex: 0, pageSize: RESULT_LIMIT + 1 }),
           )
@@ -258,6 +263,7 @@ export default (async ({ directory, worktree }) => {
           })
 
           const target = await resolveTarget(args.path, context)
+          context.metadata({ title: displayPath(target) })
           const pathConstraint = target.kind === "file" ? normalizeFileConstraint(target.constraint) : undefined
           const includeConstraint = normalizeFileConstraint(args.include)
           const constraints = [pathConstraint, includeConstraint].filter((value): value is string => Boolean(value))
