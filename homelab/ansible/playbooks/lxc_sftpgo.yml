@@ -1,0 +1,27 @@
+---
+# ============================================================
+# LXC: sftpgo (105) — ZFS-backed SFTP, WebDAV, and WebClient
+# ============================================================
+
+- import_playbook: lxc_bootstrap.yml
+  vars:
+    lxc_bootstrap_targets:
+      - sftpgo
+
+- name: Configure SFTPGo LXC
+  hosts: sftpgo
+  gather_facts: true
+  vars_files:
+    - ../group_vars/all.yml
+
+  roles:
+    - ssh
+    - common
+    - tailscale
+    - sftpgo
+    - role: caddy_proxy
+      vars:
+        caddy_proxy_server_name: sftpgo.local
+        caddy_proxy_upstream: http://127.0.0.1:8080
+        caddy_proxy_bind_address: "{{ ansible_facts['default_ipv4']['address'] }}"
+    - avahi

@@ -70,10 +70,44 @@
       retries: 12
       delay: 5
 
+    - name: Read LXC SSH host keys through Proxmox
+      ansible.builtin.command:
+        argv:
+          - pct
+          - exec
+          - "{{ hostvars[item].lxc_vmid | string }}"
+          - --
+          - cat
+          - /etc/ssh/ssh_host_ed25519_key.pub
+      loop: "{{ lxc_bootstrap_targets | default(groups['containers']) }}"
+      loop_control:
+        label: "{{ item }} ({{ hostvars[item].lxc_vmid }})"
+      register: lxc_bootstrap_host_keys
+      changed_when: false
+
+    - name: Create known-hosts file for discovered LXC addresses
+      ansible.builtin.tempfile:
+        state: file
+        prefix: ansible-lxc-known-hosts-
+      delegate_to: localhost
+      register: lxc_bootstrap_known_hosts
+
+    - name: Trust LXC host keys obtained through Proxmox
+      ansible.builtin.known_hosts:
+        path: "{{ lxc_bootstrap_known_hosts.path }}"
+        name: "{{ lxc_bootstrap_addresses.results[lxc_bootstrap_index].stdout }}"
+        key: "{{ lxc_bootstrap_addresses.results[lxc_bootstrap_index].stdout }} {{ item.stdout }}"
+      loop: "{{ lxc_bootstrap_host_keys.results }}"
+      loop_control:
+        index_var: lxc_bootstrap_index
+        label: "{{ item.item }} ({{ lxc_bootstrap_addresses.results[lxc_bootstrap_index].stdout }})"
+      delegate_to: localhost
+
     - name: Use discovered addresses for this playbook run
       ansible.builtin.add_host:
         name: "{{ item.item }}"
         ansible_host: "{{ item.stdout }}"
+        ansible_ssh_common_args: "-o UserKnownHostsFile={{ lxc_bootstrap_known_hosts.path }}"
       loop: "{{ lxc_bootstrap_addresses.results }}"
       loop_control:
         label: "{{ item.item }} ({{ item.stdout }})"

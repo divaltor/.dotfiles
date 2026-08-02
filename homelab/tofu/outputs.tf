@@ -39,6 +39,15 @@ output "ct_qbittorrent_info" {
   }
 }
 
+output "ct_sftpgo_info" {
+  description = "SFTPGo LXC details"
+  value = {
+    vmid     = proxmox_virtual_environment_container.sftpgo.vm_id
+    hostname = "sftpgo"
+    node     = proxmox_virtual_environment_container.sftpgo.node_name
+  }
+}
+
 output "all_ips" {
   description = "All static IPs for inventory (DHCP VMs use mDNS hostnames)"
   value = {

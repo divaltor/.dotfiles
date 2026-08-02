@@ -1,0 +1,98 @@
+---
+# SFTPGo role — install the pinned Community edition and expose ZFS storage.
+
+- name: Require an installation code before exposing first-time setup
+  ansible.builtin.assert:
+    that:
+      - sftpgo_installation_code | length >= 20
+    fail_msg: "Set SFTPGO_INSTALLATION_CODE to a strong value of at least 20 characters via 1Password"
+  no_log: true
+
+- name: Download pinned SFTPGo package
+  ansible.builtin.get_url:
+    url: "https://github.com/drakkan/sftpgo/releases/download/v{{ sftpgo_version }}/sftpgo_{{ sftpgo_version }}-1_amd64.deb"
+    dest: "/var/cache/apt/archives/sftpgo_{{ sftpgo_version }}-1_amd64.deb"
+    checksum: "sha256:{{ sftpgo_deb_sha256 }}"
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Install SFTPGo
+  ansible.builtin.apt:
+    deb: "/var/cache/apt/archives/sftpgo_{{ sftpgo_version }}-1_amd64.deb"
+    policy_rc_d: 101
+    state: present
+  notify: Restart SFTPGo
+
+- name: Ensure the shared ZFS access group exists
+  ansible.builtin.group:
+    name: "{{ zfs_share_group }}"
+    gid: "{{ zfs_share_gid }}"
+    state: present
+
+- name: Grant SFTPGo access to the shared ZFS group
+  ansible.builtin.user:
+    name: sftpgo
+    groups:
+      - "{{ zfs_share_group }}"
+    append: true
+  notify: Restart SFTPGo
+
+- name: Ensure the ZFS mount root is group-writable and inheritable
+  ansible.builtin.file:
+    path: "{{ sftpgo_storage_path }}"
+    state: directory
+    group: "{{ zfs_share_group }}"
+    mode: "2775"
+
+- name: Configure SFTPGo services
+  ansible.builtin.template:
+    src: sftpgo.env.j2
+    dest: /etc/sftpgo/env.d/homelab.env
+    owner: root
+    group: sftpgo
+    mode: "0640"
+  notify: Restart SFTPGo
+  no_log: true
+
+- name: Apply SFTPGo configuration before exposing services
+  ansible.builtin.meta: flush_handlers
+
+- name: Ensure SFTPGo is running
+  ansible.builtin.service:
+    name: sftpgo
+    state: started
+    enabled: true
+
+- name: Configure public WebClient Funnel
+  ansible.builtin.command:
+    argv:
+      - tailscale
+      - funnel
+      - --yes
+      - --bg
+      - --https=443
+      - "http://127.0.0.1:{{ sftpgo_webclient_port }}"
+  changed_when: false
+  when: sftpgo_funnel_enabled
+
+- name: Configure public WebDAV Funnel
+  ansible.builtin.command:
+    argv:
+      - tailscale
+      - funnel
+      - --yes
+      - --bg
+      - "--https={{ sftpgo_webdav_funnel_port }}"
+      - "http://127.0.0.1:{{ sftpgo_webdav_port }}"
+  changed_when: false
+  when: sftpgo_funnel_enabled
+
+- name: Remove public Funnels when disabled
+  ansible.builtin.command:
+    argv:
+      - tailscale
+      - funnel
+      - reset
+  changed_when: false
+  when: not sftpgo_funnel_enabled

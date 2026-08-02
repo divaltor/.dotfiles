@@ -8,5 +8,6 @@
 - import_playbook: lxc_smb.yml
 - import_playbook: lxc_kino.yml
 - import_playbook: lxc_qbittorrent.yml
+- import_playbook: lxc_sftpgo.yml
 - import_playbook: vm_homelab.yml
 - import_playbook: vm_shared.yml

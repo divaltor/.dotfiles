@@ -37,16 +37,6 @@
     group: qbittorrent
     mode: "0775"
 
-- name: Deploy qBittorrent configuration
-  ansible.builtin.template:
-    src: qBittorrent.conf.j2
-    dest: /var/lib/qbittorrent/.config/qBittorrent/qBittorrent.conf
-    owner: qbittorrent
-    group: qbittorrent
-    mode: "0600"
-    force: false
-  notify: Restart qBittorrent
-
 - name: Enforce managed qBittorrent preferences
   community.general.ini_file:
     path: /var/lib/qbittorrent/.config/qBittorrent/qBittorrent.conf

@@ -504,6 +504,91 @@ resource "proxmox_virtual_environment_container" "qbittorrent" {
   }
 }
 
+# ─── LXC: sftpgo (105) — SFTP/WebDAV file server ───────────
+
+resource "proxmox_virtual_environment_container" "sftpgo" {
+  node_name     = "divaltor-dc"
+  vm_id         = 105
+  started       = true
+  start_on_boot = true
+  unprivileged  = false
+
+  description = "SFTPGo file server — ZFS-backed SFTP, WebDAV, and WebClient"
+
+  operating_system {
+    type             = "debian"
+    template_file_id = proxmox_download_file.debian_13_lxc_template.id
+  }
+
+  # LXC processes execute directly on the host CPU; two cores leave enough
+  # headroom for concurrent encrypted transfers and password hashing.
+  cpu {
+    architecture = "amd64"
+    cores        = 2
+  }
+
+  console {
+    enabled   = true
+    tty_count = 2
+    type      = "tty"
+  }
+
+  memory {
+    dedicated = 1024
+    swap      = 512
+  }
+
+  disk {
+    datastore_id = "fast-nvme"
+    size         = 8
+  }
+
+  network_interface {
+    name     = "eth0"
+    bridge   = "vmbr0"
+    firewall = false
+  }
+
+  initialization {
+    hostname = "sftpgo"
+
+    ip_config {
+      ipv4 {
+        address = "dhcp"
+      }
+    }
+
+    dns {
+      servers = ["1.1.1.1", "8.8.8.8"]
+    }
+  }
+
+  features {
+    nesting = true
+  }
+
+  # Required for Tailscale and its public Funnel endpoints.
+  device_passthrough {
+    path = "/dev/net/tun"
+  }
+
+  # Shared ZFS directory: /media/cold/shared on host → /mnt/share in container.
+  mount_point {
+    volume = "/media/cold/shared"
+    path   = "/mnt/share"
+  }
+
+  lifecycle {
+    ignore_changes = [
+      operating_system,  # template_file_id mismatch with state
+      features[0].mount, # managed outside provider
+      features[0].fuse,
+      features[0].keyctl,
+      features[0].mknod,
+    ]
+  }
+}
+
 # ─── Storage layout (managed at host level) ─────────────────
 # Host disk (128 GB): ext4 root on pve/root, no LVM-Thin.
 #   local-lvm was removed — all space given to root for host packages.

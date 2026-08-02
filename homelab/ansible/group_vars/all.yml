@@ -47,6 +47,21 @@ samba_users:
   - name: divaltor
     password: "{{ lookup('env', 'SAMBA_PASSWORD') | default(lookup('env', 'TF_VAR_samba_password'), true) }}"
 
+# Stable numeric group shared by the privileged Samba and SFTPGo LXCs. Files
+# created through either protocol remain writable through the other one.
+zfs_share_group: zfs-share
+zfs_share_gid: 2000
+
+# SFTPGo (LXC: sftpgo only)
+sftpgo_version: 2.7.5
+sftpgo_deb_sha256: 05997f84cc7b0d4b0b21777b56468c727168c6a40fa9eb17dd9ce4a9e1e0f1b6
+sftpgo_storage_path: /mnt/share
+sftpgo_webclient_port: 8081
+sftpgo_webdav_port: 10080
+sftpgo_webdav_funnel_port: 8443
+sftpgo_funnel_enabled: true
+sftpgo_installation_code: "{{ lookup('env', 'SFTPGO_INSTALLATION_CODE') }}"
+
 # Avahi / mDNS
 avahi_enable: true
 avahi_hostname: "{{ inventory_hostname }}"

@@ -18,13 +18,31 @@
     validate: "testparm -s %s"
   notify: Restart Samba
 
+- name: Ensure the shared ZFS access group exists
+  ansible.builtin.group:
+    name: "{{ zfs_share_group }}"
+    gid: "{{ zfs_share_gid }}"
+    state: present
+
+- name: Ensure local accounts exist for Samba users
+  ansible.builtin.user:
+    name: "{{ item.name }}"
+    create_home: false
+    group: "{{ zfs_share_group }}"
+    system: true
+    shell: /usr/sbin/nologin
+    state: present
+  loop: "{{ samba_users }}"
+  when: samba_users | length > 0
+  no_log: true
+
 - name: Ensure share directories exist
   ansible.builtin.file:
     path: "{{ item.path }}"
     state: directory
     owner: "{{ item.owner }}"
-    group: "{{ item.group }}"
-    mode: "0775"
+    group: "{{ zfs_share_group }}"
+    mode: "2775"
   loop: "{{ samba_shares }}"
 
 - name: Create Samba users (if any)
