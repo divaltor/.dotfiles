@@ -30,6 +30,7 @@ Aim for clean, premium, Apple/Uber-like text styling:
 - generous spacing
 - short headings
 - boxed sections with rounded corners only when they add clarity
+- **rounded corners always:** draw box and container corners with `╭ ╮ ╰ ╯`, never square `┌ ┐ └ ┘`; keep interior junctions (`┬ ┴ ├ ┤ ┼`) and plot axis origins (`└─▶`) as they are
 - aligned columns and timelines
 - one strong visual idea per section
 - concise summary at the end
@@ -76,7 +77,7 @@ Use only when arrows between distinct nodes carry meaning (services, steps, stat
               ╰────────╯
 ```
 
-Keep nodes few. If you need more than ~8 boxes, split into sections or switch shape. Keep each box a single line; do not stack multiple aligned lines inside a bordered box, and do not run a connector line into an interior column of another box.
+Keep nodes few. If you need more than ~8 boxes, split into sections or switch shape. Bordered boxes are good; keep each box small, pad every interior line to the same width so the right border stays straight, keep interior content simple (ASCII or a uniform glyph), and route arrows and branches in the open space between boxes rather than inside them.
 
 ## Shape 3 — Stack / flamegraph
 
@@ -206,9 +207,9 @@ Ring buffer / memory layout:
 ```text
         head ─┐ (next write)
  idx:  0    1    2    3   …   15
-      ┌────┬────┬────┬────┬────┐
+      ╭────┬────┬────┬────┬────╮
       │ t₀ │ t₁ │ t₂ │ t₃ │ t₁₅│   timestamps (µs)
-      └────┴────┴────┴────┴────┘
+      ╰────┴────┴────┴────┴────╯
         ↑ oldest          newest ↑
 ```
 
@@ -236,11 +237,23 @@ Geometric projection (project a point onto the nearest segment):
 - Prefer vertical sections over one huge crowded diagram.
 - End with a compact summary box only when there is a decision or conclusion worth restating.
 
-### Width safety (keep aligned diagrams from drifting)
+### Width safety (keep bordered boxes aligned)
 
-Alignment breaks when lines that look equal do not have equal *display* width. Many glyphs are East Asian "Ambiguous" width (`→ ▶ ▲ ▼ │ ╭ ╰ ┼ ▇`) and render as 1 or 2 cells depending on the terminal, while others are always 1 cell (`◄ ↻ ⤷ ➜`). Follow these rules:
+Bordered boxes read well and are encouraged when a boundary carries meaning. A right border only stays straight when every interior line has the **same display width**, so the drift you see is a width-consistency problem, not a reason to drop borders. A tall box with a different arrow on each interior line is the usual cause. Follow this recipe:
 
-- **Avoid right-side box borders.** A right border forces every interior line to an identical display width; it drifts as soon as one line has more Ambiguous-width glyphs than another. Prefer left-anchored, open layouts (trunks, branches, brackets, bars). Use a right border only on a single-line box, where it aligns just with that box's own top and bottom.
-- **Carry alignment on vertical connectors only.** Keep `│ ▼ ├ └` on one column fixed by leading ASCII spaces (always 1 cell). Never route a vertical connector down through a horizontal arrow whose width can change.
-- **Point horizontal arrows only at single-line leaves.** A segment like `───▶` can shift everything after it, so nothing below or to its right may need to stay column-aligned.
-- **Do not mix width classes in an aligned region, and pick one arrow family.** Inside aligned text prefer ASCII `->`, `<-`, `^`, `v`; keep Ambiguous-width arrowheads on open connector segments, and do not pair them with always-1-cell glyphs (`◄ ↻ ⤷`).
+- **Pad every interior line to one width.** Between `│ … │` pad each line with trailing spaces to the identical width, and make the top and bottom border (`─` run) that same width. That is what keeps the right border aligned.
+- **Keep interiors simple.** Prefer ASCII text (every character is one cell, so the count is reliable) or a single uniformly repeated glyph (`●●●●●`). Small, uniform interiors pad correctly; tall boxes packed with varied content drift.
+- **Put flow outside the box.** Route arrows, branches, and connectors (`│ ▼ ├ ─▶`) in the open space around boxes, not on interior lines. Different arrows on different interior lines are the main cause of drift.
+- **One box, one idea.** Split a tall multi-line box into small boxes joined by external connectors instead of stacking many aligned rows inside one border.
+- **Pick one glyph family.** Do not mix arrow styles (`→ ▶` vs `◄ ⤷`) in the same diagram, so width assumptions stay consistent. Some glyphs are East Asian "Ambiguous" width (`→ ▶ ▲ ▼ │`) and render as 1 or 2 cells depending on the terminal; others are always 1 cell (`◄ ↻ ⤷`).
+
+Bordered box with the flow kept outside (aligns reliably):
+
+```text
+        ╭─────────────╮
+in ────▶│  worker: 5  │────▶ out
+        ╰──────┬──────╯
+               │ overflow
+               ▼
+            dropped
+```
