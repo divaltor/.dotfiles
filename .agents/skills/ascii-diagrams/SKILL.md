@@ -76,7 +76,7 @@ Use only when arrows between distinct nodes carry meaning (services, steps, stat
               ╰────────╯
 ```
 
-Keep nodes few. If you need more than ~8 boxes, split into sections or switch shape.
+Keep nodes few. If you need more than ~8 boxes, split into sections or switch shape. Keep each box a single line; do not stack multiple aligned lines inside a bordered box, and do not run a connector line into an interior column of another box.
 
 ## Shape 3 — Stack / flamegraph
 
@@ -235,3 +235,12 @@ Geometric projection (project a point onto the nearest segment):
 - Keep labels short; include only the details needed to make the point.
 - Prefer vertical sections over one huge crowded diagram.
 - End with a compact summary box only when there is a decision or conclusion worth restating.
+
+### Width safety (keep aligned diagrams from drifting)
+
+Alignment breaks when lines that look equal do not have equal *display* width. Many glyphs are East Asian "Ambiguous" width (`→ ▶ ▲ ▼ │ ╭ ╰ ┼ ▇`) and render as 1 or 2 cells depending on the terminal, while others are always 1 cell (`◄ ↻ ⤷ ➜`). Follow these rules:
+
+- **Avoid right-side box borders.** A right border forces every interior line to an identical display width; it drifts as soon as one line has more Ambiguous-width glyphs than another. Prefer left-anchored, open layouts (trunks, branches, brackets, bars). Use a right border only on a single-line box, where it aligns just with that box's own top and bottom.
+- **Carry alignment on vertical connectors only.** Keep `│ ▼ ├ └` on one column fixed by leading ASCII spaces (always 1 cell). Never route a vertical connector down through a horizontal arrow whose width can change.
+- **Point horizontal arrows only at single-line leaves.** A segment like `───▶` can shift everything after it, so nothing below or to its right may need to stay column-aligned.
+- **Do not mix width classes in an aligned region, and pick one arrow family.** Inside aligned text prefer ASCII `->`, `<-`, `^`, `v`; keep Ambiguous-width arrowheads on open connector segments, and do not pair them with always-1-cell glyphs (`◄ ↻ ⤷`).
