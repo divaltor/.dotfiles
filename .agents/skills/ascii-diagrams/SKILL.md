@@ -66,6 +66,8 @@ Tiny enumeration:
 
 Use only when arrows between distinct nodes carry meaning (services, steps, states, dependencies).
 
+Default linear flows to left-to-right. Use top-to-bottom only for naturally hierarchical structures or when shortening labels cannot produce a readable horizontal layout.
+
 ```text
 ╭────────╮     ╭─────╮     ╭──────────╮
 │ Client │────▶│ API │────▶│ Database │
@@ -234,7 +236,7 @@ Geometric projection (project a point onto the nearest segment):
 - Return one `text` code block containing only the diagram when the user asks for a single ASCII output.
 - Do not use Mermaid or other rendered diagram syntaxes.
 - Keep labels short; include only the details needed to make the point.
-- Prefer vertical sections over one huge crowded diagram.
+- Prefer compact horizontal sections over one huge crowded diagram.
 - End with a compact summary box only when there is a decision or conclusion worth restating.
 
 ### Width safety (keep bordered boxes aligned)
