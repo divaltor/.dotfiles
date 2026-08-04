@@ -1,13 +1,14 @@
 ---
 # ============================================================
-# Proxmox host — ZFS dataset management
+# Proxmox host bootstrap and service configuration
 # ============================================================
 # Runs against the Proxmox VE host (192.168.1.19).
-# Manages ZFS datasets on pool "pool".
-# The ZFS pool itself is created via Proxmox CLI (not managed here).
+# Imports and validates the existing VM and HDD ZFS pools, registers Proxmox
+# storage, configures the iGPU resource mapping, and manages host services.
+# Pool creation and disk wiping are deliberately not managed here.
 # ============================================================
 
-- name: Configure Proxmox host (ZFS datasets)
+- name: Configure Proxmox host
   hosts: proxmox_host
   gather_facts: true
   become: false
@@ -16,7 +17,14 @@
 
   roles:
     - ssh
-    - tailscale
+    - proxmox_repositories
+    - role: proxmox_storage
+      tags: [proxmox_bootstrap]
+    - role: proxmox_pci_mapping
+      tags: [proxmox_bootstrap]
+    - role: tailscale
+      vars:
+        tailscale_hostname: proxmox
     - zfs
     - role: avahi
       vars:

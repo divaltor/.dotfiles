@@ -1,0 +1,95 @@
+---
+- name: Check that IOMMU groups are available
+  ansible.builtin.stat:
+    path: /sys/kernel/iommu_groups
+  register: iommu_groups
+
+- name: Require IOMMU support
+  ansible.builtin.assert:
+    that:
+      - iommu_groups.stat.exists
+      - iommu_groups.stat.isdir
+    fail_msg: "IOMMU is not active; enable AMD IOMMU in firmware before configuring passthrough"
+
+- name: Read the configured GPU PCI device
+  ansible.builtin.command:
+    argv: [lspci, -Dnnv, -s, "{{ proxmox_gpu_pci_address }}"]
+  register: proxmox_gpu_pci
+  changed_when: false
+
+- name: Verify the mapped PCI device is the Radeon iGPU
+  ansible.builtin.assert:
+    that:
+      - proxmox_gpu_device_id in proxmox_gpu_pci.stdout
+      - proxmox_gpu_subsystem_id in proxmox_gpu_pci.stdout
+    fail_msg: >-
+      PCI {{ proxmox_gpu_pci_address }} does not match device {{ proxmox_gpu_device_id }}
+      and subsystem {{ proxmox_gpu_subsystem_id }}.
+      Update proxmox_gpu_pci_address before applying the playbook.
+
+- name: Read the GPU IOMMU group
+  ansible.builtin.command:
+    argv: [readlink, -f, "/sys/bus/pci/devices/{{ proxmox_gpu_pci_address }}/iommu_group"]
+  register: proxmox_gpu_iommu_group_path
+  changed_when: false
+
+- name: Record the GPU IOMMU group number
+  ansible.builtin.set_fact:
+    proxmox_gpu_iommu_group: "{{ proxmox_gpu_iommu_group_path.stdout.split('/') | last }}"
+
+- name: Build the node-specific PCI mapping
+  ansible.builtin.set_fact:
+    proxmox_gpu_map: >-
+      node={{ proxmox_node_name }},path={{ proxmox_gpu_pci_address }},id={{ proxmox_gpu_device_id }},subsystem-id={{ proxmox_gpu_subsystem_id }},iommugroup={{ proxmox_gpu_iommu_group }}
+
+- name: Read the Proxmox iGPU mapping
+  ansible.builtin.command:
+    argv: [pvesh, get, "/cluster/mapping/pci/{{ proxmox_gpu_mapping_id }}", --output-format, json]
+  register: proxmox_gpu_mapping
+  changed_when: false
+  failed_when: false
+
+- name: Create the Proxmox iGPU mapping
+  ansible.builtin.command:
+    argv:
+      - pvesh
+      - create
+      - /cluster/mapping/pci
+      - --id
+      - "{{ proxmox_gpu_mapping_id }}"
+      - --description
+      - Radeon 890M iGPU passthrough
+      - --map
+      - "{{ proxmox_gpu_map }}"
+  when: proxmox_gpu_mapping.rc != 0
+
+- name: Update the Proxmox iGPU mapping
+  ansible.builtin.command:
+    argv:
+      - pvesh
+      - set
+      - "/cluster/mapping/pci/{{ proxmox_gpu_mapping_id }}"
+      - --description
+      - Radeon 890M iGPU passthrough
+      - --map
+      - "{{ proxmox_gpu_map }}"
+  when:
+    - proxmox_gpu_mapping.rc == 0
+    - proxmox_gpu_map not in proxmox_gpu_mapping.stdout
+
+- name: Read the installed iGPU VBIOS checksum
+  ansible.builtin.stat:
+    path: "{{ proxmox_gpu_vbios_path }}"
+    checksum_algorithm: sha256
+  register: proxmox_gpu_vbios
+
+- name: Extract and verify the iGPU VBIOS from ACPI VFCT
+  ansible.builtin.script:
+    cmd: >-
+      {{ playbook_dir }}/../../tofu/scripts/extract_vfct_vbios.py
+      --output {{ proxmox_gpu_vbios_path }}
+      --sha256 {{ proxmox_gpu_vbios_sha256 }}
+    executable: /usr/bin/python3
+  when: >-
+    not proxmox_gpu_vbios.stat.exists or
+    proxmox_gpu_vbios.stat.checksum != proxmox_gpu_vbios_sha256

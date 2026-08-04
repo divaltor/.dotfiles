@@ -11,9 +11,10 @@ Hardware
 - NPU: XDNA 2, 50 TOPS
 - RAM: 64 GB total (DDR5 4800 CL40)
 - Disks:
-- System: 128 GB AirDisk used by Proxmos host
-- VMs storage: 500 GB Samsung 970 EVO Plus NVMe
-- ZFS Pool (files, archives, media): 4 disks Seagate IronWolf 6 TB in ZFS Z1 raid
+  - System: 500 GB Samsung 970 EVO Plus NVMe used by the Proxmox host
+  - VM/LXC storage: 4 TB WD_BLACK SN850X, single-disk ZFS pool `vmdata`, Proxmox storage `fast-nvme`
+  - Files, archives, and media: 4 disks Seagate IronWolf 6 TB in ZFS RAIDZ1 pool `pool`
+  - Retired: 128 GB AirDisk; do not reuse it for persistent data
 
 Any containers and VMs should provide host CPUs to get maximum performance from modern CPU instructions, not virtualized one.
 

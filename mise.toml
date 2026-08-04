@@ -48,3 +48,8 @@ run = "mise run playbook -- playbooks/site.yml --check --diff"
 [tasks."ansible:apply"]
 description = "Apply the site playbook"
 run = "mise run playbook -- playbooks/site.yml"
+
+[tasks."ansible:proxmox-host"]
+description = "Bootstrap and configure the Proxmox host"
+raw_args = true
+run = "mise run playbook -- playbooks/proxmox_host.yml"

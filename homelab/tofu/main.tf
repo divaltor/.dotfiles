@@ -48,6 +48,7 @@ resource "proxmox_storage_directory" "local" {
   id      = "local"
   path    = "/var/lib/vz"
   content = ["backup", "import", "iso", "snippets", "vztmpl"]
+  shared  = false
 }
 
 resource "proxmox_download_file" "debian_13_cloud_image" {
@@ -97,6 +98,7 @@ resource "proxmox_virtual_environment_vm" "homelab" {
     size         = 300
     iothread     = true
     discard      = "on"
+    ssd          = true
   }
 
   efi_disk {
@@ -126,7 +128,7 @@ resource "proxmox_virtual_environment_vm" "homelab" {
 
   hostpci {
     device   = "hostpci0"
-    id       = "0000:c6:00.0"
+    mapping  = "amd-igpu"
     pcie     = true
     rom_file = "strix-gfx1150.rom"
     rombar   = true
@@ -194,6 +196,7 @@ resource "proxmox_virtual_environment_vm" "shared" {
     size         = 160
     iothread     = true
     discard      = "on"
+    ssd          = true
   }
 
   cdrom {
@@ -590,9 +593,10 @@ resource "proxmox_virtual_environment_container" "sftpgo" {
 }
 
 # ─── Storage layout (managed at host level) ─────────────────
-# Host disk (128 GB): ext4 root on pve/root, no LVM-Thin.
-#   local-lvm was removed — all space given to root for host packages.
-# VM disk (500 GB): LVM-Thin pool "fast-nvme" — all VM/CT disks here.
+# Host disk (500 GB Samsung 970 EVO Plus): ext4 root on pve/root, no LVM-Thin.
+#   local-lvm is omitted so the host can use the remaining space under /var/lib/vz.
+# VM disk (4 TB WD_BLACK SN850X): single-disk ZFS pool "vmdata" exposed as
+#   Proxmox storage "fast-nvme". Add a second 4 TB disk as a mirror for redundancy.
 # HDD pool: 4× 6TB ZFS RAIDZ1 "pool" (~22TB) — bulk data.
 # ────────────────────────────────────────────────────────────
 

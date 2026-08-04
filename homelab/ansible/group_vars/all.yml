@@ -1,7 +1,26 @@
 ---
 # Group variables — all hosts
 
-# ZFS pool configuration (managed on Proxmox host)
+# Proxmox host identity and storage. Pools must already exist on disk; Ansible
+# imports and validates them but never creates a pool or wipes a device.
+proxmox_node_name: divaltor-dc
+proxmox_system_disk_by_id: /dev/disk/by-id/nvme-Samsung_SSD_970_EVO_Plus_500GB_S4EVNX0T102553F
+proxmox_vm_disk_by_id: /dev/disk/by-id/nvme-WD_BLACK_SN850X_4000GB_252639802020
+proxmox_vm_pool_name: vmdata
+proxmox_vm_pool_mountpoint: /vmdata
+proxmox_vm_storage_id: fast-nvme
+proxmox_vm_storage_blocksize: 16k
+
+# The physical BDF can change when PCIe devices are added. Guests use this
+# logical Proxmox mapping; only this host-side mapping needs the current BDF.
+proxmox_gpu_mapping_id: amd-igpu
+proxmox_gpu_pci_address: "0000:c6:00.0"
+proxmox_gpu_device_id: "1002:150e"
+proxmox_gpu_subsystem_id: "1f4c:b020"
+proxmox_gpu_vbios_path: /usr/share/kvm/strix-gfx1150.rom
+proxmox_gpu_vbios_sha256: ee1aa9f76168cc9ac1318102fa60bfe72e371741877a4b83898d8d8110e3ecbf
+
+# HDD ZFS pool configuration (managed on Proxmox host)
 zfs_pool_name: pool
 zfs_pool_mountpoint: /media
 

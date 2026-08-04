@@ -65,3 +65,10 @@
     argv: "{{ ['tailscale', 'up', '--auth-key=' ~ tailscale_auth_key, '--hostname=' ~ tailscale_hostname] + tailscale_up_args }}"
   when: tailscale_needs_login
   no_log: true
+
+- name: Set the Tailscale hostname
+  ansible.builtin.command:
+    argv: [tailscale, set, "--hostname={{ tailscale_hostname }}"]
+  when: >-
+    tailscale_needs_login or
+    (tailscale_status.stdout | from_json).Self.HostName != tailscale_hostname

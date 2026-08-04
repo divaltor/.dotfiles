@@ -1,0 +1,107 @@
+---
+- name: Verify the Proxmox node name
+  ansible.builtin.assert:
+    that:
+      - ansible_facts['hostname'] == proxmox_node_name
+    fail_msg: "Expected Proxmox node '{{ proxmox_node_name }}', got '{{ ansible_facts['hostname'] }}'"
+
+- name: Check the VM NVMe stable device path
+  ansible.builtin.stat:
+    path: "{{ proxmox_vm_disk_by_id }}"
+  register: proxmox_vm_disk
+
+- name: Require the expected VM NVMe
+  ansible.builtin.assert:
+    that:
+      - proxmox_vm_disk.stat.exists
+    fail_msg: "Expected VM disk '{{ proxmox_vm_disk_by_id }}' is not present"
+
+- name: Check whether the VM ZFS pool is imported
+  ansible.builtin.command:
+    argv: [zpool, list, -H, -o, name, "{{ proxmox_vm_pool_name }}"]
+  register: proxmox_vm_pool_check
+  changed_when: false
+  failed_when: false
+
+- name: Import the existing VM ZFS pool after host replacement
+  ansible.builtin.command:
+    argv: [zpool, import, -f, "{{ proxmox_vm_pool_name }}"]
+  when: proxmox_vm_pool_check.rc != 0
+
+- name: Read VM pool topology
+  ansible.builtin.command:
+    argv: [zpool, status, -P, "{{ proxmox_vm_pool_name }}"]
+  register: proxmox_vm_pool_status
+  changed_when: false
+
+- name: Verify that VM pool uses the expected NVMe
+  ansible.builtin.assert:
+    that:
+      - proxmox_vm_disk_by_id in proxmox_vm_pool_status.stdout
+    fail_msg: "Pool '{{ proxmox_vm_pool_name }}' is not backed by '{{ proxmox_vm_disk_by_id }}'"
+
+- name: Read VM pool properties
+  ansible.builtin.command:
+    argv: [zpool, get, -H, -o, value, "{{ item.property }}", "{{ proxmox_vm_pool_name }}"]
+  loop:
+    - { property: autoexpand, value: "on" }
+    - { property: autotrim, value: "on" }
+  register: proxmox_vm_pool_properties
+  changed_when: false
+
+- name: Set VM pool properties
+  ansible.builtin.command:
+    argv: [zpool, set, "{{ item.item.property }}={{ item.item.value }}", "{{ proxmox_vm_pool_name }}"]
+  loop: "{{ proxmox_vm_pool_properties.results }}"
+  when: item.stdout != item.item.value
+
+- name: Read VM dataset properties
+  ansible.builtin.command:
+    argv: [zfs, get, -H, -o, value, "{{ item.property }}", "{{ proxmox_vm_pool_name }}"]
+  loop:
+    - { property: compression, value: lz4 }
+    - { property: atime, value: "off" }
+    - { property: xattr, value: sa }
+    - { property: acltype, value: posix }
+    - { property: mountpoint, value: "{{ proxmox_vm_pool_mountpoint }}" }
+  register: proxmox_vm_dataset_properties
+  changed_when: false
+
+- name: Set VM dataset properties
+  ansible.builtin.command:
+    argv: [zfs, set, "{{ item.item.property }}={{ item.item.value }}", "{{ proxmox_vm_pool_name }}"]
+  loop: "{{ proxmox_vm_dataset_properties.results }}"
+  when: item.stdout != item.item.value
+
+- name: Read Proxmox VM storage configuration
+  ansible.builtin.command:
+    argv: [pvesh, get, "/storage/{{ proxmox_vm_storage_id }}", --output-format, json]
+  register: proxmox_vm_storage
+  changed_when: false
+  failed_when: false
+
+- name: Register the VM ZFS storage in Proxmox
+  ansible.builtin.command:
+    argv:
+      - pvesm
+      - add
+      - zfspool
+      - "{{ proxmox_vm_storage_id }}"
+      - --pool
+      - "{{ proxmox_vm_pool_name }}"
+      - --content
+      - images,rootdir
+      - --sparse
+      - "1"
+      - --blocksize
+      - "{{ proxmox_vm_storage_blocksize }}"
+  when: proxmox_vm_storage.rc != 0
+
+- name: Validate existing Proxmox VM storage
+  ansible.builtin.assert:
+    that:
+      - (proxmox_vm_storage.stdout | from_json).type == 'zfspool'
+      - (proxmox_vm_storage.stdout | from_json).pool == proxmox_vm_pool_name
+      - (proxmox_vm_storage.stdout | from_json).blocksize == proxmox_vm_storage_blocksize
+    fail_msg: "Storage '{{ proxmox_vm_storage_id }}' exists with an unexpected configuration"
+  when: proxmox_vm_storage.rc == 0

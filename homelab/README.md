@@ -1,116 +1,92 @@
-## OpenTofu
+# Homelab
 
-Variables use the `TF_VAR_*` prefix and are defined in `tofu/variables.tf`. Run from the repository root:
+## Storage
+
+- Samsung 970 EVO Plus 500 GB (`S4EVNX0T102553F`): Proxmox ext4/LVM system disk.
+- WD_BLACK SN850X 4 TB (`252639802020`): single-disk ZFS `vmdata`, storage `fast-nvme`, all VM/LXC disks.
+- 4× Seagate IronWolf 6 TB: RAIDZ1 `pool`, mounted at `/media/cold`.
+- AirDisk 128 GB: retired; do not use for persistent data.
+
+The Samsung has `pve/root` 430 GB, swap 8 GB, and about 26 GB unassigned.
+Proxmox showing 94% “Assigned to LVs” is normal; check real usage with `df -h /`.
+ISO and templates in `local` use `/var/lib/vz` on `pve/root`.
+
+## Back up the old host
+
+1. Stop all guests and confirm both pools are healthy:
+
+   ```sh
+   zpool status -x
+   ```
+
+2. Create `vzdump` archives on `/media/cold` and verify every `.zst` file:
+
+   ```sh
+   BUNDLE=/media/cold/pve-reinstall-$(date +%Y%m%d)
+   mkdir -p "$BUNDLE/guest-backups"
+   vzdump --all 1 --mode stop --compress zstd --dumpdir "$BUNDLE/guest-backups"
+   zstd -t "$BUNDLE"/guest-backups/*.zst
+   ```
+
+3. Save `/etc/pve`, `/var/lib/pve-cluster/config.db`, and
+   `homelab/tofu/terraform.tfstate`. Keep the state private (`0600`).
+
+Do not delete the last verified guest backup. `vmdata` has no mirror, and no
+scheduled Proxmox backup job is currently configured. The 2026 recovery bundle
+is `/media/cold/pve-reinstall-ready-20260804`.
+
+## Install a new Proxmox host
+
+1. Disconnect the WD and HDDs. Install Proxmox on the Samsung only:
+   - ext4/LVM: `swapsize=8`, `maxroot=430`, `minfree=16`, `maxvz=0`;
+   - FQDN: `divaltor-dc.local`;
+   - network: `192.168.1.19/24`, gateway `192.168.1.1`, bridge `vmbr0`.
+2. Reconnect the data disks, verify the new SSH fingerprint, then run:
+
+   ```sh
+   mise run ansible:proxmox-host -- -e proxmox_ansible_host=192.168.1.19
+   ```
+
+3. Confirm `pool`, `vmdata`, and `fast-nvme` are online. The playbook imports
+   existing pools but never creates a pool or wipes a disk.
+4. `maxroot` is only an installer limit. If root is smaller than 430 GB:
+
+   ```sh
+   lvextend -L 430G -r /dev/pve/root
+   ```
+
+## Restore
+
+If `vmdata` survived, copy the saved VM/LXC configs into `/etc/pve`, restore the
+original OpenTofu state, and run:
 
 ```sh
 mise run tofu:plan
-mise run tofu -- plan
+mise run tofu:apply
+mise run ansible:ping
+mise run ansible:apply
 ```
 
-## Ansible
+Review the plan before apply. Without the original state, OpenTofu can try to
+recreate existing VMIDs. If `vmdata` was lost, create the replacement storage
+first, then restore each archive with `qmrestore` or `pct restore` to
+`fast-nvme`.
 
-Run from `homelab/ansible` with the 1Password environment loaded:
+## Routine commands
 
 ```sh
+mise run tofu:plan
+mise run tofu:apply
 mise run ansible:syntax
-mise run ansible:ping
 mise run ansible:check
 mise run ansible:apply
 ```
 
-Hosts use mDNS (`proxmox.local`, `homelab.local`, `shared.local`, `smb.local`, `sftpgo.local`, `kino.local`, and `qbittorrent.local`). During initial setup, override their DHCP addresses and request SSH password authentication if needed:
+Hosts use mDNS: `proxmox.local`, `homelab.local`, `div.local`, `smb.local`,
+`sftpgo.local`, `kino.local`, and `qbittorrent.local`. Tasks load secrets from
+1Password. Always verify a changed SSH host key at the host console.
 
-```sh
-mise run playbook -- playbooks/site.yml --ask-pass -e proxmox_ansible_host=192.168.1.x -e homelab_ansible_host=192.168.1.y -e shared_ansible_host=192.168.1.z -e smb_ansible_host=192.168.1.w -e sftpgo_ansible_host=192.168.1.s -e qbittorrent_ansible_host=192.168.1.v
-```
-
-SSH host-key checking is required. Before the first connection to each IP or mDNS name, compare its Ed25519 fingerprint with the fingerprint shown on the host console, then add the verified key to `~/.ssh/known_hosts`:
-
-```sh
-# Run on the host console.
-ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub
-
-# Run locally; compare this fingerprint before appending the key.
-ssh-keyscan -t ed25519 <host-or-ip> 2>/dev/null | ssh-keygen -lf -
-ssh-keyscan -H -t ed25519 <host-or-ip> >> ~/.ssh/known_hosts
-```
-
-Required secrets:
-
-- `TF_VAR_ssh_public_key`: root SSH public key.
-- `TF_VAR_friend_ssh_public_key`: SSH public key for the `shared` VM only.
-- `TF_VAR_proxmox_password`: Proxmox `root@pam` password.
-- `SAMBA_PASSWORD` or `TF_VAR_samba_password`: Samba password for `divaltor`.
-- `QBITTORRENT_PASSWORD`: qBittorrent Web UI password for `admin`.
-- `TAILSCALE_AUTH_KEY` or `TF_VAR_tailscale_auth_key`: one reusable, pre-approved key authorized for `tag:homelab` and `tag:shared`.
-- `SFTPGO_INSTALLATION_CODE`: strong value of at least 20 characters required to claim the initial SFTPGo administrator.
-
-### SFTPGo file server
-
-The dedicated `sftpgo` LXC (ID 105) has 2 cores, 1 GiB RAM, and mounts
-`/media/cold/shared` at `/mnt/share`. Deploy it with:
-
-```sh
-mise run tofu:apply
-mise run playbook -- playbooks/site.yml
-```
-
-Use `https://sftpgo.local` for private administration and
-`sftpgo.local:2022` for SFTP. The standard Funnel URL serves the public
-WebClient, while port `8443` on the same URL serves WebDAV for Finder. Funnel
-requires MagicDNS, tailnet HTTPS, and the `funnel` node attribute for
-`tag:homelab`; it does not provide public native SFTP or SMB. The public
-WebClient listener disables WebAdmin and the REST API.
-
-### Shared NixOS VM
-
-The `shared` VM (ID 104) runs NixOS 26.05 with 10 host CPU cores, 16 GiB RAM, a 160 GiB disk, and 4 GiB swap. OpenTofu boots the pinned installer ISO, then `nixos-anywhere` installs the configuration from `nixos/` with Disko.
-
-```sh
-mise run tofu:plan
-mise run tofu:apply
-mise run nixos:install-shared -- 192.168.1.x
-mise run playbook -- playbooks/vm_shared.yml
-```
-
-Replace the IP with the VM's DHCP address, or set `SHARED_INSTALL_HOST` and omit it. The installer uses local Nix when available and otherwise uses the pinned official Docker image. Sources are locked in `nixos/flake.lock`.
-
-> **Warning:** Re-running `nixos-anywhere` repartitions the disk and destroys its data. Use `nixos-rebuild` or a deployment tool for later updates.
-
-Keep the two SSH keys in separate variables. The shared VM advertises only `tag:shared`; other hosts advertise `tag:homelab`. Do not make the shared VM ephemeral.
-
-Tailscale policy is managed outside this repository. Add `tag:shared` to `tagOwners` and grant access only to the owner and friend:
-
-```hujson
-{
-  groups: {
-    "group:shared-users": ["owner@example.com", "friend@example.com"],
-  },
-  tagOwners: {
-    "tag:shared": ["owner@example.com"],
-  },
-  grants: [
-    {
-      src: ["group:shared-users"],
-      dst: ["tag:shared"],
-      ip: ["tcp:22"],
-    },
-  ],
-}
-```
-
-Replace the example identities and merge this into the existing policy. Keep the friend out of `tagOwners`; ownership permits assigning the tag, not connecting to the host.
-
-### Plex first-run claim
-
-Plex is available at <https://kino.local/web>. For first setup, get a short-lived token from <https://plex.tv/claim> and run:
-
-```sh
-PLEX_CLAIM_TOKEN=claim-xxxx mise run ansible:apply
-```
-
-### qBittorrent login
-
-The Web UI is available at <https://qt.local> and <https://torrent.local>. Sign in as `admin` with `QBITTORRENT_PASSWORD`.
-
-Downloads go to `/media/cold/downloads`. Files are preallocated, and completed torrents stop automatically.
+> **Shared VM warning:** The live `shared` VM (`div.local`, VMID 104) contains
+> NixOS services and encrypted configuration missing from `nixos/shared.nix`.
+> Do not run `nixos-anywhere` or `nixos-rebuild` from this checkout. Keep the
+> working system generation until the complete live configuration is imported.

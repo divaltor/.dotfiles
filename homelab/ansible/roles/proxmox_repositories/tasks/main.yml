@@ -1,0 +1,46 @@
+---
+- name: Disable the Proxmox enterprise repository without a subscription
+  ansible.builtin.copy:
+    dest: /etc/apt/sources.list.d/pve-enterprise.sources
+    mode: "0644"
+    content: |
+      Enabled: no
+      Types: deb
+      URIs: https://enterprise.proxmox.com/debian/pve
+      Suites: {{ ansible_facts['distribution_release'] }}
+      Components: pve-enterprise
+      Signed-By: /usr/share/keyrings/proxmox-archive-keyring.gpg
+  register: proxmox_enterprise_repository
+
+- name: Disable the Ceph enterprise repository without a subscription
+  ansible.builtin.copy:
+    dest: /etc/apt/sources.list.d/ceph.sources
+    mode: "0644"
+    content: |
+      Enabled: no
+      Types: deb
+      URIs: https://enterprise.proxmox.com/debian/ceph-squid
+      Suites: {{ ansible_facts['distribution_release'] }}
+      Components: enterprise
+      Signed-By: /usr/share/keyrings/proxmox-archive-keyring.gpg
+  register: proxmox_ceph_enterprise_repository
+
+- name: Enable the Proxmox no-subscription repository
+  ansible.builtin.copy:
+    dest: /etc/apt/sources.list.d/proxmox.sources
+    mode: "0644"
+    content: |
+      Types: deb
+      URIs: http://download.proxmox.com/debian/pve
+      Suites: {{ ansible_facts['distribution_release'] }}
+      Components: pve-no-subscription
+      Signed-By: /usr/share/keyrings/proxmox-archive-keyring.gpg
+  register: proxmox_no_subscription_repository
+
+- name: Update apt cache after configuring Proxmox repositories
+  ansible.builtin.apt:
+    update_cache: true
+  when: >-
+    proxmox_enterprise_repository.changed or
+    proxmox_ceph_enterprise_repository.changed or
+    proxmox_no_subscription_repository.changed

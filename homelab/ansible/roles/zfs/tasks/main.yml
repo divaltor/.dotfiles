@@ -8,10 +8,24 @@
   changed_when: false
   failed_when: false
 
+- name: Import the existing HDD ZFS pool after host replacement
+  ansible.builtin.command:
+    argv: [zpool, import, -f, "{{ zfs_pool_name }}"]
+  register: zpool_import
+  failed_when: false
+  when: zpool_check.rc != 0
+
+- name: Verify the HDD ZFS pool is imported
+  ansible.builtin.command:
+    argv: [zpool, list, -H, -o, name, "{{ zfs_pool_name }}"]
+  register: zpool_imported
+  changed_when: false
+  failed_when: false
+
 - name: Fail if ZFS pool not found
   ansible.builtin.fail:
     msg: "ZFS pool '{{ zfs_pool_name }}' not found on host"
-  when: zpool_check.rc != 0
+  when: zpool_imported.rc != 0
 
 - name: Ensure ZFS datasets exist
   ansible.builtin.command:
@@ -27,10 +41,18 @@
   when: item.rc != 0
   loop: "{{ zfs_dataset_check.results }}"
 
+- name: Read ZFS dataset mountpoints
+  ansible.builtin.command:
+    argv: [zfs, get, -H, -o, value, mountpoint, "{{ item.name }}"]
+  loop: "{{ zfs_datasets }}"
+  register: zfs_dataset_mountpoints
+  changed_when: false
+
 - name: Ensure ZFS dataset mountpoints match config
   ansible.builtin.command:
-    cmd: "zfs set mountpoint={{ item.mountpoint }} {{ item.name }}"
-  loop: "{{ zfs_datasets }}"
+    argv: [zfs, set, "mountpoint={{ item.item.mountpoint }}", "{{ item.item.name }}"]
+  loop: "{{ zfs_dataset_mountpoints.results }}"
+  when: item.stdout != item.item.mountpoint
 
 - name: Show ZFS pool status
   ansible.builtin.command:
