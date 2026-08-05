@@ -37,9 +37,9 @@ gui:
   authorColors:
     "*": magenta # Iris
 git:
-  pagers:
+  diffRenderers:
     - colorArg: always
-      pager: ~/.config/lazygit/delta.sh
+      command: ~/.config/lazygit/delta.sh
   overrideGpg: true
   commitPrefix:
     - pattern: "^(\\w+-\\d+).*"
