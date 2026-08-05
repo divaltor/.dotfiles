@@ -6,7 +6,7 @@ import path from "node:path"
 
 const RESULT_LIMIT = 100
 const GREP_TIMEOUT_MS = 1_500
-const INDEX_TIMEOUT_MS = 5_000
+const INDEX_TIMEOUT_MS = 10_000
 const AUXILIARY_LIMIT = 3
 const AUXILIARY_IDLE_MS = 5 * 60_000
 
@@ -98,6 +98,12 @@ export default (async ({ directory, worktree }) => {
   if (!FileFinder.isAvailable()) throw new Error("The native FFF library is unavailable")
 
   const canonicalDirectory = await realpath(directory)
+  // FFF cannot index the home directory or filesystem root, and a full home
+  // scan would not finish within the index timeout. Skip FFF in that case so
+  // the built-in glob/grep tools remain available.
+  if (canonicalDirectory === homedir() || canonicalDirectory === path.parse(canonicalDirectory).root) {
+    return {}
+  }
   const canonicalWorktree = worktree === path.parse(worktree).root ? canonicalDirectory : await realpath(worktree)
   const workspaceRoot = canonicalDirectory
   const workspaceFinder = makeFinder(workspaceRoot)
@@ -127,6 +133,9 @@ export default (async ({ directory, worktree }) => {
   }
 
   function acquire(root: string) {
+    if (root === homedir() || root === path.parse(root).root) {
+      throw new Error(`FFF cannot index the home directory or filesystem root; use a smaller directory: ${root}`)
+    }
     if (root === workspaceRoot) return { finder: workspaceFinder, release() { } }
 
     let entry = auxiliary.get(root)
