@@ -200,10 +200,10 @@ export default (async ({ directory, worktree }) => {
     tool: {
       glob: tool({
         description:
-          "Find files by glob pattern. Returns absolute paths ordered by FFF. Use path to narrow the search to a directory.",
+          "Use this tool to find workspace files by name or path when the exact path is unknown. Give pattern a glob such as '**/*.ts' or '**/config.*'; use path to limit the search to a directory. Prefer this to shell find or ls for file discovery. Returns absolute paths ordered by relevance.",
         args: {
-          pattern: tool.schema.string().min(1).describe("The glob pattern to match files against"),
-          path: tool.schema.string().optional().describe("Directory to search, relative to the current directory by default"),
+          pattern: tool.schema.string().min(1).describe("Glob pattern for file paths, for example '**/*.ts' or '**/package.json'"),
+          path: tool.schema.string().optional().describe("Directory to search; defaults to the current workspace directory"),
         },
         async execute(args, context) {
           await context.ask({
@@ -236,19 +236,19 @@ export default (async ({ directory, worktree }) => {
       }),
       grep: tool({
         description:
-          "Search file contents with FFF. Regex mode is the default; plain and fuzzy search one pattern, while multi searches the primary pattern and additionalPatterns with literal OR semantics.",
+          "Use this tool to search workspace file contents for symbols, imports, error text, or other code. Prefer this to shell grep or rg. Use regex mode for regular expressions, plain for exact literal text, fuzzy for approximate text, and multi for literal OR searches with additionalPatterns. Narrow with path or include when possible.",
         args: {
-          pattern: tool.schema.string().min(1).describe("Primary search pattern; also shown in the native grep tool card"),
+          pattern: tool.schema.string().min(1).describe("Text or regular expression to find in file contents"),
           additionalPatterns: tool.schema
             .array(tool.schema.string().min(1))
             .optional()
-            .describe("Additional literal OR patterns used only in multi mode"),
+            .describe("Additional literal alternatives; set mode to 'multi' when using this field"),
           mode: tool.schema
             .enum(["regex", "plain", "fuzzy", "multi"])
             .default("regex")
-            .describe("FFF search mode; multi uses literal OR matching"),
-          path: tool.schema.string().optional().describe("File or directory to search, relative to the current directory by default"),
-          include: tool.schema.string().optional().describe('File glob to include, such as "*.ts" or "*.{ts,tsx}"'),
+            .describe("Search interpretation: regex, exact literal plain text, fuzzy text, or literal multi-pattern OR"),
+          path: tool.schema.string().optional().describe("File or directory to search; defaults to the current workspace directory"),
+          include: tool.schema.string().optional().describe('File glob filter, for example "*.ts" or "*.{ts,tsx}"'),
         },
         async execute(args, context) {
           const patterns = [args.pattern, ...(args.additionalPatterns ?? [])]
