@@ -22,7 +22,9 @@
     "task": {
       "*": "allow",
       "bellno": "deny"
-    }
+    },
+    "todowrite": "deny",
+    "t3-code_*": "deny"
   },
   "mcp": {
     "grep": {
