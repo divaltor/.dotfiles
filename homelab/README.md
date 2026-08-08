@@ -97,6 +97,9 @@ containers; pve_exporter supplies each LXC's aggregate disk and network I/O.
 The Proxmox node exporter also collects SMART and NVMe health data. pve_exporter
 still supplies hypervisor-level CPU, memory, disk, and network metrics for the
 `shared` VM, even though no agent is installed in that VM.
+cAdvisor runs as a pinned Docker container on the `homelab` VM, the only VM
+that hosts Docker workloads, and exposes container metrics to Prometheus on
+port 8080.
 
 The monitoring LXC copies `/etc/pve/pve-root-ca.pem` through Ansible and trusts
 the Proxmox cluster CA. pve_exporter connects to `divaltor-dc.local:8006` with
@@ -107,12 +110,12 @@ Grafana provisions these pinned community dashboards in the `Homelab` folder:
 - Node Exporter Full (1860, revision 45);
 - Proxmox via Prometheus (10347, revision 1);
 - ZFS Pool Performance and Health (24987, revision 2);
-- SMART + NVMe Status (16514, revision 1);
-- Node Temperatures (15202, revision 1);
-- Prometheus Self-Monitoring (25537, revision 1).
+- Prometheus Self-Monitoring (25537, revision 1);
+- cAdvisor exporter - Docker container Overview (21743, revision 1).
 
 The downloaded JSON is checksum-pinned and its Prometheus datasource reference
-is normalized to the provisioned `prometheus` datasource UID.
+is normalized to the provisioned `prometheus` datasource UID. Ansible removes
+dashboard files that are no longer in this list.
 
 The 1Password environment used by `mise` must provide:
 

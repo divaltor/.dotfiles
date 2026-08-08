@@ -14,6 +14,8 @@
     - common
     - role: node_exporter
       tags: [node_exporter]
+    - role: cadvisor
+      tags: [cadvisor]
     - tailscale
     - role: avahi
       vars:

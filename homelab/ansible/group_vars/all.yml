@@ -97,13 +97,13 @@ avahi_aliases: []
 caddy_proxy_server_name: "{{ avahi_hostname }}.local"
 caddy_proxy_upstream: https://127.0.0.1:8006
 
-# Monitoring (LXC: monitoring only)
+# Monitoring stack (LXC: monitoring only)
 node_exporter_port: 9100
 monitoring_prometheus_port: 9090
 monitoring_grafana_port: 3000
 monitoring_pve_exporter_port: 9221
 monitoring_prometheus_retention_time: 180d
-monitoring_prometheus_retention_size: 20GB
+monitoring_prometheus_retention_size: 100GB
 monitoring_pve_exporter_version: 3.9.0
 monitoring_pve_target: divaltor-dc.local
 monitoring_pve_user: prometheus@pve
@@ -132,6 +132,10 @@ monitoring_node_exporter_targets:
   - name: monitoring
     address: monitoring.local:9100
     role: lxc
+monitoring_cadvisor_targets:
+  - name: homelab
+    address: "homelab.local:{{ cadvisor_port }}"
+    role: vm
 monitoring_grafana_community_dashboards:
   - name: Node Exporter Full
     file: node-exporter-full.json
@@ -145,18 +149,20 @@ monitoring_grafana_community_dashboards:
     file: zfs-pool-performance-and-health.json
     url: https://grafana.com/api/dashboards/24987/revisions/2/download
     checksum: sha256:460d5c8f678190dfbf8d6a6e085dfb24d00503fd8fca093726b6d17bcacd15ca
-  - name: SMART and NVMe Status
-    file: smart-nvme-status.json
-    url: https://grafana.com/api/dashboards/16514/revisions/1/download
-    checksum: sha256:40f1c40721441922d811d39f2f3b02c9444b83a1ee8dc8780d4136bf15e0ad41
-  - name: Node Temperatures
-    file: node-temperatures.json
-    url: https://grafana.com/api/dashboards/15202/revisions/1/download
-    checksum: sha256:3a5addbd0a85bac907a6c3acd9525eb8863ffafe4e0cac07d2b6355c2abf9684
   - name: Prometheus Self-Monitoring
     file: prometheus-self-monitoring.json
     url: https://grafana.com/api/dashboards/25537/revisions/1/download
     checksum: sha256:964e8674a6e5bab7980acc42b2eb6bb4c958ace4fa9d79b3d9e290b1ad96cc87
+monitoring_grafana_local_dashboards:
+  - name: Docker Container Advanced
+    file: docker-container-advanced.json
+    src: docker-container-advanced.json
+monitoring_grafana_managed_dashboards: >-
+  {{ monitoring_grafana_community_dashboards + monitoring_grafana_local_dashboards }}
+
+# cAdvisor runs only on the VM that hosts Docker workloads.
+cadvisor_image: ghcr.io/google/cadvisor@sha256:1eb9bde04dab65b919bc51da9e7cf8eceb40d57e61ac9e93e373100369d90cd6
+cadvisor_port: 8080
 
 # qBittorrent
 qbittorrent_webui_password: "{{ lookup('env', 'QBITTORRENT_PASSWORD') }}"

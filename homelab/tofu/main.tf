@@ -625,7 +625,7 @@ resource "proxmox_virtual_environment_container" "monitoring" {
 
   disk {
     datastore_id = "fast-nvme"
-    size         = 32
+    size         = 128
   }
 
   network_interface {

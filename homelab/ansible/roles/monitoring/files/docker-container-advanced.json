@@ -1,0 +1,300 @@
+{
+  "annotations": {"list": []},
+  "description": "Advanced Docker resource, contention, health, and runtime metrics from cAdvisor.",
+  "editable": false,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {"unit": "short"}, "overrides": []},
+      "gridPos": {"h": 4, "w": 4, "x": 0, "y": 0},
+      "id": 1,
+      "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto"},
+      "targets": [{"expr": "count(container_last_seen{job=\"cadvisor\",host=~\"$host\",name=~\"$container\",image!=\"\"})", "instant": true, "refId": "A"}],
+      "title": "Running Containers",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {"thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "red", "value": 1}]}, "unit": "short"}, "overrides": []},
+      "gridPos": {"h": 4, "w": 4, "x": 4, "y": 0},
+      "id": 2,
+      "options": {"colorMode": "background", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto"},
+      "targets": [{"expr": "sum(container_health_state{job=\"cadvisor\",host=~\"$host\",name=~\"$container\",image!=\"\"} == bool 2)", "instant": true, "refId": "A"}],
+      "title": "Unhealthy",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {"unit": "percent"}, "overrides": []},
+      "gridPos": {"h": 4, "w": 4, "x": 8, "y": 0},
+      "id": 3,
+      "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto"},
+      "targets": [{"expr": "sum(rate(container_cpu_usage_seconds_total{job=\"cadvisor\",host=~\"$host\",name=~\"$container\",image!=\"\"}[$__rate_interval])) * 100", "instant": true, "refId": "A"}],
+      "title": "CPU Usage",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {"unit": "bytes"}, "overrides": []},
+      "gridPos": {"h": 4, "w": 4, "x": 12, "y": 0},
+      "id": 4,
+      "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto"},
+      "targets": [{"expr": "sum(container_memory_working_set_bytes{job=\"cadvisor\",host=~\"$host\",name=~\"$container\",image!=\"\"})", "instant": true, "refId": "A"}],
+      "title": "Memory Working Set",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {"thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "red", "value": 1}]}, "unit": "short"}, "overrides": []},
+      "gridPos": {"h": 4, "w": 4, "x": 16, "y": 0},
+      "id": 5,
+      "options": {"colorMode": "background", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto"},
+      "targets": [{"expr": "sum(increase(container_oom_events_total{job=\"cadvisor\",host=~\"$host\",name=~\"$container\",image!=\"\"}[$__range]))", "instant": true, "refId": "A"}],
+      "title": "OOM Events in Range",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {"unit": "s"}, "overrides": []},
+      "gridPos": {"h": 4, "w": 4, "x": 20, "y": 0},
+      "id": 6,
+      "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto"},
+      "targets": [{"expr": "min(time() - container_start_time_seconds{job=\"cadvisor\",host=~\"$host\",name=~\"$container\",image!=\"\"})", "instant": true, "refId": "A"}],
+      "title": "Youngest Container Uptime",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {"unit": "percent"}, "overrides": []},
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 4},
+      "id": 7,
+      "options": {"legend": {"calcs": ["lastNotNull", "mean", "max"], "displayMode": "table", "placement": "right", "showLegend": true}, "tooltip": {"mode": "multi", "sort": "desc"}},
+      "targets": [{"expr": "sum by (name) (rate(container_cpu_usage_seconds_total{job=\"cadvisor\",host=~\"$host\",name=~\"$container\",image!=\"\"}[$__rate_interval])) * 100", "legendFormat": "{{name}}", "refId": "A"}],
+      "title": "CPU Usage by Container",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {"unit": "percent"}, "overrides": []},
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 4},
+      "id": 8,
+      "options": {"legend": {"calcs": ["lastNotNull", "mean", "max"], "displayMode": "table", "placement": "right", "showLegend": true}, "tooltip": {"mode": "multi", "sort": "desc"}},
+      "targets": [
+        {"expr": "100 * sum by (name) (rate(container_cpu_cfs_throttled_periods_total{job=\"cadvisor\",host=~\"$host\",name=~\"$container\",image!=\"\"}[$__rate_interval])) / clamp_min(sum by (name) (rate(container_cpu_cfs_periods_total{job=\"cadvisor\",host=~\"$host\",name=~\"$container\",image!=\"\"}[$__rate_interval])), 0.000001)", "legendFormat": "{{name}} throttled", "refId": "A"},
+        {"expr": "100 * sum by (name) (rate(container_pressure_cpu_waiting_seconds_total{job=\"cadvisor\",host=~\"$host\",name=~\"$container\",image!=\"\"}[$__rate_interval]))", "legendFormat": "{{name}} PSI waiting", "refId": "B"}
+      ],
+      "title": "CPU Throttling and Pressure",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {"unit": "s"}, "overrides": []},
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 12},
+      "id": 9,
+      "options": {"legend": {"calcs": ["lastNotNull", "mean", "max"], "displayMode": "table", "placement": "right", "showLegend": true}, "tooltip": {"mode": "multi", "sort": "desc"}},
+      "targets": [
+        {"expr": "sum by (name) (rate(container_cpu_user_seconds_total{job=\"cadvisor\",host=~\"$host\",name=~\"$container\",image!=\"\"}[$__rate_interval]))", "legendFormat": "{{name}} user", "refId": "A"},
+        {"expr": "sum by (name) (rate(container_cpu_system_seconds_total{job=\"cadvisor\",host=~\"$host\",name=~\"$container\",image!=\"\"}[$__rate_interval]))", "legendFormat": "{{name}} system", "refId": "B"},
+        {"expr": "sum by (name) (rate(container_cpu_schedstat_runqueue_seconds_total{job=\"cadvisor\",host=~\"$host\",name=~\"$container\",image!=\"\"}[$__rate_interval]))", "legendFormat": "{{name}} run queue", "refId": "C"}
+      ],
+      "title": "CPU User, System, and Run Queue",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {"unit": "bytes"}, "overrides": []},
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 12},
+      "id": 10,
+      "options": {"legend": {"calcs": ["lastNotNull", "mean", "max"], "displayMode": "table", "placement": "right", "showLegend": true}, "tooltip": {"mode": "multi", "sort": "desc"}},
+      "targets": [
+        {"expr": "sum by (name) (container_memory_working_set_bytes{job=\"cadvisor\",host=~\"$host\",name=~\"$container\",image!=\"\"})", "legendFormat": "{{name}} working set", "refId": "A"},
+        {"expr": "sum by (name) (container_memory_rss{job=\"cadvisor\",host=~\"$host\",name=~\"$container\",image!=\"\"})", "legendFormat": "{{name}} RSS", "refId": "B"},
+        {"expr": "sum by (name) (container_memory_cache{job=\"cadvisor\",host=~\"$host\",name=~\"$container\",image!=\"\"})", "legendFormat": "{{name}} cache", "refId": "C"},
+        {"expr": "sum by (name) (container_memory_swap{job=\"cadvisor\",host=~\"$host\",name=~\"$container\",image!=\"\"})", "legendFormat": "{{name}} swap", "refId": "D"}
+      ],
+      "title": "Memory Composition",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {"unit": "percent"}, "overrides": []},
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 20},
+      "id": 11,
+      "options": {"legend": {"calcs": ["lastNotNull", "mean", "max"], "displayMode": "table", "placement": "right", "showLegend": true}, "tooltip": {"mode": "multi", "sort": "desc"}},
+      "targets": [
+        {"expr": "100 * sum by (name) (container_memory_working_set_bytes{job=\"cadvisor\",host=~\"$host\",name=~\"$container\",image!=\"\"}) / sum by (name) (container_spec_memory_limit_bytes{job=\"cadvisor\",host=~\"$host\",name=~\"$container\",image!=\"\"} < 1e15)", "legendFormat": "{{name}} limit", "refId": "A"},
+        {"expr": "100 * sum by (name) (rate(container_pressure_memory_waiting_seconds_total{job=\"cadvisor\",host=~\"$host\",name=~\"$container\",image!=\"\"}[$__rate_interval]))", "legendFormat": "{{name}} PSI waiting", "refId": "B"}
+      ],
+      "title": "Memory Limit and Pressure",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {"unit": "ops"}, "overrides": []},
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 20},
+      "id": 12,
+      "options": {"legend": {"calcs": ["lastNotNull", "mean", "max"], "displayMode": "table", "placement": "right", "showLegend": true}, "tooltip": {"mode": "multi", "sort": "desc"}},
+      "targets": [
+        {"expr": "sum by (name) (rate(container_memory_pgscan_total{job=\"cadvisor\",host=~\"$host\",name=~\"$container\",image!=\"\"}[$__rate_interval]))", "legendFormat": "{{name}} scans", "refId": "A"},
+        {"expr": "sum by (name) (rate(container_memory_pgsteal_total{job=\"cadvisor\",host=~\"$host\",name=~\"$container\",image!=\"\"}[$__rate_interval]))", "legendFormat": "{{name}} reclaimed", "refId": "B"},
+        {"expr": "sum by (name) (rate(container_memory_workingset_refault_file_total{job=\"cadvisor\",host=~\"$host\",name=~\"$container\",image!=\"\"}[$__rate_interval]))", "legendFormat": "{{name}} file refaults", "refId": "C"}
+      ],
+      "title": "Memory Reclaim Activity",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {"unit": "Bps"}, "overrides": []},
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 28},
+      "id": 13,
+      "options": {"legend": {"calcs": ["lastNotNull", "mean", "max"], "displayMode": "table", "placement": "right", "showLegend": true}, "tooltip": {"mode": "multi", "sort": "desc"}},
+      "targets": [
+        {"expr": "sum by (name) (rate(container_fs_reads_bytes_total{job=\"cadvisor\",host=~\"$host\",name=~\"$container\",image!=\"\"}[$__rate_interval]))", "legendFormat": "{{name}} read", "refId": "A"},
+        {"expr": "-sum by (name) (rate(container_fs_writes_bytes_total{job=\"cadvisor\",host=~\"$host\",name=~\"$container\",image!=\"\"}[$__rate_interval]))", "legendFormat": "{{name}} write", "refId": "B"}
+      ],
+      "title": "Storage Throughput",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {"unit": "iops"}, "overrides": []},
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 28},
+      "id": 14,
+      "options": {"legend": {"calcs": ["lastNotNull", "mean", "max"], "displayMode": "table", "placement": "right", "showLegend": true}, "tooltip": {"mode": "multi", "sort": "desc"}},
+      "targets": [
+        {"expr": "sum by (name) (rate(container_fs_reads_total{job=\"cadvisor\",host=~\"$host\",name=~\"$container\",image!=\"\"}[$__rate_interval]))", "legendFormat": "{{name}} read", "refId": "A"},
+        {"expr": "-sum by (name) (rate(container_fs_writes_total{job=\"cadvisor\",host=~\"$host\",name=~\"$container\",image!=\"\"}[$__rate_interval]))", "legendFormat": "{{name}} write", "refId": "B"}
+      ],
+      "title": "Storage Operations",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {"unit": "percent"}, "overrides": []},
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 36},
+      "id": 15,
+      "options": {"legend": {"calcs": ["lastNotNull", "mean", "max"], "displayMode": "table", "placement": "right", "showLegend": true}, "tooltip": {"mode": "multi", "sort": "desc"}},
+      "targets": [
+        {"expr": "100 * sum by (name) (rate(container_pressure_io_waiting_seconds_total{job=\"cadvisor\",host=~\"$host\",name=~\"$container\",image!=\"\"}[$__rate_interval]))", "legendFormat": "{{name}} some", "refId": "A"},
+        {"expr": "100 * sum by (name) (rate(container_pressure_io_stalled_seconds_total{job=\"cadvisor\",host=~\"$host\",name=~\"$container\",image!=\"\"}[$__rate_interval]))", "legendFormat": "{{name}} full", "refId": "B"}
+      ],
+      "title": "I/O Pressure",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {"unit": "Bps"}, "overrides": []},
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 36},
+      "id": 16,
+      "options": {"legend": {"calcs": ["lastNotNull", "mean", "max"], "displayMode": "table", "placement": "right", "showLegend": true}, "tooltip": {"mode": "multi", "sort": "desc"}},
+      "targets": [
+        {"expr": "sum by (name) (rate(container_network_receive_bytes_total{job=\"cadvisor\",host=~\"$host\",name=~\"$container\",image!=\"\"}[$__rate_interval]))", "legendFormat": "{{name}} receive", "refId": "A"},
+        {"expr": "-sum by (name) (rate(container_network_transmit_bytes_total{job=\"cadvisor\",host=~\"$host\",name=~\"$container\",image!=\"\"}[$__rate_interval]))", "legendFormat": "{{name}} transmit", "refId": "B"}
+      ],
+      "title": "Network Throughput",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {"unit": "pps"}, "overrides": []},
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 44},
+      "id": 17,
+      "options": {"legend": {"calcs": ["lastNotNull", "mean", "max"], "displayMode": "table", "placement": "right", "showLegend": true}, "tooltip": {"mode": "multi", "sort": "desc"}},
+      "targets": [
+        {"expr": "sum by (name) (rate(container_network_receive_packets_total{job=\"cadvisor\",host=~\"$host\",name=~\"$container\",image!=\"\"}[$__rate_interval]))", "legendFormat": "{{name}} receive", "refId": "A"},
+        {"expr": "-sum by (name) (rate(container_network_transmit_packets_total{job=\"cadvisor\",host=~\"$host\",name=~\"$container\",image!=\"\"}[$__rate_interval]))", "legendFormat": "{{name}} transmit", "refId": "B"}
+      ],
+      "title": "Network Packets",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {"unit": "pps"}, "overrides": []},
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 44},
+      "id": 18,
+      "options": {"legend": {"calcs": ["lastNotNull", "mean", "max"], "displayMode": "table", "placement": "right", "showLegend": true}, "tooltip": {"mode": "multi", "sort": "desc"}},
+      "targets": [
+        {"expr": "sum by (name) (rate(container_network_receive_errors_total{job=\"cadvisor\",host=~\"$host\",name=~\"$container\",image!=\"\"}[$__rate_interval]) + rate(container_network_transmit_errors_total{job=\"cadvisor\",host=~\"$host\",name=~\"$container\",image!=\"\"}[$__rate_interval]))", "legendFormat": "{{name}} errors", "refId": "A"},
+        {"expr": "sum by (name) (rate(container_network_receive_packets_dropped_total{job=\"cadvisor\",host=~\"$host\",name=~\"$container\",image!=\"\"}[$__rate_interval]) + rate(container_network_transmit_packets_dropped_total{job=\"cadvisor\",host=~\"$host\",name=~\"$container\",image!=\"\"}[$__rate_interval]))", "legendFormat": "{{name}} dropped", "refId": "B"}
+      ],
+      "title": "Network Errors and Drops",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {"unit": "short"}, "overrides": []},
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 52},
+      "id": 19,
+      "options": {"legend": {"calcs": ["lastNotNull", "mean", "max"], "displayMode": "table", "placement": "right", "showLegend": true}, "tooltip": {"mode": "multi", "sort": "desc"}},
+      "targets": [
+        {"expr": "sum by (name) (container_processes{job=\"cadvisor\",host=~\"$host\",name=~\"$container\",image!=\"\"})", "legendFormat": "{{name}} processes", "refId": "A"},
+        {"expr": "sum by (name) (container_threads{job=\"cadvisor\",host=~\"$host\",name=~\"$container\",image!=\"\"})", "legendFormat": "{{name}} threads", "refId": "B"},
+        {"expr": "sum by (name) (container_file_descriptors{job=\"cadvisor\",host=~\"$host\",name=~\"$container\",image!=\"\"})", "legendFormat": "{{name}} file descriptors", "refId": "C"}
+      ],
+      "title": "Processes, Threads, and File Descriptors",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {"unit": "short"}, "overrides": []},
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 52},
+      "id": 20,
+      "options": {"legend": {"calcs": ["lastNotNull", "mean", "max"], "displayMode": "table", "placement": "right", "showLegend": true}, "tooltip": {"mode": "multi", "sort": "desc"}},
+      "targets": [
+        {"expr": "sum by (name, state) (container_tasks_state{job=\"cadvisor\",host=~\"$host\",name=~\"$container\",image!=\"\"})", "legendFormat": "{{name}} {{state}}", "refId": "A"},
+        {"expr": "sum by (name, tcp_state) (container_network_tcp_usage_total{job=\"cadvisor\",host=~\"$host\",name=~\"$container\",image!=\"\"})", "legendFormat": "{{name}} TCP {{tcp_state}}", "refId": "B"}
+      ],
+      "title": "Task and TCP States",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "15s",
+  "schemaVersion": 39,
+  "tags": ["cadvisor", "docker", "containers"],
+  "templating": {
+    "list": [
+      {
+        "current": {},
+        "datasource": {"type": "prometheus", "uid": "prometheus"},
+        "definition": "label_values(container_last_seen{job=\"cadvisor\",image!=\"\"},host)",
+        "includeAll": true,
+        "label": "Docker Host",
+        "multi": true,
+        "name": "host",
+        "options": [],
+        "query": {"query": "label_values(container_last_seen{job=\"cadvisor\",image!=\"\"},host)", "refId": "PrometheusVariableQueryEditor-VariableQuery"},
+        "refresh": 1,
+        "regex": "",
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {},
+        "datasource": {"type": "prometheus", "uid": "prometheus"},
+        "definition": "label_values(container_last_seen{job=\"cadvisor\",host=~\"$host\",image!=\"\"},name)",
+        "includeAll": true,
+        "label": "Container",
+        "multi": true,
+        "name": "container",
+        "options": [],
+        "query": {"query": "label_values(container_last_seen{job=\"cadvisor\",host=~\"$host\",image!=\"\"},name)", "refId": "PrometheusVariableQueryEditor-VariableQuery"},
+        "refresh": 1,
+        "regex": "",
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {"from": "now-3h", "to": "now"},
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Docker Container Advanced",
+  "uid": "docker-container-advanced",
+  "version": 1,
+  "weekStart": ""
+}

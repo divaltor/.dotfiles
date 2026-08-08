@@ -179,6 +179,25 @@
     group: grafana
     mode: "0750"
 
+- name: Find provisioned Grafana dashboard files
+  ansible.builtin.find:
+    paths: /var/lib/grafana/dashboards
+    patterns: "*.json"
+    file_type: file
+  register: monitoring_grafana_existing_dashboard_files
+
+- name: Remove dashboards that are no longer provisioned
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: absent
+  loop: "{{ monitoring_grafana_existing_dashboard_files.files }}"
+  loop_control:
+    label: "{{ item.path | basename }}"
+  when: >-
+    (item.path | basename) not in
+    (monitoring_grafana_managed_dashboards | map(attribute='file') | list)
+  notify: Restart Grafana
+
 - name: Create community dashboard source cache
   ansible.builtin.file:
     path: /var/cache/grafana-dashboard-source
@@ -222,6 +241,18 @@
     label: "{{ item.item.name }}"
   notify: Restart Grafana
 
+- name: Provision local Grafana dashboards
+  ansible.builtin.copy:
+    src: "{{ item.src }}"
+    dest: "/var/lib/grafana/dashboards/{{ item.file }}"
+    owner: grafana
+    group: grafana
+    mode: "0640"
+  loop: "{{ monitoring_grafana_local_dashboards }}"
+  loop_control:
+    label: "{{ item.name }}"
+  notify: Restart Grafana
+
 - name: Provision Grafana Prometheus datasource
   ansible.builtin.template:
     src: grafana-prometheus.yml.j2
@@ -236,15 +267,6 @@
     src: grafana-dashboards.yml
     dest: /etc/grafana/provisioning/dashboards/homelab.yml
     owner: root
-    group: grafana
-    mode: "0640"
-  notify: Restart Grafana
-
-- name: Provision homelab storage dashboard
-  ansible.builtin.copy:
-    src: homelab-storage.json
-    dest: /var/lib/grafana/dashboards/homelab-storage.json
-    owner: grafana
     group: grafana
     mode: "0640"
   notify: Restart Grafana
@@ -354,11 +376,49 @@
   no_log: true
   when: not ansible_check_mode
 
+- name: Delete stale dashboards from the managed Grafana folder
+  ansible.builtin.uri:
+    url: >-
+      http://127.0.0.1:{{ monitoring_grafana_port }}/api/dashboards/uid/{{ item.uid | urlencode }}
+    method: DELETE
+    url_username: admin
+    url_password: "{{ monitoring_grafana_admin_password }}"
+    force_basic_auth: true
+    status_code: 200
+  loop: "{{ monitoring_grafana_dashboards.json }}"
+  loop_control:
+    label: "{{ item.title }}"
+  when:
+    - not ansible_check_mode
+    - item.folderTitle | default('') == 'Homelab'
+    - item.title not in monitoring_grafana_managed_dashboards | map(attribute='name') | list
+  no_log: true
+
+- name: Wait for the exact Grafana dashboard set
+  ansible.builtin.uri:
+    url: "http://127.0.0.1:{{ monitoring_grafana_port }}/api/search?type=dash-db"
+    url_username: admin
+    url_password: "{{ monitoring_grafana_admin_password }}"
+    force_basic_auth: true
+    return_content: true
+    status_code: 200
+  register: monitoring_grafana_reconciled_dashboards
+  until: >-
+    (monitoring_grafana_reconciled_dashboards.json | map(attribute='title') | sort | list) ==
+    (monitoring_grafana_managed_dashboards | map(attribute='name') | sort | list)
+  retries: 15
+  delay: 2
+  no_log: true
+  when: not ansible_check_mode
+
 - name: Verify all Grafana dashboards are provisioned
   ansible.builtin.assert:
     that:
-      - monitoring_grafana_dashboards.json | length >= monitoring_grafana_community_dashboards | length + 1
-    fail_msg: "Grafana did not load all provisioned homelab dashboards"
+      - monitoring_grafana_reconciled_dashboards.json | length == monitoring_grafana_managed_dashboards | length
+      - >-
+        (monitoring_grafana_reconciled_dashboards.json | map(attribute='title') | sort | list) ==
+        (monitoring_grafana_managed_dashboards | map(attribute='name') | sort | list)
+    fail_msg: "Grafana does not contain exactly the provisioned homelab dashboards"
   when: not ansible_check_mode
 
 - name: Verify Proxmox metrics collection

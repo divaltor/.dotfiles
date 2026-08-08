@@ -19,6 +19,15 @@ scrape_configs:
           role: "{{ exporter.role }}"
 {% endfor %}
 
+  - job_name: cadvisor
+    static_configs:
+{% for exporter in monitoring_cadvisor_targets %}
+      - targets: ["{{ exporter.address }}"]
+        labels:
+          host: "{{ exporter.name }}"
+          role: "{{ exporter.role }}"
+{% endfor %}
+
   - job_name: proxmox
     metrics_path: /pve
     params:

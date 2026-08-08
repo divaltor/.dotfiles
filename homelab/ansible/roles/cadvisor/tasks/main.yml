@@ -1,0 +1,66 @@
+---
+- name: Verify Docker is installed
+  ansible.builtin.stat:
+    path: /usr/bin/docker
+  register: cadvisor_docker_binary
+
+- name: Require Docker for cAdvisor
+  ansible.builtin.assert:
+    that: cadvisor_docker_binary.stat.executable | default(false)
+    fail_msg: "cAdvisor requires Docker at /usr/bin/docker"
+
+- name: Check for the pinned cAdvisor image
+  ansible.builtin.command:
+    argv:
+      - /usr/bin/docker
+      - image
+      - inspect
+      - "{{ cadvisor_image }}"
+  register: cadvisor_image_inspect
+  changed_when: false
+  failed_when: false
+  check_mode: false
+
+- name: Pull the pinned cAdvisor image
+  ansible.builtin.command:
+    argv:
+      - /usr/bin/docker
+      - pull
+      - "{{ cadvisor_image }}"
+  when: cadvisor_image_inspect.rc != 0
+  notify: Restart cAdvisor
+
+- name: Install cAdvisor systemd service
+  ansible.builtin.template:
+    src: cadvisor.service.j2
+    dest: /etc/systemd/system/cadvisor.service
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - Reload cAdvisor systemd unit
+    - Restart cAdvisor
+
+- name: Ensure cAdvisor is running
+  ansible.builtin.systemd_service:
+    name: cadvisor
+    state: started
+    enabled: true
+    daemon_reload: true
+
+- name: Apply cAdvisor configuration before its health check
+  ansible.builtin.meta: flush_handlers
+
+- name: Verify cAdvisor metrics
+  ansible.builtin.uri:
+    url: "http://127.0.0.1:{{ cadvisor_port }}/metrics"
+    status_code: 200
+    return_content: true
+  register: cadvisor_health
+  until: >-
+    cadvisor_health.status == 200 and
+    (cadvisor_health.content |
+    regex_search('(?m)^container_last_seen\{[^\n]*image="[^"]+"')) is not none
+  retries: 15
+  delay: 2
+  when: not ansible_check_mode
