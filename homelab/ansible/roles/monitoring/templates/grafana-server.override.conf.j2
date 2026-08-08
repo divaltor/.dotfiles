@@ -1,0 +1,7 @@
+[Service]
+EnvironmentFile=-/etc/grafana/grafana-secrets
+Environment="GF_SERVER_HTTP_ADDR=127.0.0.1"
+Environment="GF_SERVER_HTTP_PORT={{ monitoring_grafana_port }}"
+Environment="GF_SERVER_DOMAIN=monitoring.local"
+Environment="GF_SERVER_ROOT_URL=https://monitoring.local/"
+Environment="GF_USERS_ALLOW_SIGN_UP=false"

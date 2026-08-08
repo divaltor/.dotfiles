@@ -1,0 +1,372 @@
+---
+- name: Require monitoring credentials
+  ansible.builtin.assert:
+    that:
+      - monitoring_pve_token_value | length > 0
+      - monitoring_grafana_admin_password | length > 0
+    fail_msg: >-
+      PVE_MONITORING_TOKEN and GRAFANA_ADMIN_PASSWORD must be available in
+      the 1Password environment used by mise.
+  no_log: true
+
+- name: Install monitoring package prerequisites
+  ansible.builtin.apt:
+    name:
+      - prometheus
+      - python3-venv
+      - python3-packaging
+      - libnss-mdns
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Create APT keyring directory
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Install Grafana repository key
+  ansible.builtin.get_url:
+    url: https://apt.grafana.com/gpg-full.key
+    dest: /etc/apt/keyrings/grafana.asc
+    owner: root
+    group: root
+    mode: "0644"
+  register: monitoring_grafana_key
+
+- name: Configure Grafana stable repository
+  ansible.builtin.copy:
+    dest: /etc/apt/sources.list.d/grafana.list
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      deb [signed-by=/etc/apt/keyrings/grafana.asc] https://apt.grafana.com stable main
+  register: monitoring_grafana_repository
+
+- name: Update APT cache for Grafana repository
+  ansible.builtin.apt:
+    update_cache: true
+  when: monitoring_grafana_key.changed or monitoring_grafana_repository.changed
+
+- name: Install Grafana OSS
+  ansible.builtin.apt:
+    name: grafana
+    state: present
+    policy_rc_d: 101
+
+- name: Resolve the Proxmox certificate hostname locally
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    regexp: "^{{ proxmox_host_address | regex_escape }}\\s+.*\\bdivaltor-dc\\.local\\b"
+    line: "{{ proxmox_host_address }} divaltor-dc.local divaltor-dc"
+    state: present
+
+- name: Read the Proxmox cluster CA through the managed host connection
+  ansible.builtin.slurp:
+    src: /etc/pve/pve-root-ca.pem
+  delegate_to: proxmox_host
+  register: monitoring_proxmox_ca
+
+- name: Trust the Proxmox cluster CA
+  ansible.builtin.copy:
+    content: "{{ monitoring_proxmox_ca.content | b64decode }}"
+    dest: /usr/local/share/ca-certificates/proxmox-cluster-ca.crt
+    owner: root
+    group: root
+    mode: "0644"
+  register: monitoring_proxmox_ca_certificate
+  notify: Restart Proxmox exporter
+
+- name: Update trusted certificates for the Proxmox CA
+  ansible.builtin.command: update-ca-certificates
+  when: monitoring_proxmox_ca_certificate.changed
+  changed_when: true
+
+- name: Create Proxmox exporter service account
+  ansible.builtin.user:
+    name: prometheus-pve-exporter
+    system: true
+    create_home: false
+    home: /nonexistent
+    shell: /usr/sbin/nologin
+
+- name: Install Proxmox exporter in an isolated virtual environment
+  ansible.builtin.pip:
+    name: "prometheus-pve-exporter=={{ monitoring_pve_exporter_version }}"
+    virtualenv: /opt/prometheus-pve-exporter
+    virtualenv_command: /usr/bin/python3 -m venv
+
+- name: Configure Proxmox exporter credentials
+  ansible.builtin.template:
+    src: pve.yml.j2
+    dest: /etc/prometheus/pve.yml
+    owner: prometheus-pve-exporter
+    group: prometheus-pve-exporter
+    mode: "0600"
+  notify: Restart Proxmox exporter
+  no_log: true
+
+- name: Install Proxmox exporter systemd service
+  ansible.builtin.template:
+    src: prometheus-pve-exporter.service.j2
+    dest: /etc/systemd/system/prometheus-pve-exporter.service
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - Reload monitoring systemd units
+    - Restart Proxmox exporter
+
+- name: Configure Prometheus alert rules
+  ansible.builtin.template:
+    src: alerts.yml.j2
+    dest: /etc/prometheus/alerts.yml
+    owner: root
+    group: prometheus
+    mode: "0640"
+    validate: /usr/bin/promtool check rules %s
+  notify: Restart Prometheus
+
+- name: Configure Prometheus
+  ansible.builtin.template:
+    src: prometheus.yml.j2
+    dest: /etc/prometheus/prometheus.yml
+    owner: root
+    group: prometheus
+    mode: "0640"
+    validate: /usr/bin/promtool check config %s
+  notify: Restart Prometheus
+
+- name: Configure Prometheus retention and listen address
+  ansible.builtin.template:
+    src: prometheus.default.j2
+    dest: /etc/default/prometheus
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart Prometheus
+
+- name: Create Prometheus systemd override directory
+  ansible.builtin.file:
+    path: /etc/systemd/system/prometheus.service.d
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Disable nested user namespace isolation for Prometheus in LXC
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/prometheus.service.d/lxc.conf
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      [Service]
+      PrivateUsers=false
+  notify:
+    - Reload monitoring systemd units
+    - Restart Prometheus
+
+- name: Create Grafana dashboard directory
+  ansible.builtin.file:
+    path: /var/lib/grafana/dashboards
+    state: directory
+    owner: grafana
+    group: grafana
+    mode: "0750"
+
+- name: Create community dashboard source cache
+  ansible.builtin.file:
+    path: /var/cache/grafana-dashboard-source
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Download pinned community dashboards
+  ansible.builtin.get_url:
+    url: "{{ item.url }}"
+    dest: "/var/cache/grafana-dashboard-source/{{ item.file }}"
+    checksum: "{{ item.checksum }}"
+    owner: root
+    group: root
+    mode: "0644"
+  loop: "{{ monitoring_grafana_community_dashboards }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Read downloaded community dashboards
+  ansible.builtin.slurp:
+    src: "/var/cache/grafana-dashboard-source/{{ item.file }}"
+  loop: "{{ monitoring_grafana_community_dashboards }}"
+  loop_control:
+    label: "{{ item.name }}"
+  register: monitoring_grafana_community_dashboard_sources
+
+- name: Provision community dashboards with the local datasource
+  ansible.builtin.copy:
+    content: >-
+      {{ item.content | b64decode
+         | replace('${DS_PROMETHEUS}', 'prometheus')
+         | replace('${ds_prometheus}', 'prometheus') }}
+    dest: "/var/lib/grafana/dashboards/{{ item.item.file }}"
+    owner: grafana
+    group: grafana
+    mode: "0640"
+  loop: "{{ monitoring_grafana_community_dashboard_sources.results }}"
+  loop_control:
+    label: "{{ item.item.name }}"
+  notify: Restart Grafana
+
+- name: Provision Grafana Prometheus datasource
+  ansible.builtin.template:
+    src: grafana-prometheus.yml.j2
+    dest: /etc/grafana/provisioning/datasources/prometheus.yml
+    owner: root
+    group: grafana
+    mode: "0640"
+  notify: Restart Grafana
+
+- name: Provision Grafana dashboards provider
+  ansible.builtin.copy:
+    src: grafana-dashboards.yml
+    dest: /etc/grafana/provisioning/dashboards/homelab.yml
+    owner: root
+    group: grafana
+    mode: "0640"
+  notify: Restart Grafana
+
+- name: Provision homelab storage dashboard
+  ansible.builtin.copy:
+    src: homelab-storage.json
+    dest: /var/lib/grafana/dashboards/homelab-storage.json
+    owner: grafana
+    group: grafana
+    mode: "0640"
+  notify: Restart Grafana
+
+- name: Store Grafana bootstrap credential
+  ansible.builtin.template:
+    src: grafana-secrets.j2
+    dest: /etc/grafana/grafana-secrets
+    owner: root
+    group: grafana
+    mode: "0640"
+  notify: Restart Grafana
+  no_log: true
+  register: monitoring_grafana_secret
+
+- name: Create Grafana systemd override directory
+  ansible.builtin.file:
+    path: /etc/systemd/system/grafana-server.service.d
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Configure Grafana systemd overrides
+  ansible.builtin.template:
+    src: grafana-server.override.conf.j2
+    dest: /etc/systemd/system/grafana-server.service.d/override.conf
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - Reload monitoring systemd units
+    - Restart Grafana
+
+- name: Ensure monitoring services are running
+  ansible.builtin.systemd_service:
+    name: "{{ item }}"
+    state: started
+    enabled: true
+    daemon_reload: true
+  loop:
+    - prometheus
+    - prometheus-pve-exporter
+    - grafana-server
+
+- name: Stop Grafana before rotating a changed admin credential
+  ansible.builtin.service:
+    name: grafana-server
+    state: stopped
+  when: monitoring_grafana_secret.changed
+
+- name: Apply the Grafana admin credential to the existing database
+  ansible.builtin.command:
+    argv:
+      - grafana
+      - cli
+      - --homepath
+      - /usr/share/grafana
+      - --config
+      - /etc/grafana/grafana.ini
+      - --configOverrides
+      - cfg:default.paths.data=/var/lib/grafana
+      - admin
+      - reset-admin-password
+      - "{{ monitoring_grafana_admin_password }}"
+  when: monitoring_grafana_secret.changed
+  no_log: true
+
+- name: Start Grafana after credential rotation
+  ansible.builtin.service:
+    name: grafana-server
+    state: started
+  when: monitoring_grafana_secret.changed
+
+- name: Apply monitoring configuration before health checks
+  ansible.builtin.meta: flush_handlers
+
+- name: Verify Prometheus readiness
+  ansible.builtin.uri:
+    url: "http://127.0.0.1:{{ monitoring_prometheus_port }}/-/ready"
+    status_code: 200
+  register: monitoring_prometheus_health
+  until: monitoring_prometheus_health.status == 200
+  retries: 15
+  delay: 2
+  when: not ansible_check_mode
+
+- name: Verify Grafana health
+  ansible.builtin.uri:
+    url: "http://127.0.0.1:{{ monitoring_grafana_port }}/api/health"
+    status_code: 200
+  register: monitoring_grafana_health
+  until: monitoring_grafana_health.status == 200
+  retries: 15
+  delay: 2
+  when: not ansible_check_mode
+
+- name: Read provisioned Grafana dashboards
+  ansible.builtin.uri:
+    url: "http://127.0.0.1:{{ monitoring_grafana_port }}/api/search?type=dash-db"
+    url_username: admin
+    url_password: "{{ monitoring_grafana_admin_password }}"
+    force_basic_auth: true
+    return_content: true
+    status_code: 200
+  register: monitoring_grafana_dashboards
+  no_log: true
+  when: not ansible_check_mode
+
+- name: Verify all Grafana dashboards are provisioned
+  ansible.builtin.assert:
+    that:
+      - monitoring_grafana_dashboards.json | length >= monitoring_grafana_community_dashboards | length + 1
+    fail_msg: "Grafana did not load all provisioned homelab dashboards"
+  when: not ansible_check_mode
+
+- name: Verify Proxmox metrics collection
+  ansible.builtin.uri:
+    url: "http://127.0.0.1:{{ monitoring_pve_exporter_port }}/pve?target={{ monitoring_pve_target }}&module=default&cluster=1&node=1"
+    status_code: 200
+  register: monitoring_pve_exporter_health
+  until: monitoring_pve_exporter_health.status == 200
+  retries: 15
+  delay: 2
+  when: not ansible_check_mode

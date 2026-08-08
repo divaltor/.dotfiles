@@ -26,6 +26,10 @@
       vars:
         tailscale_hostname: proxmox
     - zfs
+    - role: node_exporter
+      tags: [node_exporter]
+      vars:
+        node_exporter_enable_disk_health_collectors: true
     - role: avahi
       vars:
         avahi_hostname: proxmox

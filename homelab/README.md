@@ -83,8 +83,55 @@ mise run ansible:apply
 ```
 
 Hosts use mDNS: `proxmox.local`, `homelab.local`, `div.local`, `smb.local`,
-`sftpgo.local`, `kino.local`, and `qbittorrent.local`. Tasks load secrets from
-1Password. Always verify a changed SSH host key at the host console.
+`sftpgo.local`, `kino.local`, `qbittorrent.local`, and `monitoring.local`.
+Tasks load secrets from 1Password. Always verify a changed SSH host key at the
+host console.
+
+## Monitoring
+
+`monitoring.local` runs Prometheus, Grafana, and prometheus-pve-exporter in
+LXC 106. Grafana is available at `https://monitoring.local`. node_exporter runs
+on the Proxmox host and every repository-managed Debian guest. LXC diskstats and
+ZFS collectors are disabled because Proxmox exposes host-wide values inside
+containers; pve_exporter supplies each LXC's aggregate disk and network I/O.
+The Proxmox node exporter also collects SMART and NVMe health data. pve_exporter
+still supplies hypervisor-level CPU, memory, disk, and network metrics for the
+`shared` VM, even though no agent is installed in that VM.
+
+The monitoring LXC copies `/etc/pve/pve-root-ca.pem` through Ansible and trusts
+the Proxmox cluster CA. pve_exporter connects to `divaltor-dc.local:8006` with
+certificate verification enabled.
+
+Grafana provisions these pinned community dashboards in the `Homelab` folder:
+
+- Node Exporter Full (1860, revision 45);
+- Proxmox via Prometheus (10347, revision 1);
+- ZFS Pool Performance and Health (24987, revision 2);
+- SMART + NVMe Status (16514, revision 1);
+- Node Temperatures (15202, revision 1);
+- Prometheus Self-Monitoring (25537, revision 1).
+
+The downloaded JSON is checksum-pinned and its Prometheus datasource reference
+is normalized to the provisioned `prometheus` datasource UID.
+
+The 1Password environment used by `mise` must provide:
+
+- `GRAFANA_ADMIN_PASSWORD` for the initial Grafana admin account;
+- `PVE_MONITORING_TOKEN` for `prometheus@pve!monitoring`.
+
+Create the API identity once on the Proxmox host, then save the printed token in
+1Password:
+
+```sh
+pveum user add prometheus@pve
+pveum aclmod / -user prometheus@pve -role PVEAuditor
+pveum user token add prometheus@pve monitoring -privsep 0
+```
+
+The `shared` NixOS VM is intentionally not scraped by node_exporter. Its live
+NixOS definition is outside this checkout. After that definition is imported,
+enable `services.prometheus.exporters.node` there and add `div.local:9100` to
+`monitoring_node_exporter_targets`.
 
 > **Shared VM warning:** The live `shared` VM (`div.local`, VMID 104) contains
 > NixOS services and encrypted configuration missing from `nixos/shared.nix`.

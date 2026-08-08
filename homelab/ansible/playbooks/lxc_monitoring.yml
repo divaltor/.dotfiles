@@ -1,18 +1,15 @@
 ---
 # ============================================================
-# LXC: kino (102) — Plex media server + Avahi mDNS
-# ============================================================
-# The container runs Debian with Plex reading ZFS-backed media
-# from the Proxmox host via bind mounts (/media/films, /media/shows).
+# LXC: monitoring (106) — Prometheus, Grafana, and exporters
 # ============================================================
 
 - import_playbook: lxc_bootstrap.yml
   vars:
     lxc_bootstrap_targets:
-      - kino
+      - monitoring
 
-- name: Configure Plex LXC
-  hosts: kino
+- name: Configure monitoring LXC
+  hosts: monitoring
   gather_facts: true
   vars_files:
     - ../group_vars/all.yml
@@ -23,12 +20,11 @@
     - role: node_exporter
       tags: [node_exporter]
       vars:
+        # LXC diskstats are host-wide and would duplicate the real host target.
         node_exporter_disabled_collectors: [diskstats, zfs]
-    - tailscale
-    - plex
+    - monitoring
     - role: caddy_proxy
       vars:
-        caddy_proxy_server_name: kino.local
-        caddy_proxy_upstream: http://127.0.0.1:32400
-        caddy_proxy_redirect_root_to: /web
+        caddy_proxy_server_name: monitoring.local
+        caddy_proxy_upstream: http://127.0.0.1:3000
     - avahi

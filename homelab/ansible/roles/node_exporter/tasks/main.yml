@@ -1,0 +1,48 @@
+---
+- name: Install Prometheus node exporter
+  ansible.builtin.package:
+    name: prometheus-node-exporter
+    state: present
+
+- name: Create node exporter textfile collector directory
+  ansible.builtin.file:
+    path: /var/lib/prometheus/node-exporter
+    state: directory
+    owner: prometheus
+    group: prometheus
+    mode: "0755"
+
+- name: Install SMART and NVMe collectors
+  ansible.builtin.package:
+    name:
+      - prometheus-node-exporter-collectors
+      - smartmontools
+      - nvme-cli
+      - jq
+    state: present
+  when: node_exporter_enable_disk_health_collectors
+
+- name: Enable SMART and NVMe collector timers
+  ansible.builtin.systemd_service:
+    name: "{{ item }}"
+    state: started
+    enabled: true
+  loop:
+    - prometheus-node-exporter-smartmon.timer
+    - prometheus-node-exporter-nvme.timer
+  when: node_exporter_enable_disk_health_collectors
+
+- name: Configure Prometheus node exporter collectors
+  ansible.builtin.template:
+    src: prometheus-node-exporter.default.j2
+    dest: /etc/default/prometheus-node-exporter
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart Prometheus node exporter
+
+- name: Ensure Prometheus node exporter is running
+  ansible.builtin.service:
+    name: prometheus-node-exporter
+    state: started
+    enabled: true

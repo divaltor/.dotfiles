@@ -12,6 +12,8 @@
   roles:
     - ssh
     - common
+    - role: node_exporter
+      tags: [node_exporter]
     - tailscale
     - role: avahi
       vars:

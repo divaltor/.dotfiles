@@ -591,6 +591,75 @@ resource "proxmox_virtual_environment_container" "sftpgo" {
   }
 }
 
+# ─── LXC: monitoring (106) — Prometheus and Grafana ─────────
+
+resource "proxmox_virtual_environment_container" "monitoring" {
+  node_name     = "divaltor-dc"
+  vm_id         = 106
+  started       = true
+  start_on_boot = true
+  unprivileged  = true
+
+  description = "Prometheus, Grafana, and Proxmox metrics exporter"
+
+  operating_system {
+    type             = "debian"
+    template_file_id = proxmox_download_file.debian_13_lxc_template.id
+  }
+
+  cpu {
+    architecture = "amd64"
+    cores        = 2
+  }
+
+  console {
+    enabled   = true
+    tty_count = 2
+    type      = "tty"
+  }
+
+  memory {
+    dedicated = 2048
+    swap      = 512
+  }
+
+  disk {
+    datastore_id = "fast-nvme"
+    size         = 32
+  }
+
+  network_interface {
+    name     = "eth0"
+    bridge   = "vmbr0"
+    firewall = false
+  }
+
+  initialization {
+    hostname = "monitoring"
+
+    ip_config {
+      ipv4 {
+        address = "dhcp"
+      }
+    }
+
+    dns {
+      servers = ["1.1.1.1", "8.8.8.8"]
+    }
+  }
+
+  # Debian 13 uses systemd 257, which needs LXC nesting support.
+  features {
+    nesting = true
+  }
+
+  lifecycle {
+    ignore_changes = [
+      operating_system, # template_file_id mismatch with state
+    ]
+  }
+}
+
 # ─── Storage layout (managed at host level) ─────────────────
 # Host disk (500 GB Samsung 970 EVO Plus): ext4 root on pve/root, no LVM-Thin.
 #   local-lvm is omitted so the host can use the remaining space under /var/lib/vz.

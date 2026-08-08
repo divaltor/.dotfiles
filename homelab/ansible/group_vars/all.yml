@@ -4,6 +4,7 @@
 # Proxmox host identity and storage. Pools must already exist on disk; Ansible
 # imports and validates them but never creates a pool or wipes a device.
 proxmox_node_name: divaltor-dc
+proxmox_host_address: 192.168.1.19
 proxmox_system_disk_by_id: /dev/disk/by-id/nvme-Samsung_SSD_970_EVO_Plus_500GB_S4EVNX0T102553F
 proxmox_vm_disk_by_id: /dev/disk/by-id/nvme-WD_BLACK_SN850X_4000GB_252639802020
 proxmox_vm_pool_name: vmdata
@@ -95,6 +96,67 @@ avahi_aliases: []
 # Caddy reverse proxy
 caddy_proxy_server_name: "{{ avahi_hostname }}.local"
 caddy_proxy_upstream: https://127.0.0.1:8006
+
+# Monitoring (LXC: monitoring only)
+node_exporter_port: 9100
+monitoring_prometheus_port: 9090
+monitoring_grafana_port: 3000
+monitoring_pve_exporter_port: 9221
+monitoring_prometheus_retention_time: 180d
+monitoring_prometheus_retention_size: 20GB
+monitoring_pve_exporter_version: 3.9.0
+monitoring_pve_target: divaltor-dc.local
+monitoring_pve_user: prometheus@pve
+monitoring_pve_token_name: monitoring
+monitoring_pve_token_value: "{{ lookup('env', 'PVE_MONITORING_TOKEN') }}"
+monitoring_grafana_admin_password: "{{ lookup('env', 'GRAFANA_ADMIN_PASSWORD') }}"
+monitoring_node_exporter_targets:
+  - name: proxmox
+    address: proxmox.local:9100
+    role: hypervisor
+  - name: homelab
+    address: homelab.local:9100
+    role: vm
+  - name: smb
+    address: smb.local:9100
+    role: lxc
+  - name: kino
+    address: kino.local:9100
+    role: lxc
+  - name: qbittorrent
+    address: qbittorrent.local:9100
+    role: lxc
+  - name: sftpgo
+    address: sftpgo.local:9100
+    role: lxc
+  - name: monitoring
+    address: monitoring.local:9100
+    role: lxc
+monitoring_grafana_community_dashboards:
+  - name: Node Exporter Full
+    file: node-exporter-full.json
+    url: https://grafana.com/api/dashboards/1860/revisions/45/download
+    checksum: sha256:184c6b7409f306da75525d7772f71945b10cea23ad16b5d78c4698ea0ea51986
+  - name: Proxmox via Prometheus
+    file: proxmox-via-prometheus.json
+    url: https://grafana.com/api/dashboards/10347/revisions/1/download
+    checksum: sha256:c336993662c26a5c706b22092527dbf0d77b46ec21bcbe227004ea17dfd1fbbd
+  - name: ZFS Pool Performance and Health
+    file: zfs-pool-performance-and-health.json
+    url: https://grafana.com/api/dashboards/24987/revisions/2/download
+    checksum: sha256:460d5c8f678190dfbf8d6a6e085dfb24d00503fd8fca093726b6d17bcacd15ca
+  - name: SMART and NVMe Status
+    file: smart-nvme-status.json
+    url: https://grafana.com/api/dashboards/16514/revisions/1/download
+    checksum: sha256:40f1c40721441922d811d39f2f3b02c9444b83a1ee8dc8780d4136bf15e0ad41
+  - name: Node Temperatures
+    file: node-temperatures.json
+    url: https://grafana.com/api/dashboards/15202/revisions/1/download
+    checksum: sha256:3a5addbd0a85bac907a6c3acd9525eb8863ffafe4e0cac07d2b6355c2abf9684
+  - name: Prometheus Self-Monitoring
+    file: prometheus-self-monitoring.json
+    url: https://grafana.com/api/dashboards/25537/revisions/1/download
+    checksum: sha256:964e8674a6e5bab7980acc42b2eb6bb4c958ace4fa9d79b3d9e290b1ad96cc87
 
 # qBittorrent
 qbittorrent_webui_password: "{{ lookup('env', 'QBITTORRENT_PASSWORD') }}"

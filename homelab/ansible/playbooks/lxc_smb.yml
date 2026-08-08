@@ -20,6 +20,10 @@
   roles:
     - ssh
     - common
+    - role: node_exporter
+      tags: [node_exporter]
+      vars:
+        node_exporter_disabled_collectors: [diskstats, zfs]
     - tailscale
     - role: samba
     - role: avahi

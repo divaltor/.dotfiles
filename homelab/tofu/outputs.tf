@@ -48,6 +48,15 @@ output "ct_sftpgo_info" {
   }
 }
 
+output "ct_monitoring_info" {
+  description = "Monitoring LXC details"
+  value = {
+    vmid     = proxmox_virtual_environment_container.monitoring.vm_id
+    hostname = "monitoring"
+    node     = proxmox_virtual_environment_container.monitoring.node_name
+  }
+}
+
 output "all_ips" {
   description = "All static IPs for inventory (DHCP VMs use mDNS hostnames)"
   value = {

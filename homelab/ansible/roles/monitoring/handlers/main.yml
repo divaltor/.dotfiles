@@ -1,0 +1,19 @@
+---
+- name: Reload monitoring systemd units
+  ansible.builtin.systemd_service:
+    daemon_reload: true
+
+- name: Restart Prometheus
+  ansible.builtin.service:
+    name: prometheus
+    state: restarted
+
+- name: Restart Proxmox exporter
+  ansible.builtin.service:
+    name: prometheus-pve-exporter
+    state: restarted
+
+- name: Restart Grafana
+  ansible.builtin.service:
+    name: grafana-server
+    state: restarted
