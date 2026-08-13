@@ -7,7 +7,7 @@ description: Use when the user asks for ASCII diagrams, timeline diagrams, flow 
 
 Use this skill when a diagram will explain timing, data flow, state, architecture, comparisons, profiling, or operational behavior more clearly than prose.
 
-Not for code-shape diffs or rendered HTML artifacts — use the `show-me` skill for those. This skill outputs terminal-safe text only.
+Not for code-shape diffs or rendered HTML artifacts — use the `explain` skill for those. This skill outputs terminal-safe text only.
 
 ## Pick the right shape first
 

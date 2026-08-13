@@ -1,17 +1,18 @@
 ---
-name: commit-messages
-description: Writes clear Git commit messages and change explanations using the seven-rule convention (imperative subject, 50/72 wrapping, why-not-how body). Use when the user asks to write, review, or improve a commit message, or to explain what and why a change was made.
+name: commit-message
+description: Write, review, or improve Git commit messages and descriptions for Jira issues, pull requests, changelogs, release notes, and similar change records. Use when the user asks for one of these artifacts.
 ---
 
-# Commit Messages
+# Change Descriptions
 
-Write commit messages and change explanations so a reader learns **why** a change
-happened, not just what changed. A diff shows *what*; the message must supply the
-*why* and the context that would otherwise be lost.
+Write change descriptions so a reader learns **why** a change happened, not just
+what changed. A diff shows *what*; the description must supply the *why* and the
+context that would otherwise be lost. Apply the commit-message rules only to Git
+commit messages.
 
 Sources: cbea.ms/git-commit and tbaggery.com/2008/04/19/a-note-about-git-commit-messages.
 
-## The seven rules
+## Git commit messages: the seven rules
 
 1. Separate subject from body with a blank line.
 2. Limit the subject line to ~50 characters (72 is the hard cap).
@@ -57,8 +58,8 @@ See also: #456, #789
 
 ## Writing explanations (not just commits)
 
-When the user asks you to explain a change (PR description, changelog entry,
-review summary), apply the same what/why priority:
+When the user asks for a Jira issue description, PR description, changelog entry,
+release note, or review summary, apply the same what/why priority:
 
 1. One-line summary in plain, imperative-style language.
 2. The problem and the reason the change was needed.

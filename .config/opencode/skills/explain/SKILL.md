@@ -1,9 +1,9 @@
 ---
-name: show-me
-description: Help the user understand code, a change, or an architecture by choosing the clearest medium — code-shape sketches, diffs, call/component/file trees, Mermaid, or a focused HTML artifact. For terminal-safe ASCII diagrams (flows, timelines, flamegraphs, XY plots, layouts) use the ascii-diagrams skill.
+name: explain
+description: Explain code, changes, architecture, or technical concepts when the user asks for an explanation. Choose the clearest medium: concise prose, code-shape sketches, diffs, call/component/file trees, Mermaid, or a focused HTML artifact. For terminal-safe ASCII diagrams (flows, timelines, flamegraphs, XY plots, layouts), use the ascii-diagrams skill.
 ---
 
-Help the user understand the current topic of conversation visually. Skip the preamble and keep prose brief. Pick the smallest view that makes the key point clear.
+Explain the current topic of conversation. Skip the preamble and keep prose brief. Use a visual only when it makes the key point clearer. Pick the smallest view that does so.
 
 - Show logic or an algorithm as pseudocode:
 
@@ -75,7 +75,7 @@ For a file-layout change:
 ```diff
  src/
  ├── commands/
-+│   └── show-me.ts       # expands the slash command
++│   └── explain.ts       # expands the slash command
  ├── sessions/
 -└── transport.ts
 +└── transport/
@@ -119,7 +119,7 @@ function expandSkill(command: string): string {
 - For a visual UI, layout, state comparison, or concept too dense for Mermaid, write one focused HTML file — a diagram, an infographic, or a short slide deck, whichever fits the point. Match the product's colors, type, spacing, and components; use real labels and data; support desktop and mobile. Then open it for the user:
 
 ```
-Bash(open path/to/show-me-{description}.html)
+Bash(open path/to/explain-{description}.html)
 ```
 
 - Place each visual next to the short text it supports. Keep only the calls, files, props, states, and boundaries needed to answer the user's current question.
