@@ -1,6 +1,6 @@
 ---
 name: duckdb-query
-description: Queries local and remote files (Parquet, CSV, JSON) using DuckDB as SQL engine. Use for data analysis, file inspection, S3 queries, or answering questions about tabular data.
+description: "Queries local and remote files (Parquet, CSV, JSON) using DuckDB as SQL engine. Use for data analysis, file inspection, S3 queries, or answering questions about tabular data."
 ---
 
 # DuckDB Query Engine

@@ -1,6 +1,6 @@
 ---
 name: commit-message
-description: Write, review, or improve Git commit messages and descriptions for Jira issues, pull requests, changelogs, release notes, and similar change records. Use when the user asks for one of these artifacts.
+description: "Write, review, or improve Git commit messages and descriptions for Jira issues, pull requests, changelogs, release notes, and similar change records. Use when the user asks for one of these artifacts."
 ---
 
 # Change Descriptions

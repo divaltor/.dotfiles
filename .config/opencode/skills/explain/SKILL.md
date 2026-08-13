@@ -1,6 +1,6 @@
 ---
 name: explain
-description: Explain code, changes, architecture, or technical concepts when the user asks for an explanation. Choose the clearest medium: concise prose, code-shape sketches, diffs, call/component/file trees, Mermaid, or a focused HTML artifact. For terminal-safe ASCII diagrams (flows, timelines, flamegraphs, XY plots, layouts), use the ascii-diagrams skill.
+description: "Explain code, changes, architecture, or technical concepts when the user asks for an explanation. Choose the clearest medium: concise prose, code-shape sketches, diffs, call/component/file trees, Mermaid, or a focused HTML artifact. For terminal-safe ASCII diagrams (flows, timelines, flamegraphs, XY plots, layouts), use the ascii-diagrams skill."
 ---
 
 Explain the current topic of conversation. Skip the preamble and keep prose brief. Use a visual only when it makes the key point clearer. Pick the smallest view that does so.
