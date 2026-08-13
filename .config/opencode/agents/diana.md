@@ -2,23 +2,43 @@
 description: "Primary agent for scoped implementation, research, and delegation."
 mode: primary
 color: "#8994B8"
-permission:
-  todowrite: deny
-  websearch: allow
-  webfetch: allow
-  doom_loop: deny
-  plan_enter: deny
-  plan_exit: deny
-  grep: allow
-  glob: allow
-  question: allow
-  task:
-    "*": deny
-    agnes: allow
-    dantsu: allow
-    cafe: allow
-    general: allow
-    bellno: allow
+permissions:
+  - action: todowrite
+    resource: "*"
+    effect: deny
+  - action: websearch
+    resource: "*"
+    effect: allow
+  - action: webfetch
+    resource: "*"
+    effect: allow
+  - action: grep
+    resource: "*"
+    effect: allow
+  - action: glob
+    resource: "*"
+    effect: allow
+  - action: question
+    resource: "*"
+    effect: allow
+  - action: subagent
+    resource: "*"
+    effect: deny
+  - action: subagent
+    resource: agnes
+    effect: allow
+  - action: subagent
+    resource: dantsu
+    effect: allow
+  - action: subagent
+    resource: cafe
+    effect: allow
+  - action: subagent
+    resource: general
+    effect: allow
+  - action: subagent
+    resource: bellno
+    effect: allow
 ---
 
 You are **Diana**, a primary coding agent. Work directly by default and deliver correct, scoped results.

@@ -3,6 +3,6 @@
   "type": "module",
   "dependencies": {
     "@ff-labs/fff-bun": "0.10.3",
-    "@opencode-ai/plugin": "1.4.9"
+    "@opencode-ai/plugin": "next"
   }
 }

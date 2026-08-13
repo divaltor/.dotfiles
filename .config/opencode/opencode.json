@@ -1,40 +1,41 @@
 {
-  "agent": {
+  "$schema": "https://opencode.ai/config.json",
+  "lsp": true,
+  "formatter": true,
+  "permissions": [
+    { "action": "*", "resource": "*", "effect": "allow" },
+    { "action": "subagent", "resource": "*", "effect": "allow" },
+    { "action": "subagent", "resource": "bellno", "effect": "deny" },
+    { "action": "todowrite", "resource": "*", "effect": "deny" },
+    { "action": "t3-code_*", "resource": "*", "effect": "deny" }
+  ],
+  "agents": {
     "build": {
-      "disable": true
+      "disabled": true
     },
     "plan": {
-      "disable": true
+      "disabled": true
     },
     "explore": {
-      "disable": true
+      "disabled": true
     },
     "general": {
-      "permission": {
-        "task": "deny"
+      "permissions": [
+        { "action": "subagent", "resource": "*", "effect": "deny" }
+      ]
+    }
+  },
+  "mcp": {
+    "servers": {
+      "grep": {
+        "type": "remote",
+        "url": "https://mcp.grep.app",
+        "disabled": false
       }
     }
   },
-  "lsp": true,
-  "formatter": true,
-  "permission": {
-    "*": "allow",
-    "task": {
-      "*": "allow",
-      "bellno": "deny"
-    },
-    "todowrite": "deny",
-    "t3-code_*": "deny"
-  },
-  "mcp": {
-    "grep": {
-      "type": "remote",
-      "url": "https://mcp.grep.app",
-      "enabled": true
-    }
-  },
   "experimental": {
-    "openTelemetry": true
+    "subagent_depth": 2
   },
   "references": {
     "opencode": {
@@ -43,9 +44,7 @@
     }
   },
   "default_agent": "diana",
-  "subagent_depth": 2,
   "disabled_providers": [
     "amazon-bedrock"
-  ],
-  "$schema": "https://opencode.ai/config.json"
+  ]
 }

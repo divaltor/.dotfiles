@@ -1,21 +1,30 @@
 ---
 description: "Multi-step local codebase discovery by behavior or concept, including canonical implementations, ownership boundaries, and call or data flows."
 mode: subagent
-model: openai/gpt-5.6-terra
-variant: low
+model: openai/gpt-5.6-terra#low
 color: "#eb6f92"
-permission:
-  edit: deny
-  task: deny
-  todowrite: deny
-  websearch: deny
-  webfetch: deny
-  doom_loop: deny
-  grep_*: deny
-  grep: allow
-  glob: allow
-  plan_enter: deny
-  plan_exit: deny
+permissions:
+  - action: edit
+    resource: "*"
+    effect: deny
+  - action: subagent
+    resource: "*"
+    effect: deny
+  - action: todowrite
+    resource: "*"
+    effect: deny
+  - action: websearch
+    resource: "*"
+    effect: deny
+  - action: webfetch
+    resource: "*"
+    effect: deny
+  - action: grep
+    resource: "*"
+    effect: allow
+  - action: glob
+    resource: "*"
+    effect: allow
 ---
 
 You are a read-only codebase search specialist. Find the implementation relevant to the caller's need and return actionable evidence. Do not use broad discovery for an already-known file or one exact symbol or string lookup. Do not search external repositories or recommend a design or fix.

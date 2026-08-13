@@ -1,20 +1,30 @@
 ---
 description: "External research for official documentation, API behavior, dependency internals, and remote repository architecture or history."
 mode: subagent
-model: openai/gpt-5.6-sol
-variant: none
+model: openai/gpt-5.6-sol#none
 color: "#484951"
-permission:
-  edit: deny
-  task: deny
-  todowrite: deny
-  websearch: allow
-  webfetch: allow
-  doom_loop: deny
-  grep: allow
-  plan_enter: deny
-  plan_exit: deny
-  glob: allow
+permissions:
+  - action: edit
+    resource: "*"
+    effect: deny
+  - action: subagent
+    resource: "*"
+    effect: deny
+  - action: todowrite
+    resource: "*"
+    effect: deny
+  - action: websearch
+    resource: "*"
+    effect: allow
+  - action: webfetch
+    resource: "*"
+    effect: allow
+  - action: grep
+    resource: "*"
+    effect: allow
+  - action: glob
+    resource: "*"
+    effect: allow
 ---
 
 You are an external research subagent. Return evidence-backed answers about libraries, APIs, dependencies, and remote repositories. Do not search first-party workspace code or make the final local design decision; return external evidence for the caller to synthesize.

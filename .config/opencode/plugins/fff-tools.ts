@@ -1,14 +1,19 @@
-import { FileFinder, type FileFinderApi, type GrepMatch } from "@ff-labs/fff-bun"
-import { tool, type Plugin, type ToolContext } from "@opencode-ai/plugin"
+import { FileFinder, type FileFinderApi, type GrepMatch, type GrepMode } from "@ff-labs/fff-bun"
+import { Plugin } from "@opencode-ai/plugin"
+import { execFile } from "node:child_process"
 import { realpath, stat } from "node:fs/promises"
 import { homedir } from "node:os"
 import path from "node:path"
+import { promisify } from "node:util"
+
+const execFileAsync = promisify(execFile)
 
 const RESULT_LIMIT = 100
 const GREP_TIMEOUT_MS = 1_500
 const INDEX_TIMEOUT_MS = 10_000
 const AUXILIARY_LIMIT = 3
 const AUXILIARY_IDLE_MS = 5 * 60_000
+const GIT_TIMEOUT_MS = 5_000
 
 type Finder = FileFinderApi
 type FinderEntry = {
@@ -26,6 +31,19 @@ type Target = {
   kind: "file" | "directory"
 }
 
+type GlobArguments = {
+  pattern: string
+  path?: string
+}
+
+type GrepArguments = {
+  pattern: string
+  additionalPatterns?: string[]
+  mode?: string
+  path?: string
+  include?: string
+}
+
 function posix(value: string) {
   return value.replaceAll(path.sep, "/")
 }
@@ -33,14 +51,6 @@ function posix(value: string) {
 function contains(root: string, target: string) {
   const relative = path.relative(root, target)
   return relative === "" || (!relative.startsWith(`..${path.sep}`) && relative !== ".." && !path.isAbsolute(relative))
-}
-
-function abortError(signal: AbortSignal) {
-  return signal.reason instanceof Error ? signal.reason : new Error("FFF search aborted")
-}
-
-function assertNotAborted(signal: AbortSignal) {
-  if (signal.aborted) throw abortError(signal)
 }
 
 function displayPath(target: Target) {
@@ -58,6 +68,10 @@ function normalizeFileConstraint(value: string | undefined) {
 
 function makeFinder(root: string) {
   if (root === path.parse(root).root) throw new Error("FFF will not index the filesystem root")
+  // FFF indexes hidden files/dirs only when git2 can discover a git repo above
+  // the root; non-git roots skip hidden entries hard-coded (no option to change).
+  // node_modules and similar are excluded via .gitignore (git roots) or FFF's
+  // built-in ignore list (non-git roots).
   const result = FileFinder.create({
     basePath: root,
     aiMode: true,
@@ -67,10 +81,8 @@ function makeFinder(root: string) {
   return result.value
 }
 
-async function waitUntilReady(finder: Finder, root: string, signal: AbortSignal) {
-  assertNotAborted(signal)
+async function waitUntilReady(finder: Finder, root: string) {
   const ready = await finder.waitForScan(INDEX_TIMEOUT_MS)
-  assertNotAborted(signal)
   if (!ready.ok) throw new Error(`FFF failed to index ${root}: ${ready.error}`)
   if (!ready.value) throw new Error(`FFF did not finish indexing ${root} within ${INDEX_TIMEOUT_MS}ms`)
 }
@@ -94,138 +106,146 @@ function formatMatches(root: string, items: GrepMatch[], more: boolean) {
   return output.join("\n")
 }
 
-export default (async ({ directory, worktree }) => {
-  if (!FileFinder.isAvailable()) throw new Error("The native FFF library is unavailable")
-
-  const canonicalDirectory = await realpath(directory)
-  // FFF cannot index the home directory or filesystem root, and a full home
-  // scan would not finish within the index timeout. Skip FFF in that case so
-  // the built-in glob/grep tools remain available.
-  if (canonicalDirectory === homedir() || canonicalDirectory === path.parse(canonicalDirectory).root) {
-    return {}
+async function gitRoot(directory: string) {
+  try {
+    const { stdout } = await execFileAsync("git", ["rev-parse", "--show-toplevel"], {
+      cwd: directory,
+      timeout: GIT_TIMEOUT_MS,
+    })
+    const root = stdout.trim()
+    return root ? await realpath(root) : directory
+  } catch {
+    return directory
   }
-  const canonicalWorktree = worktree === path.parse(worktree).root ? canonicalDirectory : await realpath(worktree)
-  const workspaceRoot = canonicalDirectory
-  const workspaceFinder = makeFinder(workspaceRoot)
-  const initialScan = await workspaceFinder.waitForScan(INDEX_TIMEOUT_MS)
-  if (!initialScan.ok || !initialScan.value) {
-    workspaceFinder.destroy()
-    throw new Error(
-      initialScan.ok
-        ? `FFF did not finish indexing ${workspaceRoot} within ${INDEX_TIMEOUT_MS}ms`
-        : `FFF failed to index ${workspaceRoot}: ${initialScan.error}`,
-    )
-  }
-  const auxiliary = new Map<string, FinderEntry>()
+}
 
-  function destroyEntry(entry: FinderEntry) {
-    if (entry.timer) clearTimeout(entry.timer)
-    entry.finder.destroy()
-    auxiliary.delete(entry.root)
-  }
+export default Plugin.define({
+  id: "divaltor.fff-tools",
+  setup: async (ctx) => {
+    if (!FileFinder.isAvailable()) throw new Error("The native FFF library is unavailable")
 
-  function evictOne() {
-    const idle = [...auxiliary.values()]
-      .filter((entry) => entry.active === 0)
-      .sort((a, b) => a.lastUsed - b.lastUsed)[0]
-    if (idle) destroyEntry(idle)
-    return Boolean(idle)
-  }
+    const finders = new Map<string, FinderEntry>()
+    const scopes = new Map<string, Promise<{ directory: string; worktree: string }>>()
 
-  function acquire(root: string) {
-    if (root === homedir() || root === path.parse(root).root) {
-      throw new Error(`FFF cannot index the home directory or filesystem root; use a smaller directory: ${root}`)
-    }
-    if (root === workspaceRoot) return { finder: workspaceFinder, release() { } }
-
-    let entry = auxiliary.get(root)
-    if (!entry) {
-      const retained = auxiliary.size < AUXILIARY_LIMIT || evictOne()
-      entry = { root, finder: makeFinder(root), active: 0, lastUsed: Date.now(), retained }
-      auxiliary.set(root, entry)
+    function destroyEntry(entry: FinderEntry) {
+      if (entry.timer) clearTimeout(entry.timer)
+      entry.finder.destroy()
+      finders.delete(entry.root)
     }
 
-    if (entry.timer) clearTimeout(entry.timer)
-    entry.active++
-    entry.lastUsed = Date.now()
-    return {
-      finder: entry.finder,
-      release() {
-        entry!.active--
-        entry!.lastUsed = Date.now()
-        if (!entry!.retained) {
-          if (entry!.active === 0) destroyEntry(entry!)
-          return
-        }
-        entry!.timer = setTimeout(() => {
-          if (entry!.active === 0 && Date.now() - entry!.lastUsed >= AUXILIARY_IDLE_MS) destroyEntry(entry!)
-        }, AUXILIARY_IDLE_MS)
-      },
-    }
-  }
-
-  async function resolveTarget(rawPath: string | undefined, context: ToolContext) {
-    const requested = path.resolve(context.directory, rawPath ?? ".")
-    const info = await stat(requested).catch(() => undefined)
-    if (!info) throw new Error(`Search path does not exist: ${requested}`)
-    if (!info.isDirectory() && !info.isFile()) throw new Error(`Search path must be a file or directory: ${requested}`)
-
-    const target = await realpath(requested)
-    const inDirectory = contains(canonicalDirectory, target)
-    const inWorktree = worktree !== path.parse(worktree).root && contains(canonicalWorktree, target)
-    if (!inDirectory && !inWorktree) {
-      const parentDir = info.isDirectory() ? target : path.dirname(target)
-      const pattern = posix(path.join(parentDir, "*"))
-      await context.ask({
-        permission: "external_directory",
-        patterns: [pattern],
-        always: [pattern],
-        metadata: { filepath: target, parentDir },
-      })
+    function evictOne() {
+      const idle = [...finders.values()]
+        .filter((entry) => entry.active === 0)
+        .sort((a, b) => a.lastUsed - b.lastUsed)[0]
+      if (idle) destroyEntry(idle)
+      return Boolean(idle)
     }
 
-    if (info.isDirectory()) return { root: target, kind: "directory" } satisfies Target
-    return { root: path.dirname(target), constraint: path.basename(target), kind: "file" } satisfies Target
-  }
-
-  async function withFinder<T>(target: Target, signal: AbortSignal, run: (finder: Finder) => T) {
-    const lease = acquire(target.root)
-    try {
-      await waitUntilReady(lease.finder, target.root, signal)
-      assertNotAborted(signal)
-      const result = run(lease.finder)
-      assertNotAborted(signal)
-      return result
-    } finally {
-      lease.release()
+    function acquire(root: string) {
+      if (root === homedir() || root === path.parse(root).root) {
+        throw new Error(`FFF cannot index the home directory or filesystem root; use a smaller directory: ${root}`)
+      }
+      let entry = finders.get(root)
+      if (!entry) {
+        const retained = finders.size < AUXILIARY_LIMIT || evictOne()
+        entry = { root, finder: makeFinder(root), active: 0, lastUsed: Date.now(), retained }
+        finders.set(root, entry)
+      }
+      if (entry.timer) clearTimeout(entry.timer)
+      entry.active++
+      entry.lastUsed = Date.now()
+      return {
+        finder: entry.finder,
+        release() {
+          entry!.active--
+          entry!.lastUsed = Date.now()
+          if (!entry!.retained) {
+            if (entry!.active === 0) destroyEntry(entry!)
+            return
+          }
+          entry!.timer = setTimeout(() => {
+            if (entry!.active === 0 && Date.now() - entry!.lastUsed >= AUXILIARY_IDLE_MS) destroyEntry(entry!)
+          }, AUXILIARY_IDLE_MS)
+        },
+      }
     }
-  }
 
-  return {
-    dispose: async () => {
-      for (const entry of auxiliary.values()) destroyEntry(entry)
-      workspaceFinder.destroy()
-    },
-    tool: {
-      glob: tool({
+    async function scopeFor(sessionID: string) {
+      const pending = scopes.get(sessionID)
+      if (pending) return pending
+      const promise = (async () => {
+        const session = await ctx.session.get({ sessionID })
+        const directory = await realpath(session.location.directory)
+        const worktree = await gitRoot(directory)
+        return { directory, worktree }
+      })()
+      scopes.set(sessionID, promise)
+      return promise
+    }
+
+    async function resolveTarget(rawPath: string | undefined, directory: string, worktree: string) {
+      const requested = path.resolve(directory, rawPath ?? ".")
+      const info = await stat(requested).catch(() => undefined)
+      if (!info) throw new Error(`Search path does not exist: ${requested}`)
+      if (!info.isDirectory() && !info.isFile()) throw new Error(`Search path must be a file or directory: ${requested}`)
+
+      const target = await realpath(requested)
+      if (!contains(directory, target) && !contains(worktree, target)) {
+        throw new Error(
+          `Search path is outside the workspace: ${target}. V2 plugin tools cannot request external directory access; move the session directory or use a path inside the project.`,
+        )
+      }
+      if (target === homedir() || target === path.parse(target).root) {
+        throw new Error(`FFF cannot index the home directory or filesystem root; use a smaller directory: ${target}`)
+      }
+
+      if (info.isDirectory()) return { root: target, kind: "directory" } satisfies Target
+      return { root: path.dirname(target), constraint: path.basename(target), kind: "file" } satisfies Target
+    }
+
+    async function withFinder<T>(target: Target, run: (finder: Finder) => T) {
+      const lease = acquire(target.root)
+      try {
+        await waitUntilReady(lease.finder, target.root)
+        return run(lease.finder)
+      } finally {
+        lease.release()
+      }
+    }
+
+    await ctx.tool.transform((tools) => {
+      tools.add({
+        name: "glob",
+        options: { codemode: false, permission: "glob" },
         description:
           "Use this tool to find workspace files by name or path when the exact path is unknown. Give pattern a glob such as '**/*.ts' or '**/config.*'; use path to limit the search to a directory. Prefer this to shell find or ls for file discovery. Returns absolute paths ordered by relevance.",
-        args: {
-          pattern: tool.schema.string().min(1).describe("Glob pattern for file paths, for example '**/*.ts' or '**/package.json'"),
-          path: tool.schema.string().optional().describe("Directory to search; defaults to the current workspace directory"),
+        input: {
+          type: "object",
+          properties: {
+            pattern: {
+              type: "string",
+              minLength: 1,
+              description: "Glob pattern for file paths, for example '**/*.ts' or '**/package.json'",
+            },
+            path: {
+              type: "string",
+              description: "Directory to search; defaults to the current workspace directory",
+            },
+          },
+          required: ["pattern"],
+          additionalProperties: false,
         },
-        async execute(args, context) {
-          await context.ask({
-            permission: "glob",
-            patterns: [args.pattern],
-            always: ["*"],
-            metadata: args,
-          })
-
-          const target = await resolveTarget(args.path, context)
+        execute: async (raw, context) => {
+          const args = raw as GlobArguments
+          if (typeof args.pattern !== "string" || args.pattern.length === 0) {
+            throw new Error("A glob pattern is required")
+          }
+          const scope = await scopeFor(context.sessionID)
+          const target = await resolveTarget(args.path, scope.directory, scope.worktree)
           if (target.kind !== "directory") throw new Error(`Glob path must be a directory: ${args.path}`)
-          context.metadata({ title: displayPath(target) })
-          const result = await withFinder(target, context.abort, (finder) =>
+          await context.progress({ title: displayPath(target) })
+
+          const result = await withFinder(target, (finder) =>
             finder.glob(args.pattern, { pageIndex: 0, pageSize: RESULT_LIMIT + 1 }),
           )
           if (!result.ok) throw new Error(result.error)
@@ -238,47 +258,70 @@ export default (async ({ directory, worktree }) => {
             output.push("", `(Results are truncated: showing first ${RESULT_LIMIT} results. Use a more specific path or pattern.)`)
           }
           return {
-            output: output.join("\n"),
+            content: output.join("\n"),
             metadata: { count: items.length, more: truncated },
           }
         },
-      }),
-      grep: tool({
+      })
+
+      tools.add({
+        name: "grep",
+        options: { codemode: false, permission: "grep" },
         description:
           "Use this tool to search workspace file contents for symbols, imports, error text, or other code. Prefer this to shell grep or rg. Use regex mode for regular expressions, plain for exact literal text, fuzzy for approximate text, and multi for literal OR searches with additionalPatterns. Narrow with path or include when possible.",
-        args: {
-          pattern: tool.schema.string().min(1).describe("Text or regular expression to find in file contents"),
-          additionalPatterns: tool.schema
-            .array(tool.schema.string().min(1))
-            .optional()
-            .describe("Additional literal alternatives; set mode to 'multi' when using this field"),
-          mode: tool.schema
-            .enum(["regex", "plain", "fuzzy", "multi"])
-            .default("regex")
-            .describe("Search interpretation: regex, exact literal plain text, fuzzy text, or literal multi-pattern OR"),
-          path: tool.schema.string().optional().describe("File or directory to search; defaults to the current workspace directory"),
-          include: tool.schema.string().optional().describe('File glob filter, for example "*.ts" or "*.{ts,tsx}"'),
+        input: {
+          type: "object",
+          properties: {
+            pattern: {
+              type: "string",
+              minLength: 1,
+              description: "Text or regular expression to find in file contents",
+            },
+            additionalPatterns: {
+              type: "array",
+              items: { type: "string", minLength: 1 },
+              description: "Additional literal alternatives; set mode to 'multi' when using this field",
+            },
+            mode: {
+              type: "string",
+              enum: ["regex", "plain", "fuzzy", "multi"],
+              description: "Search interpretation: regex, exact literal plain text, fuzzy text, or literal multi-pattern OR",
+            },
+            path: {
+              type: "string",
+              description: "File or directory to search; defaults to the current workspace directory",
+            },
+            include: {
+              type: "string",
+              description: 'File glob filter, for example "*.ts" or "*.{ts,tsx}"',
+            },
+          },
+          required: ["pattern"],
+          additionalProperties: false,
         },
-        async execute(args, context) {
+        execute: async (raw, context) => {
+          const args = raw as GrepArguments
+          if (typeof args.pattern !== "string" || args.pattern.length === 0) {
+            throw new Error("A search pattern is required")
+          }
           const patterns = [args.pattern, ...(args.additionalPatterns ?? [])]
-          if (args.mode !== "multi" && args.additionalPatterns?.length) {
+          const mode = args.mode ?? "regex"
+          if (mode !== "regex" && mode !== "plain" && mode !== "fuzzy" && mode !== "multi") {
+            throw new Error(`Unsupported search mode: ${mode}`)
+          }
+          if (mode !== "multi" && (args.additionalPatterns?.length ?? 0) > 0) {
             throw new Error("additionalPatterns can only be used in multi mode")
           }
-          await context.ask({
-            permission: "grep",
-            patterns,
-            always: ["*"],
-            metadata: args,
-          })
 
-          const target = await resolveTarget(args.path, context)
-          context.metadata({ title: displayPath(target) })
+          const scope = await scopeFor(context.sessionID)
+          const target = await resolveTarget(args.path, scope.directory, scope.worktree)
+          await context.progress({ title: displayPath(target) })
           const pathConstraint = target.kind === "file" ? normalizeFileConstraint(target.constraint) : undefined
           const includeConstraint = normalizeFileConstraint(args.include)
           const constraints = [pathConstraint, includeConstraint].filter((value): value is string => Boolean(value))
 
-          const result = await withFinder(target, context.abort, (finder) => {
-            if (args.mode === "multi") {
+          const result = await withFinder(target, (finder) => {
+            if (mode === "multi") {
               return finder.multiGrep({
                 patterns,
                 constraints: constraints.join(" ") || undefined,
@@ -288,31 +331,36 @@ export default (async ({ directory, worktree }) => {
               })
             }
             return finder.grep([...constraints, args.pattern].join(" "), {
-              mode: args.mode,
+              mode: mode as GrepMode,
               maxMatchesPerFile: RESULT_LIMIT,
               pageSize: RESULT_LIMIT,
               timeBudgetMs: GREP_TIMEOUT_MS,
             })
           })
           if (!result.ok) throw new Error(result.error)
-          if (result.value.regexFallbackError && args.mode === "regex") {
+          if (result.value.regexFallbackError && mode === "regex") {
             throw new Error(`Invalid regular expression: ${result.value.regexFallbackError}`)
           }
 
           const items = result.value.items.slice(0, RESULT_LIMIT)
           const more = result.value.items.length > items.length || result.value.nextCursor !== null
           return {
-            output: formatMatches(target.root, items, more),
+            content: formatMatches(target.root, items, more),
             metadata: {
               matches: items.length,
-              mode: args.mode,
+              mode,
               more,
               totalFilesSearched: result.value.totalFilesSearched,
               filteredFileCount: result.value.filteredFileCount,
             },
           }
         },
-      }),
-    },
-  }
-}) satisfies Plugin
+      })
+    })
+
+    return async () => {
+      for (const entry of finders.values()) destroyEntry(entry)
+      finders.clear()
+    }
+  },
+})
