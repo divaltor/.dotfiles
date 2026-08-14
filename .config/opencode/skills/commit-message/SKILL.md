@@ -69,6 +69,11 @@ release note, or review summary, apply the same what/why priority:
 Keep it concise. The goal is to save the future maintainer (often the user) from
 re-establishing lost context.
 
+For PR descriptions, use one or two short plain-text paragraphs by default. Do
+not add Markdown headings, checklists, or generic sections such as `Summary`,
+`Why`, `Validation`, or `Test plan`. Do not include routine validation details.
+Use a structured PR format only when the user explicitly requests one.
+
 ## Reviewing an existing message
 
 Check, in order: imperative subject, ~50-char subject, capitalized, no trailing

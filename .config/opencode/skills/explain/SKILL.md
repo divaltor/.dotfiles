@@ -5,6 +5,8 @@ description: "Explain code, changes, architecture, or technical concepts when th
 
 Explain the current topic of conversation. Skip the preamble and keep prose brief. Use a visual only when it makes the key point clearer. Pick the smallest view that does so.
 
+Always put code-shaped content in fenced code blocks. This includes source code, pseudocode, diffs, commands, configuration, logs, call or component trees, file trees, and diagram syntax. Do not present these as plain prose or indented text. Use the most specific fence language available (`ts`, `tsx`, `diff`, `bash`, `json`, `mermaid`); use `text` when no language fits. Keep the explanation outside the block short, and place it immediately before or after the block it explains.
+
 - Show logic or an algorithm as pseudocode:
 
 ```text
