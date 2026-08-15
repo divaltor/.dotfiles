@@ -71,8 +71,9 @@ if type -q yt-dlp
             yt-dlp \
                 $js_runtime \
                 --ffmpeg-location "$ffmpeg_dir" \
-                -f "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]" \
+                -S "vcodec:h264,lang,quality,res,fps,hdr:12,acodec:aac" \
                 --merge-output-format mp4 \
+                --remux-video mp4 \
                 --sponsorblock-remove sponsor \
                 --extractor-args "youtube:player-client=default,-tv_simply" \
                 -o "$HOME/youtube/%(title)s.%(ext)s" \
@@ -83,8 +84,9 @@ if type -q yt-dlp
 
         yt-dlp \
             $js_runtime \
-            -f "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]" \
+            -S "vcodec:h264,lang,quality,res,fps,hdr:12,acodec:aac" \
             --merge-output-format mp4 \
+            --remux-video mp4 \
             --sponsorblock-remove sponsor \
             --extractor-args "youtube:player-client=default,-tv_simply" \
             -o "$HOME/youtube/%(title)s.%(ext)s" \
