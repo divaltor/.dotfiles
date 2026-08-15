@@ -63,3 +63,31 @@
 - name: Display ZFS pool status
   ansible.builtin.debug:
     var: zpool_status.stdout_lines
+
+# ARC sizing. Persisted in modprobe config for boot, and applied live so no
+# reboot is required.
+- name: Ensure ZFS ARC max is configured
+  ansible.builtin.lineinfile:
+    path: /etc/modprobe.d/zfs.conf
+    regexp: '^options zfs zfs_arc_max='
+    line: 'options zfs zfs_arc_max={{ zfs_arc_max_bytes }}'
+    create: true
+    mode: '0644'
+  notify: Rebuild initramfs for ZFS module options
+
+- name: Read live ZFS ARC max
+  ansible.builtin.command:
+    cmd: cat /sys/module/zfs/parameters/zfs_arc_max
+  register: zfs_arc_max_live
+  changed_when: false
+
+- name: Apply ZFS ARC max without reboot
+  ansible.builtin.shell: "echo {{ zfs_arc_max_bytes }} > /sys/module/zfs/parameters/zfs_arc_max"
+  when: zfs_arc_max_live.stdout | trim != (zfs_arc_max_bytes | string)
+
+- name: Verify live ZFS ARC max
+  ansible.builtin.command:
+    cmd: cat /sys/module/zfs/parameters/zfs_arc_max
+  register: zfs_arc_max_applied
+  changed_when: false
+  failed_when: zfs_arc_max_applied.stdout | trim != (zfs_arc_max_bytes | string)

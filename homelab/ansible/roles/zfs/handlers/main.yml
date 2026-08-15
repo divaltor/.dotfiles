@@ -1,0 +1,4 @@
+---
+- name: Rebuild initramfs for ZFS module options
+  ansible.builtin.command:
+    cmd: update-initramfs -u -k all

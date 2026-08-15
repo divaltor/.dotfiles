@@ -39,6 +39,12 @@ proxmox_gpu_vbios_sha256: ee1aa9f76168cc9ac1318102fa60bfe72e371741877a4b83898d8d
 zfs_pool_name: pool
 zfs_pool_mountpoint: /media
 
+# ZFS ARC cache cap in bytes (8 GiB). The host has 60 GiB usable RAM: two VMs
+# pin 40 GiB (ballooning off), five LXCs may grow to ~9.5 GiB combined, and the
+# iGPU shares system RAM. Raising to 10 GiB (10737418240) would leave only
+# ~7 GiB available — do not raise without adding RAM or rechecking guest usage.
+zfs_arc_max_bytes: 8589934592
+
 # ZFS datasets (existing layout; the pool root itself is mounted at /media/cold)
 zfs_datasets:
   - name: pool
