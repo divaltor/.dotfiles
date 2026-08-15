@@ -327,6 +327,7 @@ resource "proxmox_virtual_environment_container" "smb" {
   lifecycle {
     ignore_changes = [
       operating_system,  # template_file_id mismatch with state
+      mount_point,       # host bind mounts are managed by Ansible without replacing the LXC
       features[0].mount, # managed outside provider
       features[0].fuse,
       features[0].keyctl,
@@ -489,7 +490,7 @@ resource "proxmox_virtual_environment_container" "qbittorrent" {
     path = "/dev/net/tun"
   }
 
-  # Keep the ZFS-backed host and container download paths identical.
+  # Existing HDD downloads remain mounted for access and manual migration.
   mount_point {
     volume = "/media/cold/downloads"
     path   = "/media/cold/downloads"
@@ -498,6 +499,7 @@ resource "proxmox_virtual_environment_container" "qbittorrent" {
   lifecycle {
     ignore_changes = [
       operating_system,  # template_file_id mismatch with state
+      mount_point,       # host bind mounts are managed by Ansible without replacing the LXC
       features[0].mount, # managed outside provider
       features[0].fuse,
       features[0].keyctl,

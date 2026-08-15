@@ -73,6 +73,78 @@
   loop: "{{ proxmox_vm_dataset_properties.results }}"
   when: item.stdout != item.item.value
 
+- name: Check VM child datasets
+  ansible.builtin.command:
+    argv: [zfs, list, -H, -o, name, "{{ item.name }}"]
+  loop: "{{ proxmox_vm_datasets }}"
+  register: proxmox_vm_dataset_checks
+  changed_when: false
+  failed_when: false
+
+- name: Create VM child datasets
+  ansible.builtin.command:
+    argv: [zfs, create, "{{ item.item.name }}"]
+  loop: "{{ proxmox_vm_dataset_checks.results }}"
+  when: item.rc != 0
+
+- name: Read VM child dataset properties
+  ansible.builtin.command:
+    argv: [zfs, get, -H, -o, value, "{{ item.1.property }}", "{{ item.0.name }}"]
+  loop: "{{ proxmox_vm_datasets | product(proxmox_vm_child_dataset_properties) | list }}"
+  vars:
+    proxmox_vm_child_dataset_properties:
+      - { property: mountpoint, key: mountpoint }
+      - { property: quota, key: quota }
+      - { property: recordsize, key: recordsize }
+  register: proxmox_vm_child_dataset_property_values
+  changed_when: false
+
+- name: Set VM child dataset properties
+  ansible.builtin.command:
+    argv:
+      - zfs
+      - set
+      - "{{ item.item.1.property }}={{ item.item.0[item.item.1.key] }}"
+      - "{{ item.item.0.name }}"
+  loop: "{{ proxmox_vm_child_dataset_property_values.results }}"
+  when: item.stdout != item.item.0[item.item.1.key] | string
+
+- name: Read LXC configurations for managed bind mounts
+  ansible.builtin.command:
+    argv:
+      - pvesh
+      - get
+      - "/nodes/{{ proxmox_node_name }}/lxc/{{ item.vmid }}/config"
+      - --output-format
+      - json
+  loop: "{{ proxmox_lxc_bind_mounts }}"
+  register: proxmox_lxc_bind_mount_configs
+  changed_when: false
+
+- name: Verify managed LXC mount slots are available
+  ansible.builtin.assert:
+    that:
+      - >-
+        item.item.key not in (item.stdout | from_json) or
+        (item.stdout | from_json)[item.item.key].split(',')[0] == item.item.volume
+    fail_msg: >-
+      LXC {{ item.item.vmid }} {{ item.item.key }} is already used by
+      '{{ (item.stdout | from_json).get(item.item.key) }}'
+  loop: "{{ proxmox_lxc_bind_mount_configs.results }}"
+
+- name: Configure managed LXC bind mounts
+  ansible.builtin.command:
+    argv:
+      - pct
+      - set
+      - "{{ item.item.vmid }}"
+      - "-{{ item.item.key }}"
+      - "{{ item.item.volume }},mp={{ item.item.path }}"
+  loop: "{{ proxmox_lxc_bind_mount_configs.results }}"
+  vars:
+    expected_mount: "{{ item.item.volume }},mp={{ item.item.path }}"
+  when: (item.stdout | from_json).get(item.item.key, '') != expected_mount
+
 - name: Read Proxmox VM storage configuration
   ansible.builtin.command:
     argv: [pvesh, get, "/storage/{{ proxmox_vm_storage_id }}", --output-format, json]

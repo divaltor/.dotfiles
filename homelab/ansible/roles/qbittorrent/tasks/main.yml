@@ -21,6 +21,19 @@
     system: true
     shell: /usr/sbin/nologin
 
+- name: Ensure shared storage group exists
+  ansible.builtin.group:
+    name: "{{ zfs_share_group }}"
+    gid: "{{ zfs_share_gid }}"
+    state: present
+
+- name: Add qBittorrent to shared storage group
+  ansible.builtin.user:
+    name: qbittorrent
+    groups:
+      - "{{ zfs_share_group }}"
+    append: true
+
 - name: Ensure qBittorrent configuration directory exists
   ansible.builtin.file:
     path: /var/lib/qbittorrent/.config/qBittorrent
@@ -29,13 +42,37 @@
     group: qbittorrent
     mode: "0750"
 
-- name: Ensure qBittorrent can write downloads
+- name: Ensure shared download directories have compatible permissions
   ansible.builtin.file:
-    path: /media/cold/downloads
+    path: "{{ item }}"
     state: directory
     owner: qbittorrent
-    group: qbittorrent
-    mode: "0775"
+    group: "{{ zfs_share_group }}"
+    mode: "2775"
+  loop:
+    - /media/cold/downloads
+    - "{{ qbittorrent_download_path }}"
+
+- name: Check qBittorrent download path
+  community.general.ini_file:
+    path: /var/lib/qbittorrent/.config/qBittorrent/qBittorrent.conf
+    section: BitTorrent
+    option: 'Session\DefaultSavePath'
+    value: "{{ qbittorrent_download_path }}"
+    no_extra_spaces: true
+  check_mode: true
+  register: qbittorrent_download_path_check
+
+- name: Gather service facts
+  ansible.builtin.service_facts:
+
+- name: Stop qBittorrent before changing its preferences
+  ansible.builtin.systemd_service:
+    name: qbittorrent
+    state: stopped
+  when:
+    - qbittorrent_download_path_check.changed
+    - ansible_facts.services['qbittorrent.service'] is defined
 
 - name: Enforce managed qBittorrent preferences
   community.general.ini_file:
@@ -47,21 +84,7 @@
     group: qbittorrent
     mode: "0600"
     no_extra_spaces: true
-  loop:
-    - { section: BitTorrent, option: 'Session\DefaultSavePath', value: /media/cold/downloads }
-    - { section: BitTorrent, option: 'Session\GlobalMaxRatio', value: '0' }
-    - { section: BitTorrent, option: 'Session\Preallocation', value: 'true' }
-    - { section: BitTorrent, option: 'Session\ShareLimitAction', value: Stop }
-    - { section: LegalNotice, option: Accepted, value: 'true' }
-    - { section: Preferences, option: 'WebUI\Address', value: 127.0.0.1 }
-    - { section: Preferences, option: 'WebUI\Enabled', value: 'true' }
-    - { section: Preferences, option: 'WebUI\HostHeaderValidation', value: 'true' }
-    - { section: Preferences, option: 'WebUI\LocalHostAuth', value: 'true' }
-    - { section: Preferences, option: 'WebUI\Port', value: '8080' }
-    - { section: Preferences, option: 'WebUI\ServerDomains', value: 'qt.local;torrent.local' }
-    - { section: Preferences, option: 'WebUI\UseUPnP', value: 'false' }
-    - { section: Preferences, option: 'WebUI\Username', value: admin }
-  notify: Restart qBittorrent
+  loop: "{{ qbittorrent_managed_preferences }}"
 
 - name: Check configured qBittorrent Web UI password
   ansible.builtin.command:

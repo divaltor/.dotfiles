@@ -3,7 +3,7 @@
 # LXC: smb (101) — Samba file server + Avahi mDNS
 # ============================================================
 # The container runs Debian with Samba sharing ZFS-backed
-# storage from the Proxmox host via bind mount (/mnt/share).
+# HDD storage and disposable SSD downloads from the Proxmox host via bind mounts.
 # ============================================================
 
 - import_playbook: lxc_bootstrap.yml

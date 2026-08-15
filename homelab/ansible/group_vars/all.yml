@@ -11,6 +11,20 @@ proxmox_vm_pool_name: vmdata
 proxmox_vm_pool_mountpoint: /vmdata
 proxmox_vm_storage_id: fast-nvme
 proxmox_vm_storage_blocksize: 16k
+proxmox_vm_datasets:
+  - name: vmdata/qbittorrent
+    mountpoint: /vmdata/qbittorrent
+    quota: 1T
+    recordsize: 1M
+proxmox_lxc_bind_mounts:
+  - vmid: 101
+    key: mp1
+    volume: /vmdata/qbittorrent
+    path: /mnt/ssd-downloads
+  - vmid: 103
+    key: mp1
+    volume: /vmdata/qbittorrent
+    path: /media/ssd/downloads
 
 # The physical BDF can change when PCIe devices are added. Guests use this
 # logical Proxmox mapping; only this host-side mapping needs the current BDF.
@@ -62,6 +76,19 @@ samba_shares:
     force_directory_mode: "0775"
     owner: divaltor
     group: divaltor
+  - name: ssd
+    path: /mnt/ssd-downloads
+    browseable: true
+    read_only: false
+    inherit_permissions: false
+    valid_users: divaltor
+    force_user: divaltor
+    create_mask: "0664"
+    force_create_mode: "0664"
+    directory_mask: "0775"
+    force_directory_mode: "0775"
+    owner: divaltor
+    group: divaltor
 
 samba_users:
   - name: divaltor
@@ -71,6 +98,10 @@ samba_users:
 # created through either protocol remain writable through the other one.
 zfs_share_group: zfs-share
 zfs_share_gid: 2000
+
+# qBittorrent uses the SSD-backed dataset shared with Samba. Bind mounts are
+# excluded from Proxmox guest backups; this disposable download data stays so.
+qbittorrent_download_path: /media/ssd/downloads
 
 # SFTPGo (LXC: sftpgo only)
 sftpgo_version: 2.7.5

@@ -1,0 +1,15 @@
+---
+qbittorrent_managed_preferences:
+  - { section: BitTorrent, option: 'Session\DefaultSavePath', value: "{{ qbittorrent_download_path }}" }
+  - { section: BitTorrent, option: 'Session\GlobalMaxRatio', value: '0' }
+  - { section: BitTorrent, option: 'Session\Preallocation', value: 'true' }
+  - { section: BitTorrent, option: 'Session\ShareLimitAction', value: Stop }
+  - { section: LegalNotice, option: Accepted, value: 'true' }
+  - { section: Preferences, option: 'WebUI\Address', value: 127.0.0.1 }
+  - { section: Preferences, option: 'WebUI\Enabled', value: 'true' }
+  - { section: Preferences, option: 'WebUI\HostHeaderValidation', value: 'true' }
+  - { section: Preferences, option: 'WebUI\LocalHostAuth', value: 'true' }
+  - { section: Preferences, option: 'WebUI\Port', value: '8080' }
+  - { section: Preferences, option: 'WebUI\ServerDomains', value: 'qt.local;torrent.local' }
+  - { section: Preferences, option: 'WebUI\UseUPnP', value: 'false' }
+  - { section: Preferences, option: 'WebUI\Username', value: admin }

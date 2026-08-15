@@ -2,8 +2,8 @@
 # ============================================================
 # LXC: qbittorrent (103) — qBittorrent server + Avahi mDNS
 # ============================================================
-# qBittorrent writes downloads directly to the ZFS-backed bind mount at
-# /media/cold/downloads and is served locally as qt.local and torrent.local.
+# qBittorrent writes downloads to the 1 TB SSD-backed bind mount at
+# /media/ssd/downloads and is served locally as qt.local and torrent.local.
 # ============================================================
 
 - import_playbook: lxc_bootstrap.yml
