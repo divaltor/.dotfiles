@@ -43,8 +43,9 @@
       "description": "Official repo of Opencode"
     }
   },
+  "websearch": {
+    "provider": "exa"
+  },
   "default_agent": "diana",
-  "disabled_providers": [
-    "amazon-bedrock"
-  ]
+  "disabled_providers": ["amazon-bedrock"]
 }
