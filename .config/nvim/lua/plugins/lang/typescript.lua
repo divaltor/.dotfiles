@@ -12,6 +12,47 @@ return {
           ".git",
         },
       })
+
+      -- TypeScript 7 native LSP (`tsc --lsp --stdio`), replacing the
+      -- deprecated tsgo extra (@typescript/native-preview). nvim-lspconfig's
+      -- `tsc` config prefers <project>/node_modules/.bin/tsc and falls back
+      -- to `tsc` on PATH. `tsc` has no Mason package, so it must be installed
+      -- from npm (typescript@7, globally or per project).
+      opts.servers.tsc = vim.tbl_deep_extend("force", opts.servers.tsc or {}, {
+        filetypes = {
+          "javascript",
+          "javascriptreact",
+          "javascript.jsx",
+          "typescript",
+          "typescriptreact",
+          "typescript.tsx",
+        },
+        settings = {
+          typescript = {
+            inlayHints = {
+              enumMemberValues = { enabled = true },
+              functionLikeReturnTypes = { enabled = false },
+              parameterNames = {
+                enabled = "literals",
+                suppressWhenArgumentMatchesName = true,
+              },
+              parameterTypes = { enabled = true },
+              propertyDeclarationTypes = { enabled = true },
+              variableTypes = { enabled = false },
+            },
+          },
+        },
+      })
+
+      -- The typescript extra defaults to vtsls now that the tsgo extra is
+      -- gone. Disable all the TS servers it knows about (vtsls also ships
+      -- keymaps that target vtsls-only commands, so clear its keys too).
+      for _, server in ipairs({ "tsgo", "vtsls", "ts_ls", "tsserver" }) do
+        opts.servers[server] = vim.tbl_deep_extend("force", opts.servers[server] or {}, {
+          enabled = false,
+          keys = {},
+        })
+      end
     end,
   },
   {

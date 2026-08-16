@@ -54,6 +54,10 @@ if type -q z
     alias cd z
 end
 
+if type -q opencode2
+    alias opencode opencode2
+end
+
 if type -q yt-dlp
     function mp4
         set -l ffmpeg_path (command -s ffmpeg 2>/dev/null)
