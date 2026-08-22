@@ -7,7 +7,9 @@
     { "action": "subagent", "resource": "*", "effect": "allow" },
     { "action": "subagent", "resource": "bellno", "effect": "deny" },
     { "action": "todowrite", "resource": "*", "effect": "deny" },
-    { "action": "t3-code_*", "resource": "*", "effect": "deny" }
+    { "action": "t3-code_*", "resource": "*", "effect": "deny" },
+    { "action": "firecrawl_firecrawl_scrape", "resource": "*", "effect": "deny" },
+    { "action": "firecrawl_firecrawl_parse", "resource": "*", "effect": "deny" }
   ],
   "agents": {
     "build": {
@@ -30,7 +32,12 @@
       "grep": {
         "type": "remote",
         "url": "https://mcp.grep.app",
-        "disabled": false
+        "disabled": true
+      },
+      "firecrawl": {
+        "type": "remote",
+        "url": "https://mcp.firecrawl.dev/v2/mcp",
+        "enabled": true
       }
     }
   },
