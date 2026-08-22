@@ -1,4 +1,4 @@
-import { FileFinder, type FileFinderApi, type GrepMatch, type GrepMode } from "@ff-labs/fff-bun"
+import { FileFinder, type FileFinderApi, type GrepCursor, type GrepMatch, type GrepMode } from "@ff-labs/fff-bun"
 import { Plugin } from "@opencode-ai/plugin"
 import { execFile } from "node:child_process"
 import { realpath, stat } from "node:fs/promises"
@@ -179,6 +179,10 @@ export default Plugin.define({
         const worktree = await gitRoot(directory)
         return { directory, worktree }
       })()
+      // Cache the scope for the session lifetime, but evict rejections: a
+      // single transient session-store failure must not poison every later
+      // glob/grep call for this session.
+      promise.catch(() => scopes.delete(sessionID))
       scopes.set(sessionID, promise)
       return promise
     }
@@ -321,21 +325,64 @@ export default Plugin.define({
           const constraints = [pathConstraint, includeConstraint].filter((value): value is string => Boolean(value))
 
           const result = await withFinder(target, (finder) => {
-            if (mode === "multi") {
-              return finder.multiGrep({
-                patterns,
-                constraints: constraints.join(" ") || undefined,
-                maxMatchesPerFile: RESULT_LIMIT,
+            const runPage = (cursor: GrepCursor | null) => {
+              // One match past RESULT_LIMIT is enough to prove truncation for
+              // any target; fff ignores pageSize when capping a single file's
+              // lines, so an explicit per-file cap bounds allocation.
+              const page = {
+                cursor,
+                maxMatchesPerFile: RESULT_LIMIT + 1,
                 pageSize: RESULT_LIMIT,
                 timeBudgetMs: GREP_TIMEOUT_MS,
+              }
+              if (mode === "multi") {
+                return finder.multiGrep({
+                  patterns,
+                  constraints: constraints.join(" ") || undefined,
+                  ...page,
+                })
+              }
+              return finder.grep([...constraints, args.pattern].join(" "), {
+                mode: mode as GrepMode,
+                ...page,
               })
             }
-            return finder.grep([...constraints, args.pattern].join(" "), {
-              mode: mode as GrepMode,
-              maxMatchesPerFile: RESULT_LIMIT,
-              pageSize: RESULT_LIMIT,
-              timeBudgetMs: GREP_TIMEOUT_MS,
-            })
+
+            const first = runPage(null)
+            if (!first.ok || target.kind !== "file") return first
+
+            // A file target searches from its parent directory with a
+            // "**/<basename>" constraint, which also matches files of the same
+            // name deeper in the tree (fff has no exact-file constraint form).
+            // Any returned target matches are complete up to the per-file
+            // sentinel, so only paginate while the target has not appeared.
+            // A no-match result requires exhausting same-named siblings.
+            const items = first.value.items.filter((match) => match.relativePath === target.constraint)
+            let searched = first.value.totalFilesSearched
+            let cursor = first.value.nextCursor
+            while (cursor && items.length === 0) {
+              const next = runPage(cursor)
+              if (!next.ok) return next
+              items.push(...next.value.items.filter((match) => match.relativePath === target.constraint))
+              searched += next.value.totalFilesSearched
+              cursor = next.value.nextCursor
+            }
+            // filteredFileCount is a whole-query count repeated on every page;
+            // totalMatched must equal items.length per the GrepResult contract.
+            return {
+              ok: true as const,
+              value: {
+                ...first.value,
+                items,
+                totalMatched: items.length,
+                totalFilesSearched: searched,
+                filteredFileCount: first.value.filteredFileCount,
+                // The native cursor addresses same-named siblings, not more
+                // matches from the requested file. The sentinel carries the
+                // only relevant truncation signal for an exact-file target.
+                nextCursor: null,
+              },
+            }
           })
           if (!result.ok) throw new Error(result.error)
           if (result.value.regexFallbackError && mode === "regex") {
