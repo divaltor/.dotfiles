@@ -1,19 +1,14 @@
 import { FileFinder, type FileFinderApi, type GrepCursor, type GrepMatch, type GrepMode } from "@ff-labs/fff-bun"
 import { Plugin } from "@opencode-ai/plugin"
-import { execFile } from "node:child_process"
 import { realpath, stat } from "node:fs/promises"
 import { homedir } from "node:os"
 import path from "node:path"
-import { promisify } from "node:util"
-
-const execFileAsync = promisify(execFile)
 
 const RESULT_LIMIT = 100
 const GREP_TIMEOUT_MS = 1_500
 const INDEX_TIMEOUT_MS = 10_000
 const AUXILIARY_LIMIT = 3
 const AUXILIARY_IDLE_MS = 5 * 60_000
-const GIT_TIMEOUT_MS = 5_000
 
 type Finder = FileFinderApi
 type FinderEntry = {
@@ -46,11 +41,6 @@ type GrepArguments = {
 
 function posix(value: string) {
   return value.replaceAll(path.sep, "/")
-}
-
-function contains(root: string, target: string) {
-  const relative = path.relative(root, target)
-  return relative === "" || (!relative.startsWith(`..${path.sep}`) && relative !== ".." && !path.isAbsolute(relative))
 }
 
 function displayPath(target: Target) {
@@ -106,26 +96,13 @@ function formatMatches(root: string, items: GrepMatch[], more: boolean) {
   return output.join("\n")
 }
 
-async function gitRoot(directory: string) {
-  try {
-    const { stdout } = await execFileAsync("git", ["rev-parse", "--show-toplevel"], {
-      cwd: directory,
-      timeout: GIT_TIMEOUT_MS,
-    })
-    const root = stdout.trim()
-    return root ? await realpath(root) : directory
-  } catch {
-    return directory
-  }
-}
-
 export default Plugin.define({
   id: "divaltor.fff-tools",
   setup: async (ctx) => {
     if (!FileFinder.isAvailable()) throw new Error("The native FFF library is unavailable")
 
     const finders = new Map<string, FinderEntry>()
-    const scopes = new Map<string, Promise<{ directory: string; worktree: string }>>()
+    const scopes = new Map<string, Promise<string>>()
 
     function destroyEntry(entry: FinderEntry) {
       if (entry.timer) clearTimeout(entry.timer)
@@ -175,9 +152,7 @@ export default Plugin.define({
       if (pending) return pending
       const promise = (async () => {
         const session = await ctx.session.get({ sessionID })
-        const directory = await realpath(session.location.directory)
-        const worktree = await gitRoot(directory)
-        return { directory, worktree }
+        return realpath(session.location.directory)
       })()
       // Cache the scope for the session lifetime, but evict rejections: a
       // single transient session-store failure must not poison every later
@@ -187,18 +162,15 @@ export default Plugin.define({
       return promise
     }
 
-    async function resolveTarget(rawPath: string | undefined, directory: string, worktree: string) {
+    async function resolveTarget(rawPath: string | undefined, directory: string) {
       const requested = path.resolve(directory, rawPath ?? ".")
       const info = await stat(requested).catch(() => undefined)
       if (!info) throw new Error(`Search path does not exist: ${requested}`)
       if (!info.isDirectory() && !info.isFile()) throw new Error(`Search path must be a file or directory: ${requested}`)
 
       const target = await realpath(requested)
-      if (!contains(directory, target) && !contains(worktree, target)) {
-        throw new Error(
-          `Search path is outside the workspace: ${target}. V2 plugin tools cannot request external directory access; move the session directory or use a path inside the project.`,
-        )
-      }
+      // Any existing directory may be searched, inside or outside the
+      // workspace; only ~ and / are refused (acquire() re-checks both).
       if (target === homedir() || target === path.parse(target).root) {
         throw new Error(`FFF cannot index the home directory or filesystem root; use a smaller directory: ${target}`)
       }
@@ -245,7 +217,7 @@ export default Plugin.define({
             throw new Error("A glob pattern is required")
           }
           const scope = await scopeFor(context.sessionID)
-          const target = await resolveTarget(args.path, scope.directory, scope.worktree)
+          const target = await resolveTarget(args.path, scope)
           if (target.kind !== "directory") throw new Error(`Glob path must be a directory: ${args.path}`)
           await context.progress({ title: displayPath(target) })
 
@@ -318,7 +290,7 @@ export default Plugin.define({
           }
 
           const scope = await scopeFor(context.sessionID)
-          const target = await resolveTarget(args.path, scope.directory, scope.worktree)
+          const target = await resolveTarget(args.path, scope)
           await context.progress({ title: displayPath(target) })
           const pathConstraint = target.kind === "file" ? normalizeFileConstraint(target.constraint) : undefined
           const includeConstraint = normalizeFileConstraint(args.include)
