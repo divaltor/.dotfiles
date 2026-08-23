@@ -14,7 +14,7 @@
       "disabled": true
     },
     "plan": {
-      "disabled": true
+      "hidden": true
     },
     "explore": {
       "disabled": true

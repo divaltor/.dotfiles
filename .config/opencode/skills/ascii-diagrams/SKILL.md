@@ -31,7 +31,7 @@ Aim for clean, premium, Apple/Uber-like text styling:
 - minimal visual noise
 - generous spacing
 - short headings
-- boxed sections with rounded corners only when they add clarity
+- **open flows by default:** plain labels joined by connectors; boxed sections with rounded corners only when a boundary adds clarity
 - **rounded corners always:** draw box and container corners with `╭ ╮ ╰ ╯`, never square `┌ ┐ └ ┘`; keep interior junctions (`┬ ┴ ├ ┤ ┼`) and plot axis origins (`└─▶`) as they are
 - aligned columns and timelines
 - one strong visual idea per section
@@ -70,6 +70,25 @@ Use only when arrows between distinct nodes carry meaning (services, steps, stat
 
 Default linear flows to left-to-right. Use top-to-bottom only for naturally hierarchical structures or when shortening labels cannot produce a readable horizontal layout.
 
+**Open flow (default).** Nodes are plain text labels joined by connectors — no borders. Put payload or type notes in parentheses on a line below their node, indented to the node's first character. Drop branches with a vertical rail (`│`) and `▼`.
+
+```text
+user mentions @bot in chat X ──▶ Update.guest_message ──▶ bot.on("guest_message")
+        │                        (Message + guest_query_id)         │
+        │                                                           ▼
+        └── not sent as "message" or        ctx.api.answerGuestQuery(queryId, result)
+            "inline_query" to your bot      (InlineQueryResult, like inline mode)
+```
+
+Rules for open flows:
+
+- one connector family per diagram: `──▶` horizontal, `│ ▼ └──` vertical; never mix arrow styles
+- keep each rail in one column — every `│`, `▼`, and `└` of the same rail sits in that column on every line it appears
+- annotation lines start under the first character of the node they describe
+- more than two rails per band usually means the diagram should split into sections
+
+**Boxed flow (only when a boundary matters).** Reserve borders for real boundaries: external systems, process or host edges, grouped components. Keep each box small and route connectors outside the borders; follow the width-safety recipe below.
+
 ```text
 ╭────────╮     ╭─────╮     ╭──────────╮
 │ Client │────▶│ API │────▶│ Database │
@@ -81,7 +100,7 @@ Default linear flows to left-to-right. Use top-to-bottom only for naturally hier
               ╰────────╯
 ```
 
-Keep nodes few. If you need more than ~8 boxes, split into sections or switch shape. Bordered boxes are good; keep each box small, pad every interior line to the same width so the right border stays straight, keep interior content simple (ASCII or a uniform glyph), and route arrows and branches in the open space between boxes rather than inside them.
+Keep nodes few. If you need more than ~8 nodes, split into sections or switch shape.
 
 ## Shape 3 — Stack / flamegraph
 
