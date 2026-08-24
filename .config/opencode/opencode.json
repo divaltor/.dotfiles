@@ -35,7 +35,14 @@
     }
   },
   "experimental": {
-    "subagent_depth": 2
+    "subagent_depth": 2,
+    "policies": [
+      {
+        "action": "provider.use",
+        "resource": "amazon-bedrock",
+        "effect": "deny"
+      }
+    ]
   },
   "references": {
     "opencode": {
@@ -46,6 +53,5 @@
   "websearch": {
     "provider": "exa"
   },
-  "default_agent": "diana",
-  "disabled_providers": ["amazon-bedrock"]
+  "default_agent": "diana"
 }
