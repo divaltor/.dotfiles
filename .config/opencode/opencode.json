@@ -25,6 +25,18 @@
       ]
     }
   },
+  "provider": {
+    "openai": {
+      "options": {
+        "textVerbosity": "low"
+      }
+    },
+    "github-copilot": {
+      "options": {
+        "textVerbosity": "low"
+      }
+    }
+  },
   "mcp": {
     "servers": {
       "grep": {
