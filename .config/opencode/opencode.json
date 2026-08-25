@@ -20,9 +20,7 @@
       "disabled": true
     },
     "general": {
-      "permissions": [
-        { "action": "subagent", "resource": "*", "effect": "deny" }
-      ]
+      "disabled": true
     }
   },
   "provider": {
