@@ -1,6 +1,6 @@
 ---
 name: explain
-description: "Explain code, changes, architecture, or technical concepts when the user asks for an explanation. Choose the clearest medium: concise prose, code-shape sketches, diffs, call/component/file trees, Mermaid, or a focused HTML artifact. For terminal-safe ASCII diagrams (flows, timelines, flamegraphs, XY plots, layouts), use the ascii-diagrams skill."
+description: "Explain code, changes, architecture, or technical concepts when the user asks for an explanation. Choose the clearest medium: concise prose, code-shape sketches, diffs, call/component/file trees, Mermaid, or a focused HTML artifact. For ASCII-only output, flamegraphs, XY plots, memory layouts, or when the user asks for ASCII diagrams, use the ascii-diagrams skill."
 ---
 
 Explain the current topic. Skip the preamble. Budget: one lead-in sentence per
@@ -8,9 +8,10 @@ visual, at most three sentences outside blocks, one visual per question unless
 the user asks for more. Include only the calls, files, props, states, and
 boundaries needed to answer it.
 
-Precedence: if the active agent defines a communication or ASCII house style,
-it wins over this skill. Mermaid and HTML artifacts need an explicit user
-request or a confirmed rendered target; otherwise stay in terminal-safe text.
+Precedence: if the active agent defines a communication or diagram style,
+it wins over this skill. Mermaid fences render natively in the OpenCode TUI,
+so use them freely; HTML artifacts still need an explicit user request or a
+confirmed rendered target.
 
 Every code-shaped artifact goes in a fenced block — source code, pseudocode,
 diffs, commands, configuration, logs, trees, diagram syntax — using the most
@@ -26,7 +27,8 @@ what changed                    diff
 who calls whom, in what order   call tree
 what lives where                component / file tree
 which branch runs               pseudocode or control-flow diff
-timing, profile, memory, flow   ascii-diagrams skill
+flow, sequence, state           mermaid fence
+timing, profile, memory         ascii-diagrams skill
 visual UI, dense concept        HTML artifact (request only)
 ```
 
@@ -117,7 +119,7 @@ function expandSkill(command: string): string {
 }
 ```
 
-- Sequence diagrams in Mermaid only when the user asks or a rendered target is confirmed:
+- Sequential flow across participants, as a Mermaid sequence diagram:
 
 ```mermaid
 sequenceDiagram

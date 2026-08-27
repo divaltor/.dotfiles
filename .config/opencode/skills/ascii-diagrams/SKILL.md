@@ -64,6 +64,21 @@ Tiny enumeration:
 • failover   ~3 s, no data loss
 ```
 
+Reference table — 3+ parallel rows always separate their header row,
+even inside a fence:
+
+```text
+value            meaning                  safe use
+──────────────────────────────────────────────────────
+logical_date     scheduled run identity   legacy paths
+event.timestamp  asset emission time      observability
+dag_run.run_id   unique consumer run      storage paths
+```
+
+Outside explicit ASCII requests, prefer a native Markdown pipe table over
+fenced column alignment: the renderer draws the border grid and bolds the
+header automatically.
+
 ## Shape 2 — Flow diagram
 
 Use only when arrows between distinct nodes carry meaning (services, steps, states, dependencies).
