@@ -1,0 +1,14 @@
+[Unit]
+Description=Grafana Loki log store
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=loki
+Group=loki
+ExecStart=/usr/bin/loki -config.file=/etc/loki/loki.yml
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

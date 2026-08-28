@@ -1,0 +1,15 @@
+[Unit]
+Description=Grafana Alloy telemetry gateway
+After=network-online.target loki.service tempo.service prometheus.service
+Wants=network-online.target
+
+[Service]
+User=alloy
+Group=alloy
+EnvironmentFile=/etc/alloy/secrets.env
+ExecStart=/usr/bin/alloy run --server.http.listen-addr=127.0.0.1:{{ monitoring_alloy_port }} --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

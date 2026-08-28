@@ -4,9 +4,13 @@
     that:
       - monitoring_pve_token_value | length > 0
       - monitoring_grafana_admin_password | length > 0
+      - monitoring_otlp_token | length > 0
+      - monitoring_langfuse_base_url | length > 0
+      - monitoring_langfuse_public_key | length > 0
+      - monitoring_langfuse_secret_key | length > 0
     fail_msg: >-
-      PVE_MONITORING_TOKEN and GRAFANA_ADMIN_PASSWORD must be available in
-      the 1Password environment used by mise.
+      Monitoring credentials must be available in the 1Password environment
+      used by mise.
   no_log: true
 
 - name: Install monitoring package prerequisites
@@ -57,6 +61,148 @@
     name: grafana
     state: present
     policy_rc_d: 101
+
+- name: Install pinned Grafana telemetry services
+  ansible.builtin.apt:
+    name:
+      - "alloy={{ monitoring_alloy_version }}"
+      - "loki={{ monitoring_loki_version }}"
+      - "tempo={{ monitoring_tempo_version }}"
+    state: present
+    policy_rc_d: 101
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Create telemetry service groups
+  ansible.builtin.group:
+    name: "{{ item }}"
+    system: true
+  loop:
+    - loki
+    - tempo
+
+- name: Assign telemetry services to dedicated groups
+  ansible.builtin.user:
+    name: "{{ item }}"
+    group: "{{ item }}"
+    system: true
+    create_home: false
+  loop:
+    - loki
+    - tempo
+
+- name: Create telemetry configuration directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  loop:
+    - /etc/alloy
+    - /etc/loki
+    - /etc/tempo
+
+- name: Create telemetry data directories
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: directory
+    owner: "{{ item.owner }}"
+    group: "{{ item.owner }}"
+    mode: "0750"
+  loop:
+    - path: /var/lib/alloy/data
+      owner: alloy
+    - path: /var/lib/loki
+      owner: loki
+    - path: /var/lib/tempo
+      owner: tempo
+
+- name: Resolve the Docker host through mDNS
+  ansible.builtin.command:
+    argv:
+      - getent
+      - hosts
+      - homelab.local
+  register: monitoring_homelab_address
+  changed_when: false
+
+- name: Make the Docker host resolvable to static Go services
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    regexp: "^\\S+\\s+homelab\\.local(?:\\s|$)"
+    line: "{{ monitoring_homelab_address.stdout.split() | first }} homelab.local homelab"
+
+- name: Configure Loki
+  ansible.builtin.template:
+    src: loki.yml.j2
+    dest: /etc/loki/loki.yml
+    owner: root
+    group: loki
+    mode: "0640"
+    validate: /usr/bin/loki -config.file=%s -verify-config=true
+  notify: Restart Loki
+
+- name: Configure Tempo
+  ansible.builtin.template:
+    src: tempo.yml.j2
+    dest: /etc/tempo/tempo.yml
+    owner: root
+    group: tempo
+    mode: "0640"
+  notify: Restart Tempo
+
+- name: Configure Alloy telemetry routing
+  ansible.builtin.template:
+    src: alloy.config.j2
+    dest: /etc/alloy/config.alloy
+    owner: root
+    group: alloy
+    mode: "0640"
+  notify: Restart Alloy
+
+- name: Configure Alloy credentials
+  ansible.builtin.template:
+    src: alloy-secrets.j2
+    dest: /etc/alloy/secrets.env
+    owner: root
+    group: alloy
+    mode: "0640"
+  notify: Restart Alloy
+  no_log: true
+
+- name: Validate Alloy configuration
+  ansible.builtin.command:
+    argv:
+      - /usr/bin/alloy
+      - validate
+      - /etc/alloy/config.alloy
+  environment:
+    ALLOY_OTLP_TOKEN: "{{ monitoring_otlp_token }}"
+    SIGNOZ_OTLP_TOKEN: "{{ monitoring_otlp_token }}"
+    LANGFUSE_PUBLIC_KEY: "{{ monitoring_langfuse_public_key }}"
+    LANGFUSE_SECRET_KEY: "{{ monitoring_langfuse_secret_key }}"
+    LANGFUSE_OTLP_ENDPOINT: >-
+      {{ monitoring_langfuse_base_url | regex_replace('/$', '') }}/api/public/otel/v1/traces
+  changed_when: false
+  no_log: true
+
+- name: Install Grafana telemetry systemd services
+  ansible.builtin.template:
+    src: "{{ item }}.service.j2"
+    dest: "/etc/systemd/system/{{ item }}.service"
+    owner: root
+    group: root
+    mode: "0644"
+  loop:
+    - loki
+    - tempo
+    - alloy
+  notify:
+    - Reload monitoring systemd units
+    - Restart Loki
+    - Restart Tempo
+    - Restart Alloy
 
 - name: Resolve the Proxmox certificate hostname locally
   ansible.builtin.lineinfile:
@@ -262,6 +408,18 @@
     mode: "0640"
   notify: Restart Grafana
 
+- name: Provision Grafana telemetry datasources
+  ansible.builtin.template:
+    src: "grafana-{{ item }}.yml.j2"
+    dest: "/etc/grafana/provisioning/datasources/{{ item }}.yml"
+    owner: root
+    group: grafana
+    mode: "0640"
+  loop:
+    - loki
+    - tempo
+  notify: Restart Grafana
+
 - name: Provision Grafana dashboards provider
   ansible.builtin.copy:
     src: grafana-dashboards.yml
@@ -311,6 +469,9 @@
     - prometheus
     - prometheus-pve-exporter
     - grafana-server
+    - loki
+    - tempo
+    - alloy
 
 - name: Stop Grafana before rotating a changed admin credential
   ansible.builtin.service:
@@ -362,6 +523,28 @@
   until: monitoring_grafana_health.status == 200
   retries: 15
   delay: 2
+  when: not ansible_check_mode
+
+- name: Verify Grafana telemetry services
+  ansible.builtin.uri:
+    url: "http://127.0.0.1:{{ item.port }}{{ item.path }}"
+    status_code: 200
+  register: monitoring_telemetry_health
+  until: monitoring_telemetry_health.status == 200
+  retries: 15
+  delay: 2
+  loop:
+    - name: Alloy
+      port: "{{ monitoring_alloy_port }}"
+      path: /-/ready
+    - name: Loki
+      port: "{{ monitoring_loki_port }}"
+      path: /ready
+    - name: Tempo
+      port: "{{ monitoring_tempo_port }}"
+      path: /ready
+  loop_control:
+    label: "{{ item.name }}"
   when: not ansible_check_mode
 
 - name: Read provisioned Grafana dashboards

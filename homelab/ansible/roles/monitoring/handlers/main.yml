@@ -17,3 +17,18 @@
   ansible.builtin.service:
     name: grafana-server
     state: restarted
+
+- name: Restart Loki
+  ansible.builtin.service:
+    name: loki
+    state: restarted
+
+- name: Restart Tempo
+  ansible.builtin.service:
+    name: tempo
+    state: restarted
+
+- name: Restart Alloy
+  ansible.builtin.service:
+    name: alloy
+    state: restarted

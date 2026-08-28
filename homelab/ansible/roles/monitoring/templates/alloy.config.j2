@@ -1,0 +1,127 @@
+otelcol.auth.bearer "ingress" {
+  token = sys.env("ALLOY_OTLP_TOKEN")
+}
+
+otelcol.auth.bearer "signoz" {
+  token = sys.env("SIGNOZ_OTLP_TOKEN")
+}
+
+otelcol.auth.basic "langfuse" {
+  username = sys.env("LANGFUSE_PUBLIC_KEY")
+  password = sys.env("LANGFUSE_SECRET_KEY")
+}
+
+otelcol.receiver.otlp "gateway" {
+  grpc {
+    endpoint = "0.0.0.0:{{ monitoring_otlp_grpc_port }}"
+    auth     = otelcol.auth.bearer.ingress.handler
+  }
+
+  http {
+    endpoint = "0.0.0.0:{{ monitoring_otlp_http_port }}"
+    auth     = otelcol.auth.bearer.ingress.handler
+  }
+
+  output {
+    metrics = [otelcol.processor.memory_limiter.gateway.input]
+    logs    = [otelcol.processor.memory_limiter.gateway.input]
+    traces  = [otelcol.processor.memory_limiter.gateway.input]
+  }
+}
+
+otelcol.processor.memory_limiter "gateway" {
+  check_interval = "1s"
+  limit          = "512MiB"
+  spike_limit    = "128MiB"
+
+  output {
+    metrics = [otelcol.processor.batch.gateway.input]
+    logs    = [otelcol.processor.batch.gateway.input]
+    traces  = [otelcol.processor.batch.gateway.input]
+  }
+}
+
+otelcol.processor.batch "gateway" {
+  timeout             = "1s"
+  send_batch_size     = 2000
+  send_batch_max_size = 3000
+
+  output {
+    metrics = [
+      otelcol.exporter.prometheus.local.input,
+      otelcol.exporter.otlphttp.signoz.input,
+    ]
+    logs = [
+      otelcol.exporter.loki.local.input,
+      otelcol.exporter.otlphttp.signoz.input,
+    ]
+    traces = [
+      otelcol.exporter.otlp.tempo.input,
+      otelcol.exporter.otlphttp.signoz.input,
+      otelcol.processor.filter.langfuse.input,
+    ]
+  }
+}
+
+otelcol.exporter.prometheus "local" {
+  forward_to = [prometheus.remote_write.local.receiver]
+}
+
+prometheus.remote_write "local" {
+  endpoint {
+    url = "http://127.0.0.1:{{ monitoring_prometheus_port }}/api/v1/write"
+  }
+}
+
+otelcol.exporter.loki "local" {
+  forward_to = [loki.write.local.receiver]
+}
+
+loki.write "local" {
+  endpoint {
+    url = "http://127.0.0.1:{{ monitoring_loki_port }}/loki/api/v1/push"
+  }
+}
+
+otelcol.exporter.otlp "tempo" {
+  client {
+    endpoint = "127.0.0.1:{{ monitoring_tempo_otlp_grpc_port }}"
+    tls {
+      insecure = true
+    }
+  }
+}
+
+otelcol.exporter.otlphttp "signoz" {
+  client {
+    endpoint = "{{ monitoring_signoz_otlp_endpoint }}"
+    auth     = otelcol.auth.bearer.signoz.handler
+  }
+}
+
+otelcol.processor.filter "langfuse" {
+  error_mode = "ignore"
+
+  trace_conditions {
+    context = "span"
+    conditions = [
+      `span.attributes["langfuse.observation.type"] == nil and instrumentation_scope.name != "langfuse-sdk"`,
+    ]
+  }
+
+  output {
+    traces = [otelcol.exporter.otlphttp.langfuse.input]
+  }
+}
+
+otelcol.exporter.otlphttp "langfuse" {
+  traces_endpoint = sys.env("LANGFUSE_OTLP_ENDPOINT")
+
+  client {
+    endpoint = sys.env("LANGFUSE_OTLP_ENDPOINT")
+    auth     = otelcol.auth.basic.langfuse.handler
+    headers = {
+      "x-langfuse-ingestion-version" = "4",
+    }
+  }
+}

@@ -1,7 +1,7 @@
 ---
 # ============================================================
 # Master playbook — Proxmox infrastructure
-# Run order matters: host config → containers → VMs
+# Run order matters: host config → telemetry producer → consumers
 # ============================================================
 
 - import_playbook: proxmox_host.yml
@@ -9,6 +9,6 @@
 - import_playbook: lxc_kino.yml
 - import_playbook: lxc_qbittorrent.yml
 - import_playbook: lxc_sftpgo.yml
-- import_playbook: lxc_monitoring.yml
 - import_playbook: vm_homelab.yml
+- import_playbook: lxc_monitoring.yml
 - import_playbook: vm_shared.yml

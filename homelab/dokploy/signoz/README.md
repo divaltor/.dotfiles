@@ -33,12 +33,15 @@ Use **Docker Compose**, not Docker Stack.
    Path:           /
    ```
 
-5. In Cloudflare tunnel `divaos`, publish the ingestion route:
+5. In Cloudflare tunnel `divaos`, route ingestion through Alloy:
 
    ```text
    Hostname: otlp.divaltor.dev
-   Service:  http://localhost:4318
+   Service:  http://monitoring.home.arpa:4318
    ```
+
+   `monitoring.home.arpa` is a UniFi local DNS record for monitoring LXC 106.
+   Alloy stores telemetry in the Grafana stack and forwards it to SigNoz.
 
 The one-shot user-script and migrator services must exit with code `0`. Send
 telemetry with the OTLP bearer token:

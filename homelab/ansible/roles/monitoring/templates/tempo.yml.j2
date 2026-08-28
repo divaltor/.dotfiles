@@ -1,0 +1,36 @@
+stream_over_http_enabled: true
+
+server:
+  http_listen_address: 127.0.0.1
+  http_listen_port: {{ monitoring_tempo_port }}
+  grpc_listen_address: 127.0.0.1
+
+distributor:
+  receivers:
+    otlp:
+      protocols:
+        grpc:
+          endpoint: 127.0.0.1:{{ monitoring_tempo_otlp_grpc_port }}
+        http:
+          endpoint: 127.0.0.1:{{ monitoring_tempo_otlp_http_port }}
+
+live_store:
+  max_trace_idle: 10s
+  max_block_duration: 5m
+
+backend_scheduler:
+  provider:
+    compaction:
+      compaction:
+        block_retention: {{ monitoring_telemetry_retention }}
+
+storage:
+  trace:
+    backend: local
+    wal:
+      path: /var/lib/tempo/wal
+    local:
+      path: /var/lib/tempo/blocks
+
+usage_report:
+  reporting_enabled: false

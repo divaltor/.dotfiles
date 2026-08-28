@@ -611,7 +611,7 @@ resource "proxmox_virtual_environment_container" "monitoring" {
 
   cpu {
     architecture = "amd64"
-    cores        = 2
+    cores        = 4
   }
 
   console {
@@ -621,8 +621,8 @@ resource "proxmox_virtual_environment_container" "monitoring" {
   }
 
   memory {
-    dedicated = 2048
-    swap      = 512
+    dedicated = 4096
+    swap      = 1024
   }
 
   disk {
