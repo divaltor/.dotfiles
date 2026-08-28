@@ -5,9 +5,6 @@
       - monitoring_pve_token_value | length > 0
       - monitoring_grafana_admin_password | length > 0
       - monitoring_otlp_token | length > 0
-      - monitoring_langfuse_base_url | length > 0
-      - monitoring_langfuse_public_key | length > 0
-      - monitoring_langfuse_secret_key | length > 0
     fail_msg: >-
       Monitoring credentials must be available in the 1Password environment
       used by mise.
@@ -180,10 +177,6 @@
   environment:
     ALLOY_OTLP_TOKEN: "{{ monitoring_otlp_token }}"
     SIGNOZ_OTLP_TOKEN: "{{ monitoring_otlp_token }}"
-    LANGFUSE_PUBLIC_KEY: "{{ monitoring_langfuse_public_key }}"
-    LANGFUSE_SECRET_KEY: "{{ monitoring_langfuse_secret_key }}"
-    LANGFUSE_OTLP_ENDPOINT: >-
-      {{ monitoring_langfuse_base_url | regex_replace('/$', '') }}/api/public/otel/v1/traces
   changed_when: false
   no_log: true
 

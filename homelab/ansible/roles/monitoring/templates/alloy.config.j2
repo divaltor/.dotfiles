@@ -6,11 +6,6 @@ otelcol.auth.bearer "signoz" {
   token = sys.env("SIGNOZ_OTLP_TOKEN")
 }
 
-otelcol.auth.basic "langfuse" {
-  username = sys.env("LANGFUSE_PUBLIC_KEY")
-  password = sys.env("LANGFUSE_SECRET_KEY")
-}
-
 otelcol.receiver.otlp "gateway" {
   grpc {
     endpoint = "0.0.0.0:{{ monitoring_otlp_grpc_port }}"
@@ -58,7 +53,6 @@ otelcol.processor.batch "gateway" {
     traces = [
       otelcol.exporter.otlp.tempo.input,
       otelcol.exporter.otlphttp.signoz.input,
-      otelcol.processor.filter.langfuse.input,
     ]
   }
 }
@@ -96,32 +90,5 @@ otelcol.exporter.otlphttp "signoz" {
   client {
     endpoint = "{{ monitoring_signoz_otlp_endpoint }}"
     auth     = otelcol.auth.bearer.signoz.handler
-  }
-}
-
-otelcol.processor.filter "langfuse" {
-  error_mode = "ignore"
-
-  trace_conditions {
-    context = "span"
-    conditions = [
-      `span.attributes["langfuse.observation.type"] == nil and instrumentation_scope.name != "langfuse-sdk"`,
-    ]
-  }
-
-  output {
-    traces = [otelcol.exporter.otlphttp.langfuse.input]
-  }
-}
-
-otelcol.exporter.otlphttp "langfuse" {
-  traces_endpoint = sys.env("LANGFUSE_OTLP_ENDPOINT")
-
-  client {
-    endpoint = sys.env("LANGFUSE_OTLP_ENDPOINT")
-    auth     = otelcol.auth.basic.langfuse.handler
-    headers = {
-      "x-langfuse-ingestion-version" = "4",
-    }
   }
 }

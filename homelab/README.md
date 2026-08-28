@@ -95,9 +95,9 @@ host console.
 prometheus-pve-exporter in LXC 106. Grafana is available at
 `https://monitoring.local`. Alloy accepts bearer-authenticated OTLP on ports
 4317 and 4318, stores metrics in Prometheus, logs in Loki, and traces in Tempo,
-and also forwards all signals to SigNoz. Spans created by the Langfuse SDK are
-forwarded to Langfuse. node_exporter runs on the Proxmox host and every
-repository-managed Debian guest. LXC diskstats and ZFS collectors are disabled
+and also forwards all signals to SigNoz. node_exporter runs on the Proxmox host
+and every repository-managed Debian guest. LXC diskstats and ZFS collectors are
+disabled
 because Proxmox exposes host-wide values inside containers; pve_exporter
 supplies each LXC's aggregate disk and network I/O.
 The Proxmox node exporter also collects SMART and NVMe health data. pve_exporter
@@ -127,9 +127,7 @@ The 1Password environment used by `mise` must provide:
 
 - `GRAFANA_ADMIN_PASSWORD` for the initial Grafana admin account;
 - `PVE_MONITORING_TOKEN` for `prometheus@pve!monitoring`;
-- `OTLP_TOKEN` for Alloy ingress and SigNoz forwarding;
-- `LANGFUSE_BASE_URL`, `LANGFUSE_PUBLIC_KEY`, and `LANGFUSE_SECRET_KEY` for
-  filtered Langfuse trace forwarding.
+- `OTLP_TOKEN` for Alloy ingress and SigNoz forwarding.
 
 Create the API identity once on the Proxmox host, then save the printed token in
 1Password:

@@ -154,9 +154,6 @@ monitoring_tempo_otlp_http_port: 4328
 monitoring_telemetry_retention: 336h
 monitoring_otlp_token: "{{ lookup('env', 'OTLP_TOKEN') }}"
 monitoring_signoz_otlp_endpoint: http://homelab.local:4318
-monitoring_langfuse_base_url: "{{ lookup('env', 'LANGFUSE_BASE_URL') }}"
-monitoring_langfuse_public_key: "{{ lookup('env', 'LANGFUSE_PUBLIC_KEY') }}"
-monitoring_langfuse_secret_key: "{{ lookup('env', 'LANGFUSE_SECRET_KEY') }}"
 monitoring_pve_exporter_version: 3.9.0
 monitoring_pve_target: divaltor-dc.local
 monitoring_pve_user: prometheus@pve
