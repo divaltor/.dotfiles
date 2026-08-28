@@ -72,10 +72,15 @@
   loop:
     - container_cpu_usage_seconds_total
     - container_cpu_schedstat_runqueue_seconds_total
+    - container_pressure_cpu_waiting_seconds_total
     - container_memory_working_set_bytes
+    - container_pressure_memory_waiting_seconds_total
     - container_fs_reads_bytes_total
+    - container_pressure_io_waiting_seconds_total
+    - container_pressure_io_stalled_seconds_total
     - container_network_receive_bytes_total
     - container_oom_events_total
     - container_processes
+    - container_tasks_state
     - container_network_tcp_usage_total
   when: not ansible_check_mode
