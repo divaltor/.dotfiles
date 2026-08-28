@@ -7,7 +7,25 @@ After=docker.service network-online.target
 Restart=always
 RestartSec=5
 ExecStartPre=-/usr/bin/docker rm --force cadvisor
-ExecStart=/usr/bin/docker run --rm --name cadvisor --pid=host --publish={{ cadvisor_port }}:8080 --volume=/:/rootfs:ro --volume=/var/run:/var/run:ro --volume=/run/containerd:/run/containerd:ro --volume=/sys:/sys:ro --volume=/var/lib/docker:/var/lib/docker:ro --volume=/var/lib/containerd:/var/lib/containerd:ro --volume=/dev/disk:/dev/disk:ro --privileged --device=/dev/kmsg {{ cadvisor_image }} --disable_metrics=advtcp,cpu_topology,cpuset,hugetlb,memory_numa,referenced_memory,resctrl
+ExecStart=/usr/bin/docker run --rm \
+  --name cadvisor \
+  --pid=host \
+  --publish={{ cadvisor_port }}:8080 \
+  --volume=/:/rootfs:ro \
+  --volume=/var/run:/var/run:ro \
+  --volume=/run/containerd:/run/containerd:ro \
+  --volume=/sys:/sys:ro \
+  --volume=/var/lib/docker:/var/lib/docker:ro \
+  --volume=/var/lib/containerd:/var/lib/containerd:ro \
+  --volume=/dev/disk:/dev/disk:ro \
+  --privileged \
+  --device=/dev/kmsg \
+  {{ cadvisor_image }} \
+  --docker_only=true \
+  --housekeeping_interval=10s \
+  --store_container_labels=false \
+  --whitelisted_container_labels=com.docker.swarm.service.name \
+  --enable_metrics=cpu,diskIO,memory,network,oom_event,process,sched,tcp
 ExecStop=/usr/bin/docker stop --time=10 cadvisor
 TimeoutStopSec=20
 

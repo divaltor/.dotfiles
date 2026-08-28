@@ -64,3 +64,18 @@
   retries: 15
   delay: 2
   when: not ansible_check_mode
+
+- name: Require metrics used by the container dashboard
+  ansible.builtin.assert:
+    that: item in cadvisor_health.content
+    fail_msg: "cAdvisor did not expose required metric {{ item }}"
+  loop:
+    - container_cpu_usage_seconds_total
+    - container_cpu_schedstat_runqueue_seconds_total
+    - container_memory_working_set_bytes
+    - container_fs_reads_bytes_total
+    - container_network_receive_bytes_total
+    - container_oom_events_total
+    - container_processes
+    - container_network_tcp_usage_total
+  when: not ansible_check_mode
