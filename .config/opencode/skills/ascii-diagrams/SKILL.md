@@ -1,6 +1,6 @@
 ---
 name: ascii-diagrams
-description: "Use when the user asks for ASCII diagrams, timeline diagrams, flow diagrams, schedule explanations, stack traces, flamegraphs, or a single user-friendly ASCII output with Apple/Uber-like clean styling."
+description: "Use when the user asks for ASCII diagrams, timeline diagrams, flow diagrams, schedule explanations, stack traces, flamegraphs, or a single user-friendly ASCII output with Apple/Uber-like clean styling. Routes Mermaid-renderable shapes to Mermaid first; falls back to ASCII for flamegraphs, XY plots, memory layouts, and explicit ASCII requests."
 ---
 
 # ASCII Diagrams
@@ -9,16 +9,38 @@ Use this skill when a diagram will explain timing, data flow, state, architectur
 
 Not for code-shape diffs or rendered HTML artifacts — use the `explain` skill for those. This skill outputs terminal-safe text only.
 
-## Pick the right shape first
+## Mermaid first — the TUI renders it natively
 
-Do not default to a flow diagram. Match the diagram to the problem.
+The OpenCode TUI renders Mermaid directly (flowchart, sequence, state, timeline, gantt, gitGraph). ASCII is the fallback, not the default:
+
+| Content                                                              | Output                          |
+| -------------------------------------------------------------------- | ------------------------------- |
+| Flows, pipelines, dependencies, decision logic                        | **Mermaid** `flowchart`         |
+| Schedules, ranges, durations, parallel tracks                         | **Mermaid** `gantt`             |
+| Time-anchored before/after, phases                                   | **Mermaid** `timeline`          |
+| Request lifecycles across services                                   | **Mermaid** `sequenceDiagram`   |
+| State machines, drift, migrations                                    | **Mermaid** `stateDiagram-v2`   |
+| Branch/merge history                                                 | **Mermaid** `gitGraph`          |
+| Call stacks, hot paths, flamegraphs                                  | **ASCII** (below)               |
+| Value vs continuous axis (curves, drift, spread)                      | **ASCII** XY plot (below)       |
+| Memory/buffer layout, geometry, spatial relationships                 | **ASCII** (below)               |
+| Bars, thresholds, one-off comparisons                                 | **ASCII** simple (below)        |
+| User explicitly asks for ASCII                                       | **ASCII** (below)               |
+
+Keep Mermaid syntax plain: short real labels, no exotic diagram types, no styling directives — unrenderable syntax degrades to raw source in the TUI. Put measured values, real identifiers, and `←` causes into labels, edge text, and Notes.
+
+Use the ASCII shapes below only for the rows marked **ASCII**, or when the target surface cannot render Mermaid.
+
+## Pick the right ASCII shape first
+
+Once ASCII is the chosen output (per the routing table above), do not default to a flow diagram. Match the diagram to the problem.
 
 | Problem shape                                                                  | Use                          |
 | ------------------------------------------------------------------------------ | ---------------------------- |
 | One value, ratio, threshold, before/after, simple comparison, short enumeration | **Simple ASCII** (bars, list, table) |
-| Movement between steps/services/states, pipelines, request lifecycles, deps   | **Flow diagram**             |
+| Movement between steps/services/states, pipelines, request lifecycles, deps   | **Flow diagram** (or Mermaid `flowchart`/`sequenceDiagram` first) |
 | Call stacks, hot paths, CPU/memory profiles, nested time spent, blame trees   | **Stack / flamegraph**       |
-| Time-anchored events, schedules, ranges, durations                            | **Timeline**                 |
+| Time-anchored events, schedules, ranges, durations                            | **Timeline** (or Mermaid `gantt`/`timeline` first) |
 | A value plotted against a continuous axis (time, distance, progress); curves, drift, spread | **XY plot** |
 | Memory/buffer layout, geometry, or spatial relationships                       | **Other** (layouts, vectors) |
 
