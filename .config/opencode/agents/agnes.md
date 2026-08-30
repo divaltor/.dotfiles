@@ -1,7 +1,7 @@
 ---
 description: "Read-only expert advisor for hard architecture decisions, subtle debugging, alternative analysis, and high-impact plans."
 mode: subagent
-model: github-copilot/gpt-5.6-sol#high
+model: openai/gpt-5.6-sol#high
 color: "#db696b"
 permissions:
   - action: edit
