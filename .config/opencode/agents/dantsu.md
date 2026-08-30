@@ -1,7 +1,7 @@
 ---
 description: "Multi-step local codebase discovery by behavior or concept, including canonical implementations, ownership boundaries, and call or data flows."
 mode: subagent
-model: openai/gpt-5.6-terra#low
+model: github-copilot/gpt-5.6-terra#low
 color: "#eb6f92"
 permissions:
   - action: edit

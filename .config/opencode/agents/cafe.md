@@ -1,7 +1,7 @@
 ---
 description: "External research for official documentation, API behavior, dependency internals, and remote repository architecture or history."
 mode: subagent
-model: openai/gpt-5.6-sol#none
+model: github-copilot/gpt-5.6-sol#none
 color: "#484951"
 permissions:
   - action: edit
