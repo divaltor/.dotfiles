@@ -1,0 +1,118 @@
+---
+- name: Verify Docker is installed
+  ansible.builtin.stat:
+    path: /usr/bin/docker
+  register: docker_logs_docker_binary
+
+- name: Require Docker for docker-logs
+  ansible.builtin.assert:
+    that: docker_logs_docker_binary.stat.executable | default(false)
+    fail_msg: "docker-logs requires Docker at /usr/bin/docker"
+
+- name: Check for the pinned docker-logs image
+  ansible.builtin.command:
+    argv:
+      - /usr/bin/docker
+      - image
+      - inspect
+      - "{{ docker_logs_image }}"
+  register: docker_logs_image_inspect
+  changed_when: false
+  failed_when: false
+  check_mode: false
+
+- name: Pull the pinned docker-logs image
+  ansible.builtin.command:
+    argv:
+      - /usr/bin/docker
+      - pull
+      - "{{ docker_logs_image }}"
+  when: docker_logs_image_inspect.rc != 0
+  notify: Restart docker-logs
+
+- name: Create the docker-logs configuration directory
+  ansible.builtin.file:
+    path: /etc/docker-logs
+    state: directory
+    owner: root
+    group: root
+    mode: "0750"
+
+- name: Create the docker-logs data directory
+  ansible.builtin.file:
+    path: /var/lib/docker-logs
+    state: directory
+    owner: root
+    group: root
+    mode: "0750"
+
+- name: Resolve the monitoring host through mDNS
+  ansible.builtin.command:
+    argv:
+      - getent
+      - hosts
+      - monitoring.local
+  register: docker_logs_monitoring_address
+  changed_when: false
+  check_mode: false
+
+- name: Install the docker-logs Alloy configuration
+  ansible.builtin.template:
+    src: config.alloy.j2
+    dest: /etc/docker-logs/config.alloy
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart docker-logs
+
+- name: Remove obsolete OpenTelemetry collector files
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /etc/docker-logs/config.yaml
+    - /etc/docker-logs/secrets.env
+
+- name: Validate the docker-logs Alloy configuration
+  ansible.builtin.command:
+    argv:
+      - /usr/bin/docker
+      - run
+      - --rm
+      - --volume=/etc/docker-logs/config.alloy:/etc/alloy/config.alloy:ro
+      - "{{ docker_logs_image }}"
+      - validate
+      - /etc/alloy/config.alloy
+  changed_when: false
+  when: not ansible_check_mode
+
+- name: Install docker-logs systemd service
+  ansible.builtin.template:
+    src: docker-logs.service.j2
+    dest: /etc/systemd/system/docker-logs.service
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - Reload docker-logs systemd unit
+    - Restart docker-logs
+
+- name: Ensure docker-logs is running
+  ansible.builtin.systemd_service:
+    name: docker-logs
+    state: started
+    enabled: true
+    daemon_reload: true
+
+- name: Apply docker-logs configuration before its health check
+  ansible.builtin.meta: flush_handlers
+
+- name: Verify docker-logs health
+  ansible.builtin.uri:
+    url: "http://127.0.0.1:{{ docker_logs_health_port }}/-/healthy"
+    status_code: 200
+  register: docker_logs_health
+  until: docker_logs_health.status == 200
+  retries: 15
+  delay: 2
+  when: not ansible_check_mode

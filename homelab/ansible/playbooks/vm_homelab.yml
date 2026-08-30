@@ -16,6 +16,8 @@
       tags: [node_exporter]
     - role: cadvisor
       tags: [cadvisor]
+    - role: docker-logs
+      tags: [docker-logs]
     - tailscale
     - role: avahi
       vars:

@@ -1,0 +1,26 @@
+[Unit]
+Description=Grafana Alloy Docker log collector
+Requires=docker.service
+After=docker.service network-online.target
+
+[Service]
+Restart=always
+RestartSec=5
+ExecStartPre=-/usr/bin/docker rm --force docker-logs
+ExecStart=/usr/bin/docker run --rm \
+  --name docker-logs \
+  --add-host=monitoring.local:{{ docker_logs_monitoring_address.stdout.split() | first }} \
+  --publish=127.0.0.1:{{ docker_logs_health_port }}:12345 \
+  --volume=/etc/docker-logs/config.alloy:/etc/alloy/config.alloy:ro \
+  --volume=/var/lib/docker-logs:/var/lib/alloy/data \
+  --volume=/var/run/docker.sock:/var/run/docker.sock:ro \
+  {{ docker_logs_image }} \
+  run \
+  --server.http.listen-addr=0.0.0.0:12345 \
+  --storage.path=/var/lib/alloy/data \
+  /etc/alloy/config.alloy
+ExecStop=/usr/bin/docker stop --time=10 docker-logs
+TimeoutStopSec=20
+
+[Install]
+WantedBy=multi-user.target

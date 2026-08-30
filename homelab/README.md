@@ -105,7 +105,14 @@ still supplies hypervisor-level CPU, memory, disk, and network metrics for the
 `shared` VM, even though no agent is installed in that VM.
 cAdvisor runs as a pinned Docker container on the `homelab` VM, the only VM
 that hosts Docker workloads, and exposes container metrics to Prometheus on
-port 8080.
+port 8080. The `docker-logs` role runs a pinned Grafana Alloy container on the
+same VM. It discovers containers through the Docker socket, labels stdout with
+the container name as `service_name`, and writes directly to Loki on
+`monitoring.local:3100`; this path bypasses the OTLP gateway and SigNoz. Loki's
+HTTP port is exposed to the homelab network for this direct write path.
+Containers whose names match `docker_logs_exclude_pattern` are skipped. Apps
+that also push the same logs over OTLP should be added to that pattern to avoid
+duplicate Loki entries.
 
 The monitoring LXC copies `/etc/pve/pve-root-ca.pem` through Ansible and trusts
 the Proxmox cluster CA. pve_exporter connects to `divaltor-dc.local:8006` with

@@ -214,6 +214,18 @@ monitoring_grafana_managed_dashboards: >-
 cadvisor_image: ghcr.io/google/cadvisor@sha256:1eb9bde04dab65b919bc51da9e7cf8eceb40d57e61ac9e93e373100369d90cd6
 cadvisor_port: 8080
 
+# Alloy tails Docker container stdout on the Docker VM and writes directly to
+# Loki, bypassing the OTLP gateway and SigNoz.
+docker_logs_image: grafana/alloy@sha256:1eeba15ef3193438c72f66efd3d76f769c523a4c661db0fae6eddde906004bc8
+docker_logs_loki_endpoint: "http://monitoring.local:{{ monitoring_loki_port }}/loki/api/v1/push"
+docker_logs_health_port: 12345
+# Loki rejects samples older than 168h by default. Leave an hour for clock and
+# batching skew when Alloy reads retained Docker history on first startup.
+docker_logs_max_age: 167h
+# Exact container-name alternatives to skip. Add apps that also push the same
+# logs over OTLP to prevent duplicate Loki entries.
+docker_logs_exclude_pattern: docker-logs|cadvisor
+
 # qBittorrent
 qbittorrent_webui_password: "{{ lookup('env', 'QBITTORRENT_PASSWORD') }}"
 
