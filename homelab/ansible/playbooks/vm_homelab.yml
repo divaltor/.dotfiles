@@ -28,3 +28,28 @@
       ansible.builtin.package:
         name: firmware-amd-graphics
         state: present
+
+    - name: Let applications opt in to transparent huge pages
+      ansible.builtin.lineinfile:
+        path: /etc/default/grub
+        regexp: ^GRUB_CMDLINE_LINUX_DEFAULT=
+        line: 'GRUB_CMDLINE_LINUX_DEFAULT="quiet transparent_hugepage=madvise"'
+        validate: /bin/sh -n %s
+      notify:
+        - Update GRUB
+
+    - name: Apply transparent huge pages policy
+      ansible.builtin.shell:
+        cmd: |
+          if grep -q '\[madvise\]' /sys/kernel/mm/transparent_hugepage/enabled; then
+            exit 0
+          fi
+          echo madvise > /sys/kernel/mm/transparent_hugepage/enabled
+          echo changed
+      register: homelab_transparent_hugepages
+      changed_when: homelab_transparent_hugepages.stdout == 'changed'
+
+  handlers:
+    - name: Update GRUB
+      ansible.builtin.command: update-grub
+      changed_when: true
