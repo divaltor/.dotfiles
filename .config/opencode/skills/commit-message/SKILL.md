@@ -82,3 +82,22 @@ For PR descriptions, use one or two short plain-text paragraphs by default. Do
 not add Markdown headings, checklists, or generic sections such as `Summary`,
 `Why`, `Validation`, or `Test plan`. Do not include routine validation details.
 Use a structured PR format only when the user explicitly requests one.
+
+## Diagrams (only when shape helps)
+
+The default stays prose-only. Add a diagram only when the *why* has visual
+shape — a before/after flow, state change, request lifecycle, or performance
+comparison — and the picture says it better than the paragraph. One diagram
+maximum, placed after the why-paragraph. Pick the shape with the
+`ascii-diagrams` skill, and skip the diagram when prose covers it in two
+lines.
+
+Surface decides the format:
+
+- **Commit bodies and git notes** (terminal, no Markdown): ASCII in a fenced
+  `text` block. Keep every line ≤72 columns and never re-wrap it — wrapping
+  destroys alignment. Never in the subject.
+- **PR descriptions** (GitHub): Mermaid renders natively, but prefer ASCII in
+  a `text` block whenever it fits the explanation better — it survives
+  copy-paste, diff review, and plain-text renderers. Use Mermaid only for
+  shapes that need rendering, such as branching graphs or gantt charts.
