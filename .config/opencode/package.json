@@ -2,7 +2,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "@ff-labs/fff-bun": "0.10.5",
-    "@opencode-ai/plugin": "next"
+    "@ff-labs/fff-bun": "0.10.6",
+    "@opencode-ai/plugin": "beta"
   }
 }
