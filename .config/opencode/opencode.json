@@ -3,11 +3,31 @@
   "lsp": true,
   "formatter": true,
   "permissions": [
-    { "action": "*", "resource": "*", "effect": "allow" },
-    { "action": "subagent", "resource": "*", "effect": "allow" },
-    { "action": "subagent", "resource": "bellno", "effect": "deny" },
-    { "action": "todowrite", "resource": "*", "effect": "deny" },
-    { "action": "t3-code_*", "resource": "*", "effect": "deny" }
+    {
+      "action": "*",
+      "resource": "*",
+      "effect": "allow"
+    },
+    {
+      "action": "subagent",
+      "resource": "*",
+      "effect": "allow"
+    },
+    {
+      "action": "subagent",
+      "resource": "bellno",
+      "effect": "deny"
+    },
+    {
+      "action": "todowrite",
+      "resource": "*",
+      "effect": "deny"
+    },
+    {
+      "action": "t3-code_*",
+      "resource": "*",
+      "effect": "deny"
+    }
   ],
   "agents": {
     "build": {
@@ -44,13 +64,9 @@
       },
       "grafana": {
         "type": "local",
-        "command": [
-          "uvx",
-          "mcp-grafana@latest",
-          "--loki-guardrail-mode=enforce"
-        ],
+        "command": ["uvx", "mcp-grafana@latest", "--loki-guardrail-mode=enforce"],
         "environment": {
-          "GRAFANA_URL": "https://monitoring.local",
+          "GRAFANA_URL": "https://monitoring.divaltor.dev",
           "GRAFANA_API_KEY": "{env:GRAFANA_API_KEY}"
         }
       }
