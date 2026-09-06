@@ -1,7 +1,7 @@
 ---
 description: "Read-only reviewer for complete, systematic reviews of diffs, commits, branches, and PRs. Use Agnes instead for a focused hard judgment call."
 mode: subagent
-model: openai/gpt-5.6-terra#high
+model: openai/gpt-5.6-sol#high
 color: "#d99aae"
 permissions:
   - action: edit
