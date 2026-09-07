@@ -21,11 +21,14 @@ return {
       },
     },
     keys = {
-      -- Disable snacks file-finding keys (replaced by fff.nvim)
+      -- Disable Snacks file-finding and grep keys (replaced by fff.nvim)
+      { "<leader>/", false },
       { "<leader><space>", false },
       { "<leader>ff", false },
       { "<leader>fF", false },
       { "<leader>fg", false },
+      { "<leader>sg", false },
+      { "<leader>sG", false },
     },
   },
   {
@@ -110,6 +113,9 @@ return {
     },
     -- stylua: ignore
     keys = {
+      { "<leader>/", function() require("fff").live_grep({ cwd = LazyVim.root() }) end, desc = "Grep (Root Dir)" },
+      { "<leader>sg", function() require("fff").live_grep({ cwd = LazyVim.root() }) end, desc = "Grep (Root Dir)" },
+      { "<leader>sG", function() require("fff").live_grep({ cwd = vim.fn.getcwd() }) end, desc = "Grep (cwd)" },
       {
         "<leader><space>",
         function()
