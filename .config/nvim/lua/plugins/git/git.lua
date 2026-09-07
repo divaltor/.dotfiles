@@ -18,16 +18,16 @@ return {
       {
         "<leader>gg",
         function()
-          require("tsugit").toggle()
+          require("tsugit").toggle({}, { cwd = LazyVim.root.git() })
         end,
-        desc = "Open LazyGit (cwd)",
+        desc = "Open LazyGit (root)",
       },
       {
         "<leader>gG",
         function()
-          require("tsugit").toggle({}, { cwd = LazyVim.root.git() })
+          require("tsugit").toggle({}, { cwd = vim.fn.getcwd() })
         end,
-        desc = "Open LazyGit (root)",
+        desc = "Open LazyGit (cwd)",
       },
     },
     opts = {

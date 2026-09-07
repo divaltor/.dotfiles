@@ -1,56 +1,15 @@
 return {
   {
     "nvim-neo-tree/neo-tree.nvim",
-    dependencies = {
-      "saifulapm/neotree-file-nesting-config",
-    },
-    opts = {
-      filesystem = {
-        filtered_items = {
-          show_hidden_count = false,
-          never_show = {
-            ".DS_Store",
-          },
-          always_show = { ".env", "devlog.md" },
-        },
-      },
-      default_component_configs = {
-        indent = {
-          with_expanders = true,
-          expander_collapsed = "",
-          expander_expanded = "",
-        },
-      },
-      window = {
-        mappings = {
-          ["e"] = {
-            "toggle_node",
-            nowait = false,
-          },
-        },
-      },
-    },
+    enabled = false,
   },
   {
     "nvim-mini/mini.files",
     enabled = false,
-    opts = {
-      options = {
-        use_as_default_explorer = true,
-      },
-      windows = {
-        preview = true,
-        width_focus = 60,
-        width_preview = 70,
-      },
-    },
-  },
-  {
-    "nvim-neo-tree/neo-tree.nvim",
-    enabled = false,
   },
   {
     "mikavilpas/yazi.nvim",
+    lazy = false,
     keys = {
       {
         "<leader>fm",

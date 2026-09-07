@@ -72,11 +72,12 @@ return {
       vim.api.nvim_create_autocmd("FileType", {
         group = group,
         pattern = "fff_list",
-        callback = function()
+        callback = function(event)
           open_backdrop()
           -- Close backdrop when the fff window closes
           vim.api.nvim_create_autocmd("WinClosed", {
             group = group,
+            pattern = tostring(vim.fn.bufwinid(event.buf)),
             once = true,
             callback = close_backdrop,
           })
@@ -109,29 +110,12 @@ return {
     },
     -- stylua: ignore
     keys = {
-      { "<leader>/", function() require("fff").live_grep() end, desc = "Live Grep (fff)" },
-      { "<leader>sg", function() require("fff").live_grep() end, desc = "Live Grep (fff)" },
-      { "<leader>sG", function() require("fff").live_grep() end, desc = "Live Grep (fff, cwd)" },
       {
         "<leader><space>",
         function()
-          require("fff").find_files()
+          require("fff").find_files({ cwd = LazyVim.root() })
         end,
         desc = "Find Files (Root Dir)",
-      },
-      {
-        "<leader>ff",
-        function()
-          require("fff").find_files()
-        end,
-        desc = "Find Files (Root Dir)",
-      },
-      {
-        "<leader>fF",
-        function()
-          require("fff").find_files_in_dir(vim.fn.getcwd())
-        end,
-        desc = "Find Files (cwd)",
       },
     },
   },
