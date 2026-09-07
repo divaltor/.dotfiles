@@ -11,7 +11,6 @@ return {
       end
 
       -- hl-groups can have any name
-      vim.api.nvim_set_hl(0, "SymbolUsageRounding", { fg = h("CursorLine").bg, italic = true })
       vim.api.nvim_set_hl(0, "SymbolUsageContent", { fg = h("Comment").fg, italic = true })
       vim.api.nvim_set_hl(0, "SymbolUsageRef", { fg = h("Function").fg, italic = true })
       vim.api.nvim_set_hl(0, "SymbolUsageDef", { fg = h("Type").fg, italic = true })
@@ -50,7 +49,7 @@ return {
         implementation = { enabled = true },
         text_format = text_format,
         disable = {
-          lsp = { "pyright", "basedpyright" },
+          lsp = { "pyright", "basedpyright", "ty" },
           filetypes = { "dockerfile", "yaml.circleci-orb" },
         },
         hl = { link = "GitSignsCurrentLineBlame" },
