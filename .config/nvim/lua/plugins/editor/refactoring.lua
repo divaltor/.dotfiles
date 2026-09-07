@@ -5,28 +5,28 @@ return {
     vscode = true,
     keys = {
       {
-        "<leader>sh",
+        "<leader>c<",
         function()
           require("sibling-swap").swap_with_left()
         end,
         desc = "Swap with left",
       },
       {
-        "<leader>sl",
+        "<leader>c>",
         function()
           require("sibling-swap").swap_with_right()
         end,
         desc = "Swap with right",
       },
       {
-        "<leader>s<",
+        "<leader>c,",
         function()
           require("sibling-swap").swap_with_left_with_opp()
         end,
         desc = "Swap with left with operator",
       },
       {
-        "<leader>s>",
+        "<leader>c.",
         function()
           require("sibling-swap").swap_with_right_with_opp()
         end,
@@ -34,7 +34,7 @@ return {
       },
     },
     opts = {
-      use_default_keymap = false,
+      use_default_keymaps = false,
     },
   },
   {

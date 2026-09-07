@@ -6,23 +6,18 @@ return {
   {
     "nvim-mini/mini.move",
     vscode = true,
-    opts = function(opts)
+    opts = function(_, opts)
       if vim.g.vscode then
-        return {
-          mappings = {
-            left = "˙",
-            right = "¬",
-            down = "∆",
-            up = "˚",
+        opts.mappings = {
+          left = "˙",
+          right = "¬",
+          down = "∆",
+          up = "˚",
 
-            line_left = "˙",
-            line_right = "¬",
-            line_down = "∆",
-            line_up = "˚",
-          },
-          options = {
-            reindent_linewise = true,
-          },
+          line_left = "˙",
+          line_right = "¬",
+          line_down = "∆",
+          line_up = "˚",
         }
       end
 
