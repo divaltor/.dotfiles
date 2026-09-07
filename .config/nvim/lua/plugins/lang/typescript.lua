@@ -4,14 +4,12 @@ return {
     opts = function(_, opts)
       opts.servers = opts.servers or {}
 
-      -- The native `tsc` LSP does not reliably honor `typescript.inlayHints`
-      -- settings, so disable hints for TS filetypes client-side instead
-      -- (LazyVim checks this list before enabling hints on a buffer).
+      -- Disable hints client-side for both JavaScript and TypeScript.
       opts.inlay_hints = opts.inlay_hints or {}
-      opts.inlay_hints.exclude = vim.tbl_flatten({
+      opts.inlay_hints.exclude = vim.list_extend(
         opts.inlay_hints.exclude or {},
-        { "javascript", "javascriptreact", "typescript", "typescriptreact" },
-      })
+        { "javascript", "javascriptreact", "typescript", "typescriptreact" }
+      )
 
       opts.servers.oxlint = vim.tbl_deep_extend("force", opts.servers.oxlint or {}, {
         root_markers = {
@@ -35,20 +33,6 @@ return {
           "typescript",
           "typescriptreact",
           "typescript.tsx",
-        },
-        settings = {
-          typescript = {
-            inlayHints = {
-              enumMemberValues = { enabled = true },
-              functionLikeReturnTypes = { enabled = false },
-              parameterNames = {
-                enabled = "none",
-              },
-              parameterTypes = { enabled = false },
-              propertyDeclarationTypes = { enabled = true },
-              variableTypes = { enabled = false },
-            },
-          },
         },
       })
 
