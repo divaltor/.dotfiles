@@ -40,24 +40,4 @@ return {
       },
     },
   },
-  -- Linter: run cfn-lint directly on save/insert-leave as a backup
-  -- diagnostics source and for ad-hoc :lua require("lint").try_lint() use.
-  {
-    "nvim-lint",
-    opts = {
-      linters_by_ft = {
-        ["yaml.cloudformation"] = { "cfn_lint" },
-        ["json.cloudformation"] = { "cfn_lint" },
-      },
-      linters = {
-        cfn_lint = {
-          cmd = "cfn-lint",
-          stdin = false,
-          args = { "--format", "json" },
-          stream = "stdout",
-          ignore_exitcode = true,
-        },
-      },
-    },
-  },
 }
