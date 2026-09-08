@@ -116,6 +116,7 @@ return {
       { "<leader>/", function() require("fff").live_grep({ cwd = LazyVim.root() }) end, desc = "Grep (Root Dir)" },
       { "<leader>sg", function() require("fff").live_grep({ cwd = LazyVim.root() }) end, desc = "Grep (Root Dir)" },
       { "<leader>sG", function() require("fff").live_grep({ cwd = vim.fn.getcwd() }) end, desc = "Grep (cwd)" },
+      { "<leader>fF", function() require("fff").find_files({ cwd = vim.fn.getcwd() }) end, desc = "Find Files (cwd)" },
       {
         "<leader><space>",
         function()
