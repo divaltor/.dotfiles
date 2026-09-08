@@ -43,7 +43,9 @@ See also: #456, #789
 
 - Imperative test: the subject must complete "If applied, this commit will
   ___." Good: `Fix race in cache eviction`. Wrong: `Fixed race...`,
-  `Fixing race...`. Body mood is free.
+  `Fixing race...`. Body sentences state facts about the change, never
+  command the reader: "Psycopg 3 exposes the first result…", not
+  "Use one result-producing statement…".
 - Skip the body only when the change is trivially self-explanatory
   (`Fix typo in installation guide`).
 - If the subject won't fit in ~50 characters, the commit probably does too
