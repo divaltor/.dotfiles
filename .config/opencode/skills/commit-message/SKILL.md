@@ -52,6 +52,22 @@ See also: #456, #789
   much — prefer splitting into atomic commits.
 - Never append generated attribution footers or `Co-Authored-By` trailers
   unless the user asks.
+- Pass multi-line messages to Git with real newlines, never `\n` escapes:
+  write the message to a file and use `git commit -F <file>`, or use a
+  quoted heredoc:
+
+  ```bash
+  git commit -F - <<'EOF'
+  Subject line
+
+  Body paragraph wrapped at 72 characters.
+
+  Resolves: #123
+  EOF
+  ```
+
+  `git commit -m "para1\n\npara2"` stores the literal backslash-n text in
+  the commit.
 
 ## Verify
 
