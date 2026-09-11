@@ -1,0 +1,9 @@
+---
+- name: Limit swapping when memory is available
+  ansible.posix.sysctl:
+    name: vm.swappiness
+    value: "10"
+    state: present
+    sysctl_set: true
+    sysctl_file: /etc/sysctl.d/99-swappiness.conf
+    reload: true

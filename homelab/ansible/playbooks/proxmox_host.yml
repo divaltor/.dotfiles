@@ -17,6 +17,8 @@
 
   roles:
     - ssh
+    - role: swappiness
+      tags: [swappiness]
     - proxmox_repositories
     - role: proxmox_storage
       tags: [proxmox_bootstrap]

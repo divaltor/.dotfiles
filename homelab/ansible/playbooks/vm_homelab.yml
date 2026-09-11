@@ -12,6 +12,8 @@
   roles:
     - ssh
     - common
+    - role: swappiness
+      tags: [swappiness]
     - role: node_exporter
       tags: [node_exporter]
     - role: cadvisor
