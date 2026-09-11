@@ -30,9 +30,9 @@ The template encodes the mechanical rules; the annotations carry the judgment.
 ```text
 Capitalize the subject, ~50 chars, imperative, no final period
 
-How it worked before, what was wrong with that, and why this fix
-is the right one. Wrap every line at 72 characters. Leave out how —
-the code shows that.
+Optional body: how it worked before, what was wrong with that, and why
+this fix is the right one. Wrap every line at 72 characters. Leave out
+what changed and how — the diff shows both.
 
 - Bullets are okay: hyphen, single space
 - Blank lines between multi-line bullets
@@ -43,11 +43,18 @@ See also: #456, #789
 
 - Imperative test: the subject must complete "If applied, this commit will
   ___." Good: `Fix race in cache eviction`. Wrong: `Fixed race...`,
-  `Fixing race...`. Body sentences state facts about the change, never
-  command the reader: "Psycopg 3 exposes the first result…", not
+  `Fixing race...`.
+- The body explains why, not what. The diff already shows the change;
+  the body records the problem, the reason this fix is right, and any
+  tradeoff. State facts: "Psycopg 3 exposes the first result…", not
   "Use one result-producing statement…".
-- Skip the body only when the change is trivially self-explanatory
-  (`Fix typo in installation guide`).
+- Never end the body with a "Do X" directive. A closing order — "Prefer
+  reclaiming available memory before swapping", "Keep project-root grep
+  searches on FFF" — reads as a to-do list; the last sentence states the
+  outcome or reason.
+- A single title can be the whole message. When the subject and the diff
+  make the why obvious (`Fix typo in installation guide`, `Update FFF`),
+  skip the body; add one only for context the diff cannot show.
 - If the subject won't fit in ~50 characters, the commit probably does too
   much — prefer splitting into atomic commits.
 - Never append generated attribution footers or `Co-Authored-By` trailers
@@ -75,7 +82,8 @@ Review an existing or drafted message against, in order:
 
 ```text
 imperative → ≤72-char subject → capitalized → no period → blank line
-→ 72-wrapped body → explains why, not how → references at bottom
+→ optional 72-wrapped body → explains why, not what → no closing
+directive → references at bottom
 ```
 
 Report only the broken rules, with a corrected version. When reviewing
