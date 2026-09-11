@@ -48,10 +48,11 @@ See also: #456, #789
   the body records the problem, the reason this fix is right, and any
   tradeoff. State facts: "Psycopg 3 exposes the first result…", not
   "Use one result-producing statement…".
-- Never end the body with a "Do X" directive. A closing order — "Prefer
-  reclaiming available memory before swapping", "Keep project-root grep
-  searches on FFF" — reads as a to-do list; the last sentence states the
-  outcome or reason.
+- Never end the body with the change restated as an action. A closing
+  "Reserve grand consequences…", "Pin both to rc.112…", "Split
+  answers into chunks…" repeats what the subject and diff already
+  show; the last sentence states the cost of doing nothing, the
+  reason this direction is right, or the tradeoff.
 - A single title can be the whole message. When the subject and the diff
   make the why obvious (`Fix typo in installation guide`, `Update FFF`),
   skip the body; add one only for context the diff cannot show.
@@ -83,7 +84,7 @@ Review an existing or drafted message against, in order:
 ```text
 imperative → ≤72-char subject → capitalized → no period → blank line
 → optional 72-wrapped body → explains why, not what → no closing
-directive → references at bottom
+action → references at bottom
 ```
 
 Report only the broken rules, with a corrected version. When reviewing
