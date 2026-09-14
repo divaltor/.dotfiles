@@ -31,8 +31,8 @@ The template encodes the mechanical rules; the annotations carry the judgment.
 Capitalize the subject, ~50 chars, imperative, no final period
 
 Optional body: how it worked before, what was wrong with that, and why
-this fix is the right one. Wrap every line at 72 characters. Leave out
-what changed and how — the diff shows both.
+another direction would be worse. Wrap every line at 72 characters.
+Never state what changed and how — the diff shows both.
 
 - Bullets are okay: hyphen, single space
 - Blank lines between multi-line bullets
@@ -44,15 +44,22 @@ See also: #456, #789
 - Imperative test: the subject must complete "If applied, this commit will
   ___." Good: `Fix race in cache eviction`. Wrong: `Fixed race...`,
   `Fixing race...`.
-- The body explains why, not what. The diff already shows the change;
-  the body records the problem, the reason this fix is right, and any
-  tradeoff. State facts: "Psycopg 3 exposes the first result…", not
+- The body explains why, not what. Allowed: facts the diff cannot show
+  (failure cause, user / cost impact, rejected alternative, tradeoff).
+  Forbidden in commits: any sentence reconstructible from the diff —
+  imperatives like `Treat / Use / Add / Keep / Split / Pin / Switch`,
+  `We now…`, or a tool / model / flag name stated as an instruction.
+  State facts: "Psycopg 3 exposes the first result…", not
   "Use one result-producing statement…".
+- Subtraction test (mandatory before output): cover the diff, read the
+  body alone. If you can guess what code does, delete that sentence.
+  If nothing remains, ship subject-only. Mention the fix only as
+  `because + outside-diff fact`, never as an action.
 - Never end the body with the change restated as an action. A closing
   "Reserve grand consequences…", "Pin both to rc.112…", "Split
   answers into chunks…" repeats what the subject and diff already
-  show; the last sentence states the cost of doing nothing, the
-  reason this direction is right, or the tradeoff.
+  show; the last sentence must state the cost of doing nothing, the
+  reason the alternative loses, or the tradeoff.
 - A single title can be the whole message. When the subject and the diff
   make the why obvious (`Fix typo in installation guide`, `Update FFF`),
   skip the body; add one only for context the diff cannot show.
@@ -83,7 +90,7 @@ Review an existing or drafted message against, in order:
 
 ```text
 imperative → ≤72-char subject → capitalized → no period → blank line
-→ optional 72-wrapped body → explains why, not what → no closing
+→ optional 72-wrapped body → subtraction test passes → no closing
 action → references at bottom
 ```
 
@@ -98,11 +105,14 @@ Empty output means every subject fits the hard cap.
 
 ## Other change records (PRs, Jira, changelogs)
 
-Apply the same what/why priority without Git formatting:
+Apply the same what/why priority without Git formatting. The commit
+no-approach rule stays: commits never describe the approach. Approach
+belongs in PRs / Jira only, where the reader has no diff context yet:
 
 1. One-line summary in plain, imperative-style language.
 2. The problem and the reason the change was needed.
-3. The approach plus any non-obvious tradeoffs or side effects.
+3. The approach plus any non-obvious tradeoffs or side effects (PRs only —
+   never copy this into the commit body).
 4. Links to issues, prior discussion, or follow-ups.
 
 For PR descriptions, use one or two short plain-text paragraphs by default. Do
