@@ -27,6 +27,7 @@
     - role: tailscale
       vars:
         tailscale_hostname: proxmox
+        tailscale_ssh_enabled: true
     - role: zfs
       tags: [zfs]
     - role: node_exporter

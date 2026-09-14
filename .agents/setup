@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+minimum_tailscale_version=1.90.1
+installed_tailscale_version="$(tailscale version 2>/dev/null | head -n 1 || true)"
+
+if [[ -z "$installed_tailscale_version" ]] || ! dpkg --compare-versions "$installed_tailscale_version" ge "$minimum_tailscale_version"; then
+  sudo install -d -m 0755 /usr/share/keyrings
+  sudo curl -fsSL https://pkgs.tailscale.com/stable/debian/bookworm.noarmor.gpg \
+    -o /usr/share/keyrings/tailscale-archive-keyring.gpg
+  sudo curl -fsSL https://pkgs.tailscale.com/stable/debian/bookworm.tailscale-keyring.list \
+    -o /etc/apt/sources.list.d/tailscale.list
+  sudo apt-get update
+  sudo apt-get install -y tailscale
+fi
+
+sudo install -d /etc/systemd/system/tailscaled.service.d
+sudo tee /etc/systemd/system/tailscaled.service.d/amp-orb.conf >/dev/null <<'EOF'
+[Service]
+Environment=TS_ASSUME_NETWORK_UP_FOR_TEST=true
+EOF
+
+sudo systemctl daemon-reload
+sudo systemctl enable tailscaled
+sudo systemctl restart tailscaled

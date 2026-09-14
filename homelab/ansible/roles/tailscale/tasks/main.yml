@@ -72,3 +72,16 @@
   when: >-
     tailscale_needs_login or
     (tailscale_status.stdout | from_json).Self.HostName != tailscale_hostname
+
+- name: Read Tailscale SSH preference
+  ansible.builtin.command: tailscale get ssh
+  register: tailscale_ssh_status
+  changed_when: false
+  when: tailscale_ssh_enabled | default(false) | bool
+
+- name: Enable Tailscale SSH
+  ansible.builtin.command: tailscale set --ssh=true
+  when:
+    - tailscale_ssh_enabled | default(false) | bool
+    - tailscale_ssh_status.stdout | trim != 'true'
+  changed_when: true
