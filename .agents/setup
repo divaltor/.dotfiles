@@ -22,4 +22,3 @@ EOF
 
 sudo systemctl daemon-reload
 sudo systemctl enable tailscaled
-sudo systemctl restart tailscaled
