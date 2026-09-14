@@ -1,30 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-: "${TAILSCALE_CLIENT_ID:?Set TAILSCALE_CLIENT_ID in the Amp project environment}"
-: "${TAILSCALE_AUDIENCE:?Set TAILSCALE_AUDIENCE in the Amp project environment}"
-
-sudo systemctl start tailscaled
-
 tailscale_status="$(sudo tailscale status --json 2>/dev/null || true)"
-if jq -e '.BackendState == "Running" and ((.Self.Tags // []) | index("tag:amp-orb") != null)' \
-  >/dev/null <<<"$tailscale_status"; then
-  exit 0
-fi
-
 if jq -e '.BackendState == "Running"' >/dev/null <<<"$tailscale_status"; then
   sudo tailscale logout
 fi
-
-identity_token="$(
-  amp orb id-token \
-    --audience "$TAILSCALE_AUDIENCE" \
-    --subject-scope project
-)"
-trap 'unset identity_token' EXIT
-
-sudo tailscale up \
-  --client-id="${TAILSCALE_CLIENT_ID}?ephemeral=true&preauthorized=true" \
-  --id-token="$identity_token" \
-  --advertise-tags=tag:amp-orb \
-  --hostname=amp-dotfiles
