@@ -65,6 +65,7 @@
       "grafana": {
         "type": "local",
         "command": ["uvx", "mcp-grafana@latest", "--loki-guardrail-mode=enforce"],
+        "disabled": true,
         "environment": {
           "GRAFANA_URL": "https://monitoring.divaltor.dev",
           "GRAFANA_API_KEY": "{env:GRAFANA_API_KEY}"
