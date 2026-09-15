@@ -49,11 +49,22 @@ function displayPath(target: Target) {
 
 function normalizeFileConstraint(value: string | undefined) {
   if (!value) return
-  const normalized = posix(value.trim())
+  const normalized = posix(value.trim()).replace(/^\/+/, "")
   if (!normalized) return
   if (/\s/.test(normalized)) throw new Error(`FFF file constraints cannot contain whitespace: ${value}`)
   if (normalized.includes("/") || normalized.includes("{") || normalized.startsWith("*.")) return normalized
   return `**/${normalized}`
+}
+
+function normalizeSearchInput(rawPath: string | undefined) {
+  if (rawPath === undefined) return "."
+  const trimmed = rawPath.trim()
+  if (!trimmed || trimmed === "." || trimmed === "./" || trimmed === "/") return "."
+  return trimmed
+}
+
+function normalizeGlobPattern(pattern: string) {
+  return pattern.trim().replace(/^\/+/, "")
 }
 
 function makeFinder(root: string) {
@@ -163,9 +174,24 @@ export default Plugin.define({
     }
 
     async function resolveTarget(rawPath: string | undefined, directory: string) {
-      const requested = path.resolve(directory, rawPath ?? ".")
-      const info = await stat(requested).catch(() => undefined)
-      if (!info) throw new Error(`Search path does not exist: ${requested}`)
+      const normalized = normalizeSearchInput(rawPath)
+      let requested = path.resolve(directory, normalized)
+      let info = await stat(requested).catch(() => undefined)
+      if (!info && typeof rawPath === "string" && rawPath.trim().startsWith("/")) {
+        const stripped = rawPath.trim().replace(/^\/+/, "")
+        if (stripped && stripped !== normalized) {
+          const retry = path.resolve(directory, stripped)
+          const retryInfo = await stat(retry).catch(() => undefined)
+          if (retryInfo) {
+            requested = retry
+            info = retryInfo
+          }
+        }
+      }
+      if (!info)
+        throw new Error(
+          `Search path does not exist: ${requested} (received: ${JSON.stringify(rawPath ?? null)}). Use a workspace-relative path like 'apps/web', '.' for the workspace root, or an absolute directory outside the workspace.`,
+        )
       if (!info.isDirectory() && !info.isFile()) throw new Error(`Search path must be a file or directory: ${requested}`)
 
       const target = await realpath(requested)
@@ -205,7 +231,8 @@ export default Plugin.define({
             },
             path: {
               type: "string",
-              description: "Directory to search; defaults to the current workspace directory",
+              description:
+                "Directory to search like 'apps/web'; omit or use '.' for the workspace root, never '/' for the workspace root. An absolute directory outside the workspace is also allowed.",
             },
           },
           required: ["pattern"],
@@ -213,7 +240,8 @@ export default Plugin.define({
         },
         execute: async (raw, context) => {
           const args = raw as GlobArguments
-          if (typeof args.pattern !== "string" || args.pattern.length === 0) {
+          const pattern = typeof args.pattern === "string" ? normalizeGlobPattern(args.pattern) : ""
+          if (!pattern) {
             throw new Error("A glob pattern is required")
           }
           const scope = await scopeFor(context.sessionID)
@@ -222,7 +250,7 @@ export default Plugin.define({
           await context.progress({ title: displayPath(target) })
 
           const result = await withFinder(target, (finder) =>
-            finder.glob(args.pattern, { pageIndex: 0, pageSize: RESULT_LIMIT + 1 }),
+            finder.glob(pattern, { pageIndex: 0, pageSize: RESULT_LIMIT + 1 }),
           )
           if (!result.ok) throw new Error(result.error)
 
@@ -265,7 +293,8 @@ export default Plugin.define({
             },
             path: {
               type: "string",
-              description: "File or directory to search; defaults to the current workspace directory",
+              description:
+                "File or directory to search like 'apps/web'; omit or use '.' for the workspace root, never '/' for the workspace root. An absolute directory outside the workspace is also allowed.",
             },
             include: {
               type: "string",
