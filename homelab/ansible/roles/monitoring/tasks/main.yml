@@ -176,7 +176,6 @@
       - /etc/alloy/config.alloy
   environment:
     ALLOY_OTLP_TOKEN: "{{ monitoring_otlp_token }}"
-    SIGNOZ_OTLP_TOKEN: "{{ monitoring_otlp_token }}"
   changed_when: false
   no_log: true
 

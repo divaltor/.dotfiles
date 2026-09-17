@@ -94,8 +94,10 @@ host console.
 `monitoring.local` runs Prometheus, Grafana, Loki, Tempo, Alloy, and
 prometheus-pve-exporter in LXC 106. Grafana is available at
 `https://monitoring.local`. Alloy accepts bearer-authenticated OTLP on ports
-4317 and 4318, stores metrics in Prometheus, logs in Loki, and traces in Tempo,
-and also forwards all signals to SigNoz. node_exporter runs on the Proxmox host
+4317 and 4318, stores metrics in Prometheus, logs in Loki, and traces in Tempo.
+Applications send telemetry directly to external backends (Axiom, Langfuse)
+instead of the gateway; the gateway only feeds the local Grafana stack.
+node_exporter runs on the Proxmox host
 and every repository-managed Debian guest. LXC diskstats and ZFS collectors are
 disabled
 because Proxmox exposes host-wide values inside containers; pve_exporter
@@ -108,7 +110,7 @@ that hosts Docker workloads, and exposes container metrics to Prometheus on
 port 8080. The `docker-logs` role runs a pinned Grafana Alloy container on the
 same VM. It discovers containers through the Docker socket, labels stdout with
 the container name as `service_name`, and writes directly to Loki on
-`monitoring.local:3100`; this path bypasses the OTLP gateway and SigNoz. Loki's
+`monitoring.local:3100`; this path bypasses the OTLP gateway. Loki's
 HTTP port is exposed to the homelab network for this direct write path.
 Containers whose names match `docker_logs_exclude_pattern` are skipped. Apps
 that also push the same logs over OTLP should be added to that pattern to avoid
@@ -134,7 +136,7 @@ The 1Password environment used by `mise` must provide:
 
 - `GRAFANA_ADMIN_PASSWORD` for the initial Grafana admin account;
 - `PVE_MONITORING_TOKEN` for `prometheus@pve!monitoring`;
-- `OTLP_TOKEN` for Alloy ingress and SigNoz forwarding.
+- `OTLP_TOKEN` for the Alloy OTLP gateway.
 
 Create the API identity once on the Proxmox host, then save the printed token in
 1Password:

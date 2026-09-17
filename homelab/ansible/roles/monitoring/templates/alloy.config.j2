@@ -2,10 +2,6 @@ otelcol.auth.bearer "ingress" {
   token = sys.env("ALLOY_OTLP_TOKEN")
 }
 
-otelcol.auth.bearer "signoz" {
-  token = sys.env("SIGNOZ_OTLP_TOKEN")
-}
-
 otelcol.receiver.otlp "gateway" {
   grpc {
     endpoint = "0.0.0.0:{{ monitoring_otlp_grpc_port }}"
@@ -42,18 +38,9 @@ otelcol.processor.batch "gateway" {
   send_batch_max_size = 3000
 
   output {
-    metrics = [
-      otelcol.exporter.prometheus.local.input,
-      otelcol.exporter.otlphttp.signoz.input,
-    ]
-    logs = [
-      otelcol.exporter.loki.local.input,
-      otelcol.exporter.otlphttp.signoz.input,
-    ]
-    traces = [
-      otelcol.exporter.otlp.tempo.input,
-      otelcol.exporter.otlphttp.signoz.input,
-    ]
+    metrics = [otelcol.exporter.prometheus.local.input]
+    logs = [otelcol.exporter.loki.local.input]
+    traces = [otelcol.exporter.otlp.tempo.input]
   }
 }
 
@@ -83,12 +70,5 @@ otelcol.exporter.otlp "tempo" {
     tls {
       insecure = true
     }
-  }
-}
-
-otelcol.exporter.otlphttp "signoz" {
-  client {
-    endpoint = "{{ monitoring_signoz_otlp_endpoint }}"
-    auth     = otelcol.auth.bearer.signoz.handler
   }
 }

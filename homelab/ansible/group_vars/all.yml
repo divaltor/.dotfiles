@@ -153,7 +153,6 @@ monitoring_tempo_otlp_grpc_port: 4327
 monitoring_tempo_otlp_http_port: 4328
 monitoring_telemetry_retention: 336h
 monitoring_otlp_token: "{{ lookup('env', 'OTLP_TOKEN') }}"
-monitoring_signoz_otlp_endpoint: http://homelab.local:4318
 monitoring_pve_exporter_version: 3.9.0
 monitoring_pve_target: divaltor-dc.local
 monitoring_pve_user: prometheus@pve
@@ -215,7 +214,7 @@ cadvisor_image: ghcr.io/google/cadvisor@sha256:1eb9bde04dab65b919bc51da9e7cf8ece
 cadvisor_port: 8080
 
 # Alloy tails Docker container stdout on the Docker VM and writes directly to
-# Loki, bypassing the OTLP gateway and SigNoz.
+# Loki, bypassing the OTLP gateway.
 docker_logs_image: grafana/alloy@sha256:1eeba15ef3193438c72f66efd3d76f769c523a4c661db0fae6eddde906004bc8
 docker_logs_loki_endpoint: "http://monitoring.local:{{ monitoring_loki_port }}/loki/api/v1/push"
 docker_logs_health_port: 12345
