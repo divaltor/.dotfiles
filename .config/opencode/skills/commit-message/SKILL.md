@@ -67,9 +67,10 @@ See also: #456, #789
   much — prefer splitting into atomic commits.
 - Never append generated attribution footers or `Co-Authored-By` trailers
   unless the user asks.
-- Pass multi-line messages to Git with real newlines, never `\n` escapes:
-  write the message to a file and use `git commit -F <file>`, or use a
-  quoted heredoc:
+- Pass multi-line messages with real newlines, never `\n` escapes — this
+  applies everywhere: commit messages, PR descriptions, Jira comments,
+  changelog entries. Write the message to a file and pass it whole, or use
+  a quoted heredoc:
 
   ```bash
   git commit -F - <<'EOF'
@@ -81,8 +82,12 @@ See also: #456, #789
   EOF
   ```
 
-  `git commit -m "para1\n\npara2"` stores the literal backslash-n text in
-  the commit.
+  ```bash
+  gh pr create --body-file body.md   # or gh pr edit --body-file body.md
+  ```
+
+  An inline `"para1\n\npara2"` stores or posts the literal backslash-n
+  text, which renders as a visible `\n\n` in the published description.
 
 ## Verify
 
@@ -91,7 +96,7 @@ Review an existing or drafted message against, in order:
 ```text
 imperative → ≤72-char subject → capitalized → no period → blank line
 → optional 72-wrapped body → subtraction test passes → no closing
-action → references at bottom
+action → references at bottom → no literal \n escapes on any surface
 ```
 
 Report only the broken rules, with a corrected version. When reviewing
@@ -105,20 +110,37 @@ Empty output means every subject fits the hard cap.
 
 ## Other change records (PRs, Jira, changelogs)
 
-Apply the same what/why priority without Git formatting. The commit
-no-approach rule stays: commits never describe the approach. Approach
-belongs in PRs / Jira only, where the reader has no diff context yet:
+Apply the commit rules 1:1 — the what/why split, the subtraction test, and
+the imperative style. The diff is attached to the PR exactly as it is to
+the commit, so the description must still only supply *why*: the problem,
+the reason the change was needed, failure cause, user / cost impact,
+rejected alternative, tradeoff. Never narrate what the diff shows or
+restate the change as an action ("Configure X…", "We now…", "Add…").
+State facts, the same way commit bodies must:
+
+- Good: "DuckDB 1.5 rejects the virtual-hosted URL because it does not
+  match AWS's wildcard certificate, which failed `convert_details` after
+  the production upgrade."
+- Wrong: "Configure the DuckDB S3 secret to use path-style URLs." —
+  that sentence is the diff, spoken aloud.
+
+Structure without Git formatting:
 
 1. One-line summary in plain, imperative-style language.
-2. The problem and the reason the change was needed.
-3. The approach plus any non-obvious tradeoffs or side effects (PRs only —
-   never copy this into the commit body).
+2. The problem and the reason the change was needed — never a
+   restatement of the file changes.
+3. Non-obvious tradeoffs or side effects the diff cannot show.
 4. Links to issues, prior discussion, or follow-ups.
 
 For PR descriptions, use one or two short plain-text paragraphs by default. Do
 not add Markdown headings, checklists, or generic sections such as `Summary`,
 `Why`, `Validation`, or `Test plan`. Do not include routine validation details.
 Use a structured PR format only when the user explicitly requests one.
+
+Before posting a PR description, run the subtraction test against the
+diff and confirm the body contains no literal `\n`, `\n\n`, or
+escaped-newline sequences — pass it with `--body-file`, never inline in
+quotes.
 
 ## Diagrams (only when shape helps)
 
