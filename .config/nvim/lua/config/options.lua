@@ -3,6 +3,7 @@
 -- Add any additional options here
 vim.g.lazygit_config = false
 vim.g.lazyvim_python_lsp = "ty"
+vim.g.lazyvim_ts_lsp = "tsc"
 vim.g.snacks_animate = false
 
 -- Enable line wrapping by default
