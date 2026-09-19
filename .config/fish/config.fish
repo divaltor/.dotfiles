@@ -60,7 +60,23 @@ end
 
 if type -q yt-dlp
     function mp4
-        set -l ffmpeg_path (command -s ffmpeg 2>/dev/null)
+        # The PATH ffmpeg may exist yet be unrunnable (stale brew dylib
+        # link), which yt-dlp reports as "ffmpeg is not installed" and
+        # leaves a silent video + orphan audio. Verify before use.
+        set -l ffmpeg_bin
+        for candidate in (command -s ffmpeg 2>/dev/null) /opt/homebrew/bin/ffmpeg /opt/homebrew/opt/ffmpeg-full/bin/ffmpeg
+            if test -x "$candidate" && "$candidate" -version >/dev/null 2>&1
+                set ffmpeg_bin "$candidate"
+                break
+            end
+        end
+
+        if test -z "$ffmpeg_bin"
+            echo "mp4: no working ffmpeg found (binary present but won't run?) — try `brew reinstall ffmpeg`, then retry" >&2
+            return 1
+        end
+
+        set -l ffmpeg_dir (path dirname "$ffmpeg_bin")
         set -l js_runtime
 
         if type -q deno
@@ -69,25 +85,9 @@ if type -q yt-dlp
             set js_runtime --js-runtimes node
         end
 
-        if test -n "$ffmpeg_path"
-            set -l ffmpeg_dir (path dirname "$ffmpeg_path")
-
-            yt-dlp \
-                $js_runtime \
-                --ffmpeg-location "$ffmpeg_dir" \
-                -S "vcodec:h264,lang,quality,res,fps,hdr:12,acodec:aac" \
-                --merge-output-format mp4 \
-                --remux-video mp4 \
-                --sponsorblock-remove sponsor \
-                --extractor-args "youtube:player-client=default,-tv_simply" \
-                -o "$HOME/youtube/%(title)s.%(ext)s" \
-                --remote-components ejs:github \
-                $argv
-            return
-        end
-
         yt-dlp \
             $js_runtime \
+            --ffmpeg-location "$ffmpeg_dir" \
             -S "vcodec:h264,lang,quality,res,fps,hdr:12,acodec:aac" \
             --merge-output-format mp4 \
             --remux-video mp4 \
@@ -117,4 +117,8 @@ fish_add_path $HOME/.local/bin
 
 set -U -x DO_NOT_TRACK 1
 
-set -U -x UV_PREVIEW_FEATURES=content-addressed-cache
+set -U -x UV_PREVIEW_FEATURES content-addressed-cache
+
+set -U -x AMP_DISABLE_AMP_COAUTHOR_TRAILER 1
+
+fish_add_path /opt/homebrew/opt/ffmpeg-full/bin
