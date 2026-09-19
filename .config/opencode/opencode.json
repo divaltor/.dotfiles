@@ -43,14 +43,14 @@
       "disabled": true
     }
   },
-  "provider": {
+  "providers": {
     "openai": {
-      "options": {
+      "settings": {
         "textVerbosity": "low"
       }
     },
     "github-copilot": {
-      "options": {
+      "settings": {
         "textVerbosity": "low"
       }
     }

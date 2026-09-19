@@ -1,5 +1,5 @@
 import { FileFinder, type FileFinderApi, type GrepCursor, type GrepMatch, type GrepMode } from "@ff-labs/fff-bun"
-import { Plugin } from "@opencode-ai/plugin"
+import { Plugin } from "@opencode/plugin"
 import { realpath, stat } from "node:fs/promises"
 import { homedir } from "node:os"
 import path from "node:path"

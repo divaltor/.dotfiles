@@ -1,4 +1,4 @@
-import { Plugin } from "@opencode-ai/plugin"
+import { Plugin } from "@opencode/plugin"
 
 const EXA_MCP_URL = "https://mcp.exa.ai/mcp"
 const REQUEST_TIMEOUT_MS = 30_000
