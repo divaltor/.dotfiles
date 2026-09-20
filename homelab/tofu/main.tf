@@ -364,7 +364,7 @@ resource "proxmox_virtual_environment_container" "kino" {
   }
 
   memory {
-    dedicated = 4096
+    dedicated = 1536
     swap      = 1024
   }
 
@@ -452,8 +452,8 @@ resource "proxmox_virtual_environment_container" "qbittorrent" {
   }
 
   memory {
-    dedicated = 2048
-    swap      = 512
+    dedicated = 1024
+    swap      = 256
   }
 
   disk {
@@ -538,8 +538,8 @@ resource "proxmox_virtual_environment_container" "sftpgo" {
   }
 
   memory {
-    dedicated = 1024
-    swap      = 512
+    dedicated = 512
+    swap      = 256
   }
 
   disk {
