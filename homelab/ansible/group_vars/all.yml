@@ -236,6 +236,16 @@ tailscale_apt_release: "{{ ansible_facts['distribution_release'] }}"
 tailscale_up_args:
   - --advertise-tags=tag:homelab
 
+# Opera Amp runner
+amp_api_key: "{{ lookup('env', 'AMP_API_KEY') }}"
+amp_github_token: "{{ lookup('env', 'GH_TOKEN') }}"
+amp_signing_key_reference: op://y4uraao7il4epuusrsquhwempm/6654bedlzejjchdrse3mqb6bgu/private_key?ssh-format=openssh
+amp_signing_key: "{{ lookup('ansible.builtin.pipe', 'op read ' ~ (amp_signing_key_reference | quote)) }}"
+websocat_version: 1.14.1
+websocat_sha256: 66f8dd3a0394761556339117f8bb5123bddefd44e087af2a72ec22b0bd08d514
+opera_allowed_lan_destinations:
+  - 192.168.1.1
+
 # Common packages
 common_packages:
   - vim

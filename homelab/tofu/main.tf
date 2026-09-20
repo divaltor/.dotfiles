@@ -148,6 +148,87 @@ resource "proxmox_virtual_environment_vm" "homelab" {
   depends_on = [terraform_data.amd_gpu_vbios]
 }
 
+# ─── VM: opera (107) — Amp runner ────────────────────────────
+
+resource "proxmox_virtual_environment_vm" "opera" {
+  node_name   = "divaltor-dc"
+  vm_id       = 107
+  name        = "opera"
+  description = "Dedicated Amp runner"
+  started     = true
+  on_boot     = true
+
+  bios    = "ovmf"
+  machine = "q35"
+
+  operating_system {
+    type = "l26"
+  }
+
+  cpu {
+    cores   = 12
+    type    = "host"
+    sockets = 1
+  }
+
+  memory {
+    dedicated = 8192
+  }
+
+  agent {
+    enabled = true
+  }
+
+  disk {
+    interface    = "scsi0"
+    datastore_id = "fast-nvme"
+    file_format  = "raw"
+    import_from  = proxmox_download_file.debian_13_cloud_image.id
+    size         = 400
+    iothread     = true
+    discard      = "on"
+    ssd          = true
+  }
+
+  efi_disk {
+    datastore_id = "fast-nvme"
+    type         = "4m"
+  }
+
+  initialization {
+    datastore_id = "fast-nvme"
+
+    ip_config {
+      ipv4 {
+        address = "dhcp"
+      }
+    }
+
+    user_account {
+      username = "root"
+      keys     = [trimspace(var.ssh_public_key)]
+    }
+  }
+
+  network_device {
+    bridge   = "vmbr0"
+    model    = "virtio"
+    firewall = false
+  }
+
+  scsi_hardware = "virtio-scsi-single"
+
+  serial_device {}
+
+  boot_order = ["scsi0", "net0"]
+
+  lifecycle {
+    ignore_changes = [
+      disk[0].file_id,
+    ]
+  }
+}
+
 # ─── VM: shared (104) — NixOS 26.05 ─────────────────────────
 
 resource "proxmox_download_file" "nixos_cloud_init_installer" {

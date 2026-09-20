@@ -84,10 +84,38 @@ mise run ansible:check
 mise run ansible:apply
 ```
 
-Hosts use mDNS: `proxmox.local`, `homelab.local`, `div.local`, `smb.local`,
+Hosts use mDNS: `proxmox.local`, `homelab.local`, `opera.local`, `div.local`, `smb.local`,
 `sftpgo.local`, `kino.local`, `qbittorrent.local`, and `monitoring.local`.
 Tasks load secrets from 1Password. Always verify a changed SSH host key at the
 host console.
+
+## Opera Amp runner
+
+VM 107 (`opera`) is a Debian 13 runner with 12 host CPU cores, 8 GB RAM, an
+extendable 400 GB disk, and an 8 GB swap file with swappiness 10. Ansible creates
+the unprivileged `amp` account and runs Amp from `/workspace/personal`; the
+account has no `sudo` access. It installs the standard Orb toolset, current
+Node.js LTS, and current Amp, Bun, pnpm, Yarn, uv, and agent-browser releases.
+
+Before provisioning, add `AMP_API_KEY` and a Tailscale auth key authorized for
+`tag:homelab` to the 1Password environment. Optionally add `GH_TOKEN` so the
+runner's `gh` and Git HTTPS operations are authenticated. The multiline SSH
+signing key is read directly from 1Password item `6654bedlzejjchdrse3mqb6bgu`;
+do not pass private keys through the 1Password Environment tab because it does
+not preserve their line breaks. Check `fast-nvme` capacity, apply OpenTofu, find
+the new DHCP lease, then bootstrap with:
+
+```sh
+mise run playbook -- playbooks/vm_opera.yml -e opera_ansible_host=<verified-ip>
+```
+
+The guest firewall permits internet and Tailscale connectivity but rejects new
+connections initiated toward RFC1918 and IPv6 ULA networks, except the LAN
+addresses in `opera_allowed_lan_destinations` (currently only
+`192.168.1.1`). Existing inbound connections can reply. Use Tailscale grants for
+additional restrictions between tailnet nodes; direct LAN/internet traffic does
+not pass through Tailscale policy. Increase `disk[0].size`, apply OpenTofu, and
+grow the guest partition and filesystem when more workspace capacity is needed.
 
 ## Monitoring
 

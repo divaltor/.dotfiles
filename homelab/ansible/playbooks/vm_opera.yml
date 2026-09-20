@@ -1,0 +1,30 @@
+---
+# VM: opera (107) — Debian 13 Amp runner
+
+- name: Configure Opera Amp runner VM
+  hosts: opera
+  gather_facts: true
+  vars_files:
+    - ../group_vars/all.yml
+  vars:
+    swapfile_size: 8G
+    tailscale_up_args:
+      - --advertise-tags=tag:homelab
+
+  roles:
+    - ssh
+    - common
+    - role: swapfile
+      tags: [swapfile]
+    - role: swappiness
+      tags: [swappiness]
+    - role: tailscale
+      vars:
+        tailscale_ssh_enabled: true
+    - role: avahi
+      vars:
+        avahi_allow_interfaces: ens18
+    - role: amp_runner
+      tags: [amp_runner]
+    - role: restricted_egress
+      tags: [restricted_egress]

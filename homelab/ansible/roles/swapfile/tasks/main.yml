@@ -1,0 +1,36 @@
+---
+- name: Allocate swap file
+  ansible.builtin.command:
+    argv: [fallocate, -l, "{{ swapfile_size }}", /swapfile]
+    creates: /swapfile
+
+- name: Protect swap file
+  ansible.builtin.file:
+    path: /swapfile
+    owner: root
+    group: root
+    mode: "0600"
+
+- name: Format swap file
+  community.general.filesystem:
+    dev: /swapfile
+    fstype: swap
+
+- name: Configure swap file at boot
+  ansible.posix.mount:
+    path: none
+    src: /swapfile
+    fstype: swap
+    opts: sw
+    state: present
+
+- name: Enable swap file
+  ansible.builtin.shell:
+    cmd: |
+      if swapon --show=NAME --noheadings | grep -Fxq /swapfile; then
+        exit 0
+      fi
+      swapon /swapfile
+      echo changed
+  register: swapfile_enable
+  changed_when: swapfile_enable.stdout == 'changed'

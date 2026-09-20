@@ -18,6 +18,13 @@ Hardware
 
 Any containers and VMs should provide host CPUs to get maximum performance from modern CPU instructions, not virtualized one.
 
+## Secrets
+
+Do not pass multiline private keys through the 1Password Environment tab; it
+does not preserve line breaks. Read SSH keys directly from their 1Password item
+with `op read` and the `?ssh-format=openssh` query parameter. Never print secret
+field values while inspecting item metadata.
+
 ## Other
 
 For any additional info how to run Opentofu or Ansible read README.md

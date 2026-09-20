@@ -20,6 +20,15 @@ output "vm_shared_info" {
   }
 }
 
+output "vm_opera_info" {
+  description = "Opera Amp runner VM details"
+  value = {
+    vmid = proxmox_virtual_environment_vm.opera.vm_id
+    name = proxmox_virtual_environment_vm.opera.name
+    node = proxmox_virtual_environment_vm.opera.node_name
+  }
+}
+
 output "ct_smb_info" {
   description = "Samba LXC details"
   value = {

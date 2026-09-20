@@ -1,0 +1,10 @@
+table inet opera_egress {
+  chain output {
+    type filter hook output priority filter; policy accept;
+
+    ct state established,related accept
+    ip daddr { {{ opera_allowed_lan_destinations | join(', ') }} } accept
+    ip daddr { 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16 } reject
+    ip6 daddr fc00::/7 reject
+  }
+}
