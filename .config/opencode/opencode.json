@@ -2,22 +2,8 @@
   "$schema": "https://opencode.ai/config.json",
   "lsp": true,
   "formatter": true,
+  "plugins": ["@divaltor/academy@0.1.3"],
   "permissions": [
-    {
-      "action": "*",
-      "resource": "*",
-      "effect": "allow"
-    },
-    {
-      "action": "subagent",
-      "resource": "*",
-      "effect": "allow"
-    },
-    {
-      "action": "subagent",
-      "resource": "bellno",
-      "effect": "deny"
-    },
     {
       "action": "todowrite",
       "resource": "*",
@@ -29,20 +15,6 @@
       "effect": "deny"
     }
   ],
-  "agents": {
-    "build": {
-      "disabled": true
-    },
-    "plan": {
-      "hidden": true
-    },
-    "explore": {
-      "disabled": true
-    },
-    "general": {
-      "disabled": true
-    }
-  },
   "providers": {
     "openai": {
       "settings": {
@@ -91,6 +63,5 @@
   },
   "websearch": {
     "provider": "exa"
-  },
-  "default_agent": "diana"
+  }
 }
