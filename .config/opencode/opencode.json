@@ -4,11 +4,18 @@
   "formatter": true,
   "plugins": [
     {
-      "package": "@divaltor/academy@0.2.3",
+      "package": "@divaltor/academy@0.4.1",
       "options": {
-        "rudolf": {
-          "color": "#8994B8",
-          "name": "diana"
+        "agents": {
+          "rudolf": {
+            "color": "#8994B8",
+            "name": "diana"
+          }
+        },
+        "experimental": {
+          "communication": {
+            "enabled": true
+          }
         }
       }
     }
