@@ -47,13 +47,16 @@
     - name: commit.gpgsign
       value: "true"
 
-- name: Create runner workspace
+- name: Create runner workspaces
   ansible.builtin.file:
-    path: /workspace/personal
+    path: "{{ item }}"
     state: directory
     owner: amp
     group: amp
     mode: "0755"
+  loop:
+    - /workspace/personal
+    - /workspace/work
 
 - name: Install NodeSource signing key
   ansible.builtin.get_url:
@@ -133,6 +136,7 @@
     NPM_CONFIG_PREFIX: /home/amp/.local
   loop:
     - "@ampcode/cli"
+    - "@opencode/cli"
     - agent-browser
     - bun
     - pnpm
