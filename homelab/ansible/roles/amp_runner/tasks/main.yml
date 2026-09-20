@@ -91,12 +91,27 @@
       - python3-pip
       - qemu-guest-agent
       - ripgrep
+      - sudo
       - tmux
       - unzip
       - vim
       - zstd
     state: latest
     update_cache: true
+
+- name: Allow Amp user passwordless sudo
+  ansible.builtin.copy:
+    content: "amp ALL=(ALL:ALL) NOPASSWD: ALL\n"
+    dest: /etc/sudoers.d/amp
+    owner: root
+    group: root
+    mode: "0440"
+    validate: /usr/sbin/visudo -cf %s
+
+- name: Enable lingering for Amp user
+  ansible.builtin.command: loginctl enable-linger amp
+  args:
+    creates: /var/lib/systemd/linger/amp
 
 - name: Install websocat
   ansible.builtin.get_url:

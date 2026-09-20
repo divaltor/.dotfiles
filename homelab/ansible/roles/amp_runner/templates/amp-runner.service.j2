@@ -13,10 +13,7 @@ Environment=PATH=/usr/local/bin:/usr/bin:/bin:/home/amp/.local/bin
 ExecStart=/home/amp/.local/bin/amp --no-tui --runner-id opera --remote-control-terminal
 Restart=on-failure
 RestartSec=5s
-NoNewPrivileges=true
 PrivateTmp=true
-ProtectSystem=strict
-ReadWritePaths=/workspace/personal /home/amp
 
 [Install]
 WantedBy=multi-user.target
