@@ -29,11 +29,6 @@
   },
   "mcp": {
     "servers": {
-      "grep": {
-        "type": "remote",
-        "url": "https://mcp.grep.app",
-        "disabled": false
-      },
       "grafana": {
         "type": "local",
         "command": ["uvx", "mcp-grafana@latest", "--loki-guardrail-mode=enforce"],
