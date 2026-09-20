@@ -82,7 +82,7 @@ resource "proxmox_virtual_environment_vm" "homelab" {
   }
 
   memory {
-    dedicated = 24576 # 24 GB fixed; no floating (ballooning) — balloon device intentionally absent
+    dedicated = 20480 # 20 GB fixed; no floating (ballooning) — balloon device intentionally absent
   }
 
   agent {
@@ -621,7 +621,7 @@ resource "proxmox_virtual_environment_container" "monitoring" {
   }
 
   memory {
-    dedicated = 4096
+    dedicated = 2560
     swap      = 1024
   }
 
