@@ -5,6 +5,10 @@
       - monitoring_pve_token_value | length > 0
       - monitoring_grafana_admin_password | length > 0
       - monitoring_otlp_token | length > 0
+      - monitoring_axiom_api_token | length > 0
+      - monitoring_axiom_traces_dataset | length > 0
+      - monitoring_axiom_logs_dataset | length > 0
+      - monitoring_axiom_metrics_dataset | length > 0
     fail_msg: >-
       Monitoring credentials must be available in the 1Password environment
       used by mise.
@@ -176,6 +180,10 @@
       - /etc/alloy/config.alloy
   environment:
     ALLOY_OTLP_TOKEN: "{{ monitoring_otlp_token }}"
+    AXIOM_API_TOKEN: "{{ monitoring_axiom_api_token }}"
+    AXIOM_TRACES_DATASET: "{{ monitoring_axiom_traces_dataset }}"
+    AXIOM_LOGS_DATASET: "{{ monitoring_axiom_logs_dataset }}"
+    AXIOM_METRICS_DATASET: "{{ monitoring_axiom_metrics_dataset }}"
   changed_when: false
   no_log: true
 

@@ -153,6 +153,10 @@ monitoring_tempo_otlp_grpc_port: 4327
 monitoring_tempo_otlp_http_port: 4328
 monitoring_telemetry_retention: 336h
 monitoring_otlp_token: "{{ lookup('env', 'OTLP_TOKEN') }}"
+monitoring_axiom_api_token: "{{ lookup('env', 'AXIOM_API_TOKEN') }}"
+monitoring_axiom_traces_dataset: "{{ lookup('env', 'AXIOM_TRACES_DATASET') }}"
+monitoring_axiom_logs_dataset: "{{ lookup('env', 'AXIOM_LOGS_DATASET') }}"
+monitoring_axiom_metrics_dataset: "{{ lookup('env', 'AXIOM_METRICS_DATASET') }}"
 monitoring_pve_exporter_version: 3.9.0
 monitoring_pve_target: divaltor-dc.local
 monitoring_pve_user: prometheus@pve

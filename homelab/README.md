@@ -125,9 +125,11 @@ grow the guest partition and filesystem when more workspace capacity is needed.
 `monitoring.local` runs Prometheus, Grafana, Loki, Tempo, Alloy, and
 prometheus-pve-exporter in LXC 106. Grafana is available at
 `https://monitoring.local`. Alloy accepts bearer-authenticated OTLP on ports
-4317 and 4318, stores metrics in Prometheus, logs in Loki, and traces in Tempo.
-Applications send telemetry directly to external backends (Axiom, Langfuse)
-instead of the gateway; the gateway only feeds the local Grafana stack.
+4317 and 4318, stores metrics in Prometheus, logs in Loki, and traces in Tempo,
+and fans telemetry whose `service.name` is `starlight` or starts with
+`starlight-` out to dedicated Axiom datasets. Other services stay in the local
+Grafana stack. Applications send OTLP telemetry to Alloy; Starlight sends AI
+traces directly to Langfuse as a separate output.
 node_exporter runs on the Proxmox host
 and every repository-managed Debian guest. LXC diskstats and ZFS collectors are
 disabled
@@ -167,7 +169,10 @@ The 1Password environment used by `mise` must provide:
 
 - `GRAFANA_ADMIN_PASSWORD` for the initial Grafana admin account;
 - `PVE_MONITORING_TOKEN` for `prometheus@pve!monitoring`;
-- `OTLP_TOKEN` for the Alloy OTLP gateway.
+- `OTLP_TOKEN` for the Alloy OTLP gateway;
+- `AXIOM_API_TOKEN` with ingest access to the three telemetry datasets;
+- `AXIOM_TRACES_DATASET`, `AXIOM_LOGS_DATASET`, and
+  `AXIOM_METRICS_DATASET` for dedicated traces, logs, and metrics datasets.
 
 Create the API identity once on the Proxmox host, then save the printed token in
 1Password:

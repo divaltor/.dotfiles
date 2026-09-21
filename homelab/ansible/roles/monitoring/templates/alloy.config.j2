@@ -2,6 +2,10 @@ otelcol.auth.bearer "ingress" {
   token = sys.env("ALLOY_OTLP_TOKEN")
 }
 
+otelcol.auth.bearer "axiom" {
+  token = sys.env("AXIOM_API_TOKEN")
+}
+
 otelcol.receiver.otlp "gateway" {
   grpc {
     endpoint = "0.0.0.0:{{ monitoring_otlp_grpc_port }}"
@@ -38,9 +42,37 @@ otelcol.processor.batch "gateway" {
   send_batch_max_size = 3000
 
   output {
-    metrics = [otelcol.exporter.prometheus.local.input]
-    logs = [otelcol.exporter.loki.local.input]
-    traces = [otelcol.exporter.otlp.tempo.input]
+    metrics = [otelcol.exporter.prometheus.local.input, otelcol.processor.filter.axiom_starlight.input]
+    logs    = [otelcol.exporter.loki.local.input, otelcol.processor.filter.axiom_starlight.input]
+    traces  = [otelcol.exporter.otlp.tempo.input, otelcol.processor.filter.axiom_starlight.input]
+  }
+}
+
+otelcol.processor.filter "axiom_starlight" {
+  error_mode = "ignore"
+
+  metrics {
+    metric = [
+      `resource.attributes["service.name"] == nil or not IsMatch(resource.attributes["service.name"], "^starlight($|-)")`,
+    ]
+  }
+
+  logs {
+    log_record = [
+      `resource.attributes["service.name"] == nil or not IsMatch(resource.attributes["service.name"], "^starlight($|-)")`,
+    ]
+  }
+
+  traces {
+    span = [
+      `resource.attributes["service.name"] == nil or not IsMatch(resource.attributes["service.name"], "^starlight($|-)")`,
+    ]
+  }
+
+  output {
+    metrics = [otelcol.exporter.otlphttp.axiom_metrics.input]
+    logs    = [otelcol.exporter.otlphttp.axiom_logs.input]
+    traces  = [otelcol.exporter.otlphttp.axiom_traces.input]
   }
 }
 
@@ -69,6 +101,39 @@ otelcol.exporter.otlp "tempo" {
     endpoint = "127.0.0.1:{{ monitoring_tempo_otlp_grpc_port }}"
     tls {
       insecure = true
+    }
+  }
+}
+
+otelcol.exporter.otlphttp "axiom_traces" {
+  client {
+    endpoint    = "https://api.axiom.co"
+    auth        = otelcol.auth.bearer.axiom.handler
+    compression = "zstd"
+    headers = {
+      "X-Axiom-Dataset" = sys.env("AXIOM_TRACES_DATASET"),
+    }
+  }
+}
+
+otelcol.exporter.otlphttp "axiom_logs" {
+  client {
+    endpoint    = "https://api.axiom.co"
+    auth        = otelcol.auth.bearer.axiom.handler
+    compression = "zstd"
+    headers = {
+      "X-Axiom-Dataset" = sys.env("AXIOM_LOGS_DATASET"),
+    }
+  }
+}
+
+otelcol.exporter.otlphttp "axiom_metrics" {
+  client {
+    endpoint    = "https://api.axiom.co"
+    auth        = otelcol.auth.bearer.axiom.handler
+    compression = "zstd"
+    headers = {
+      "X-Axiom-Metrics-Dataset" = sys.env("AXIOM_METRICS_DATASET"),
     }
   }
 }
