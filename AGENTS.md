@@ -10,3 +10,6 @@ Use Tailscale MagicDNS hostnames such as `proxmox` and `homelab`, not the
 LAN-only `.local` names.
 
 After finishing your work and before archiving a thread - logout from Tailscale to save ephemeral minutes.
+
+Only run scripts in `.agents/` from an Amp Orb. When running outside an Amp
+Orb, do not run them.
