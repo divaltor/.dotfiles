@@ -93,8 +93,8 @@ host console.
 
 VM 107 (`opera`) is a Debian 13 runner with 12 host CPU cores, 8 GB RAM, an
 extendable 400 GB disk, and an 8 GB swap file with swappiness 10. Ansible creates
-the unprivileged `amp` account and serves `/workspace/personal` and
-`/workspace/work` from one Amp runner. The service uses `/home/amp` for Amp and
+the unprivileged `amp` account and serves the shared `/workspace` directory from
+one Amp runner. The service uses `/home/amp` for Amp and
 OpenCode state. The account has passwordless `sudo` access and user lingering
 enabled so runner setup can install packages and manage services like an Orb.
 It installs the standard Orb toolset, current Node.js LTS, Amp, OpenCode V2,

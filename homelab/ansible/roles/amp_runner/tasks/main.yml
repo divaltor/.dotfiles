@@ -47,16 +47,13 @@
     - name: commit.gpgsign
       value: "true"
 
-- name: Create runner workspaces
+- name: Create shared runner workspace
   ansible.builtin.file:
-    path: "{{ item }}"
+    path: /workspace
     state: directory
     owner: amp
     group: amp
     mode: "0755"
-  loop:
-    - /workspace/personal
-    - /workspace/work
 
 - name: Install NodeSource signing key
   ansible.builtin.get_url:

@@ -11,7 +11,7 @@ WorkingDirectory=/workspace
 EnvironmentFile=/etc/amp-runner.env
 Environment=HOME=/home/amp
 Environment=PATH=/usr/local/bin:/usr/bin:/bin:/home/amp/.local/bin
-ExecStart=/home/amp/.local/bin/amp --no-tui --runner-id opera --remote-control-terminal --no-serve-cwd --dir /workspace/personal --dir /workspace/work
+ExecStart=/home/amp/.local/bin/amp --no-tui --runner-id opera --remote-control-terminal --no-serve-cwd --dir /workspace
 Restart=on-failure
 RestartSec=5s
 PrivateTmp=true
