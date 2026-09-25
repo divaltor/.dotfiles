@@ -4,7 +4,7 @@
   "formatter": true,
   "plugins": [
     {
-      "package": "@divaltor/academy@0.4.1",
+      "package": "@divaltor/academy@latest",
       "options": {
         "agents": {
           "rudolf": {
