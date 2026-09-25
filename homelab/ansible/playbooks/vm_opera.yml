@@ -11,6 +11,37 @@
     tailscale_up_args:
       - --advertise-tags=tag:homelab
 
+  pre_tasks:
+    - name: Gather service state
+      ansible.builtin.service_facts:
+
+    - name: Disable legacy Opera egress firewall
+      ansible.builtin.systemd_service:
+        name: opera-egress-firewall
+        enabled: false
+        state: stopped
+      when: "'opera-egress-firewall.service' in ansible_facts.services"
+
+    - name: Check for legacy Opera egress rules
+      ansible.builtin.command: nft list table inet opera_egress
+      register: opera_egress_table
+      changed_when: false
+      failed_when: false
+
+    - name: Remove legacy Opera egress rules
+      ansible.builtin.command: nft delete table inet opera_egress
+      when: opera_egress_table.rc == 0
+      changed_when: true
+
+    - name: Remove legacy Opera egress firewall files
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - /etc/systemd/system/opera-egress-firewall.service
+        - /etc/nftables.d/opera-egress.nft
+      notify: Reload systemd
+
   roles:
     - ssh
     - common
@@ -26,5 +57,8 @@
         avahi_allow_interfaces: ens18
     - role: amp_runner
       tags: [amp_runner]
-    - role: restricted_egress
-      tags: [restricted_egress]
+
+  handlers:
+    - name: Reload systemd
+      ansible.builtin.systemd_service:
+        daemon_reload: true

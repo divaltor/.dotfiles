@@ -112,13 +112,11 @@ the new DHCP lease, then bootstrap with:
 mise run playbook -- playbooks/vm_opera.yml -e opera_ansible_host=<verified-ip>
 ```
 
-The guest firewall permits internet and Tailscale connectivity but rejects new
-connections initiated toward RFC1918 and IPv6 ULA networks, except the LAN
-addresses in `opera_allowed_lan_destinations` (currently only
-`192.168.1.1`). Existing inbound connections can reply. Use Tailscale grants for
-additional restrictions between tailnet nodes; direct LAN/internet traffic does
-not pass through Tailscale policy. Increase `disk[0].size`, apply OpenTofu, and
-grow the guest partition and filesystem when more workspace capacity is needed.
+Opera has no guest egress firewall, so it can connect directly to the homelab
+LAN, Tailscale nodes, and the internet. Use Tailscale grants for restrictions
+between tailnet nodes; direct LAN/internet traffic does not pass through
+Tailscale policy. Increase `disk[0].size`, apply OpenTofu, and grow the guest
+partition and filesystem when more workspace capacity is needed.
 
 ## Monitoring
 

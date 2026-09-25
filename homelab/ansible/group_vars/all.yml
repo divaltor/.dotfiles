@@ -247,8 +247,6 @@ amp_signing_key_reference: op://y4uraao7il4epuusrsquhwempm/6654bedlzejjchdrse3mq
 amp_signing_key: "{{ lookup('ansible.builtin.pipe', 'op read ' ~ (amp_signing_key_reference | quote)) }}"
 websocat_version: 1.14.1
 websocat_sha256: 66f8dd3a0394761556339117f8bb5123bddefd44e087af2a72ec22b0bd08d514
-opera_allowed_lan_destinations:
-  - 192.168.1.1
 
 # Common packages
 common_packages:
