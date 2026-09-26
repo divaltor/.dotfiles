@@ -32,6 +32,24 @@
     mode: "0600"
   no_log: true
 
+- name: Require a GitHub SSH authentication key
+  ansible.builtin.assert:
+    that:
+      - amp_github_ssh_key.startswith('-----BEGIN OPENSSH PRIVATE KEY-----')
+      - amp_github_ssh_key.splitlines() | length > 2
+      - amp_github_ssh_key.rstrip().endswith('-----END OPENSSH PRIVATE KEY-----')
+    fail_msg: The GitHub SSH key must contain a multiline OpenSSH private key
+  no_log: true
+
+- name: Install GitHub SSH authentication key
+  ansible.builtin.copy:
+    content: "{{ amp_github_ssh_key }}\n"
+    dest: /home/amp/.ssh/id_ed25519
+    owner: amp
+    group: amp
+    mode: "0600"
+  no_log: true
+
 - name: Configure Git to sign commits with SSH
   community.general.git_config:
     name: "{{ item.name }}"
