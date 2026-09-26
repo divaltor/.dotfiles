@@ -1,0 +1,5 @@
+---
+description: "Ship all committed and uncommitted changes to origin/HEAD."
+---
+
+Ship all committed and uncommitted changes to origin/HEAD. Commit any uncommitted changes before pushing. If push fails because origin/HEAD is ahead, rebase and resolve merge conflicts, checking with me before proceeding if there are any substantive conflicts, then push again. If rebasing floods add/add conflicts in unrelated files, run `git rebase --abort`, `git fetch --quiet --unshallow origin`, then rebase again. Fetch origin and rebase onto latest origin/HEAD, then run the full test suite before pushing. Do not repeat it after a later fetch, rebase, or rejected push unless conflict resolution or other local edits changed files after the successful test run. Ignore a failing check from the test suite only after verifying that the same check also fails on origin/HEAD without this thread's changes. When done, archive the current thread and any threads you created that are neither needed nor running. This archive step applies only to this Ship request: if I send new instructions afterward, drop it and do not archive unless I ask again.
