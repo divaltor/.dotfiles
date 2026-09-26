@@ -243,8 +243,6 @@ tailscale_up_args:
 # Opera Amp runner
 amp_api_key: "{{ lookup('env', 'AMP_API_KEY') }}"
 amp_github_token: "{{ lookup('env', 'GH_TOKEN') }}"
-amp_signing_key_reference: op://y4uraao7il4epuusrsquhwempm/6654bedlzejjchdrse3mqb6bgu/private_key?ssh-format=openssh
-amp_signing_key: "{{ lookup('ansible.builtin.pipe', 'op read ' ~ (amp_signing_key_reference | quote)) }}"
 amp_github_ssh_key_reference: op://y4uraao7il4epuusrsquhwempm/g5pw5ymnxgt5kgqetgte6pzocm/private_key?ssh-format=openssh
 amp_github_ssh_key: "{{ lookup('ansible.builtin.pipe', 'op read ' ~ (amp_github_ssh_key_reference | quote)) }}"
 websocat_version: 1.14.1

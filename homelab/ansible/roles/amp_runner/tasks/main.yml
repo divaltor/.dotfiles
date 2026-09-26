@@ -14,24 +14,6 @@
   loop: "{{ ssh_public_keys }}"
   no_log: true
 
-- name: Require an SSH private commit-signing key
-  ansible.builtin.assert:
-    that:
-      - amp_signing_key.startswith('-----BEGIN OPENSSH PRIVATE KEY-----')
-      - amp_signing_key.splitlines() | length > 2
-      - amp_signing_key.rstrip().endswith('-----END OPENSSH PRIVATE KEY-----')
-    fail_msg: AMP_SIGNING_KEY must contain a multiline OpenSSH private key
-  no_log: true
-
-- name: Install Amp commit-signing key
-  ansible.builtin.copy:
-    content: "{{ amp_signing_key }}\n"
-    dest: /home/amp/.ssh/commit_signing_key
-    owner: amp
-    group: amp
-    mode: "0600"
-  no_log: true
-
 - name: Require a GitHub SSH authentication key
   ansible.builtin.assert:
     that:
@@ -50,6 +32,11 @@
     mode: "0600"
   no_log: true
 
+- name: Remove legacy separate commit-signing key
+  ansible.builtin.file:
+    path: /home/amp/.ssh/commit_signing_key
+    state: absent
+
 - name: Configure Git to sign commits with SSH
   community.general.git_config:
     name: "{{ item.name }}"
@@ -61,7 +48,7 @@
     - name: gpg.format
       value: ssh
     - name: user.signingkey
-      value: /home/amp/.ssh/commit_signing_key
+      value: /home/amp/.ssh/id_ed25519
     - name: commit.gpgsign
       value: "true"
 

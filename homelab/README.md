@@ -102,12 +102,12 @@ Bun, pnpm, Yarn, uv, and agent-browser releases.
 
 Before provisioning, add `AMP_API_KEY` and a Tailscale auth key authorized for
 `tag:homelab` to the 1Password environment. Optionally add `GH_TOKEN` so the
-runner's `gh` and Git HTTPS operations are authenticated. The multiline SSH
-signing key is read directly from 1Password item `6654bedlzejjchdrse3mqb6bgu`,
-and the GitHub authentication key from item `g5pw5ymnxgt5kgqetgte6pzocm`.
-Do not pass private keys through the 1Password Environment tab because it does
-not preserve their line breaks. Check `fast-nvme` capacity, apply OpenTofu,
-find the new DHCP lease, then bootstrap with:
+runner's `gh` and Git HTTPS operations are authenticated. The SSH key used for
+GitHub authentication and commit signing is read directly from 1Password item
+`g5pw5ymnxgt5kgqetgte6pzocm`. Do not pass private keys through the 1Password
+Environment tab because it does not preserve their line breaks. Check
+`fast-nvme` capacity, apply OpenTofu, find the new DHCP lease, then bootstrap
+with:
 
 ```sh
 mise run playbook -- playbooks/vm_opera.yml -e opera_ansible_host=<verified-ip>
