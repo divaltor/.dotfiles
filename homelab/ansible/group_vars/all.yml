@@ -229,6 +229,18 @@ docker_logs_max_age: 167h
 # logs over OTLP to prevent duplicate Loki entries.
 docker_logs_exclude_pattern: docker-logs|cadvisor
 
+# OpenShip control plane. It runs in bare mode so Dokploy's Traefik keeps ports
+# 80 and 443 during the gradual migration. cloudflared forwards the public
+# hostname to the loopback-only dashboard.
+openship_version: 0.8.0
+openship_installer_sha256: b613060ddbcb042cd6711d7022134f15b118c812840a25d5feb4346d64788c63
+openship_api_port: 4000
+openship_dashboard_port: 3001
+openship_public_url: https://openship.divaltor.dev
+openship_admin_name: divaltor
+openship_admin_email: admin@divaltor.dev
+openship_admin_password: "{{ lookup('env', 'OPENSHIP_ADMIN_PASSWORD') }}"
+
 # qBittorrent
 qbittorrent_webui_password: "{{ lookup('env', 'QBITTORRENT_PASSWORD') }}"
 

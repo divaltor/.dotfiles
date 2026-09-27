@@ -20,6 +20,8 @@
       tags: [cadvisor]
     - role: docker-logs
       tags: [docker-logs]
+    - role: openship
+      tags: [openship]
     - role: tailscale
       vars:
         tailscale_ssh_enabled: true

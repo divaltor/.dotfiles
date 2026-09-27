@@ -167,6 +167,7 @@ dashboard files that are no longer in this list.
 The 1Password environment used by `mise` must provide:
 
 - `GRAFANA_ADMIN_PASSWORD` for the initial Grafana admin account;
+- `OPENSHIP_ADMIN_PASSWORD` for the founding OpenShip administrator;
 - `PVE_MONITORING_TOKEN` for `prometheus@pve!monitoring`;
 - `OTLP_TOKEN` for the Alloy OTLP gateway;
 - `AXIOM_API_TOKEN` with ingest access to the three telemetry datasets;
@@ -181,6 +182,18 @@ pveum user add prometheus@pve
 pveum aclmod / -user prometheus@pve -role PVEAuditor
 pveum user token add prometheus@pve monitoring -privsep 0
 ```
+
+## OpenShip migration control plane
+
+The `homelab` VM runs pinned OpenShip in bare mode at
+`https://openship.divaltor.dev`. Its dashboard and API listen only on
+`127.0.0.1:3001` and `127.0.0.1:4000`; the existing remotely managed
+Cloudflare Tunnel publishes the dashboard. OpenShip does not install its edge,
+so Dokploy's Traefik retains ports 80 and 443 while services migrate gradually.
+
+Ansible creates the first administrator from `openship_admin_name`,
+`openship_admin_email`, and `OPENSHIP_ADMIN_PASSWORD`. The bootstrap operation
+is create-only: later applies do not reset the password or revoke sessions.
 
 The `shared` NixOS VM is intentionally not scraped by node_exporter. Its live
 NixOS definition is outside this checkout. After that definition is imported,
