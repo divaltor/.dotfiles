@@ -1,9 +1,0 @@
----
-- name: Reload OpenShip systemd unit
-  ansible.builtin.systemd_service:
-    daemon_reload: true
-
-- name: Restart OpenShip
-  ansible.builtin.systemd_service:
-    name: openship
-    state: restarted
