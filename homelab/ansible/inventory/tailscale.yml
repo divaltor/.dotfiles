@@ -1,0 +1,20 @@
+---
+tailscale_status: "{{ lookup('ansible.builtin.pipe', 'tailscale status --json') | from_json }}"
+tailscale_names:
+  proxmox_host: proxmos
+  shared: div
+tailscale_peer: >-
+  {{ tailscale_status.Peer.values()
+     | selectattr('HostName', 'equalto', tailscale_names.get(inventory_hostname, inventory_hostname))
+     | first }}
+ansible_host: "{{ tailscale_peer.DNSName }}"
+tailscale_ssh_config: >-
+  {{ lookup('ansible.builtin.pipe',
+     'tailscale ssh ' ~ (tailscale_peer.TailscaleIPs[0] | quote) ~ ' -T -G') }}
+tailscale_known_hosts: >-
+  {{ tailscale_ssh_config.splitlines()
+     | select('match', '^userknownhostsfile ')
+     | first | regex_replace('^userknownhostsfile ', '') }}
+ansible_ssh_common_args: >-
+  -o ProxyCommand='tailscale nc %h %p'
+  -o {{ ('UserKnownHostsFile=' ~ (tailscale_known_hosts | to_json)) | quote }}

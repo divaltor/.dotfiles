@@ -143,6 +143,7 @@
     - bun
     - pnpm
     - yarn
+  notify: Restart Amp runner
 
 - name: Install current uv for Amp user
   community.general.pipx:
@@ -189,6 +190,25 @@
 - name: Enable and start Amp runner
   ansible.builtin.systemd_service:
     name: amp-runner
+    enabled: true
+    state: started
+    daemon_reload: true
+
+- name: Install Amp automatic update units
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "/etc/systemd/system/{{ item }}"
+    owner: root
+    group: root
+    mode: "0644"
+  loop:
+    - amp-runner-update.service
+    - amp-runner-update.timer
+  notify: Restart Amp update timer
+
+- name: Enable and start Amp update timer
+  ansible.builtin.systemd_service:
+    name: amp-runner-update.timer
     enabled: true
     state: started
     daemon_reload: true

@@ -53,3 +53,30 @@ run = "mise run playbook -- playbooks/site.yml"
 description = "Bootstrap and configure the Proxmox host"
 raw_args = true
 run = "mise run playbook -- playbooks/proxmox_host.yml"
+
+[tasks."ansible:tailscale"]
+description = "Run Ansible through Tailscale, including behind a VPN"
+raw_args = true
+dir = "homelab/ansible"
+run = "op run --environment 5hfpicsmni2xf56r2dv5gumz5e -- ansible -i inventory/hosts.yml -e @inventory/tailscale.yml"
+
+[tasks."playbook:tailscale"]
+description = "Run an Ansible playbook through Tailscale"
+raw_args = true
+dir = "homelab/ansible"
+run = "op run --environment 5hfpicsmni2xf56r2dv5gumz5e -- ansible-playbook -i inventory/hosts.yml -e @inventory/tailscale.yml"
+
+[tasks."ansible:ping:tailscale"]
+description = "Ping all Ansible hosts through Tailscale"
+raw_args = true
+run = "mise run ansible:tailscale -- all -m ping"
+
+[tasks."ansible:check:tailscale"]
+description = "Dry-run the site playbook through Tailscale"
+raw_args = true
+run = "mise run playbook:tailscale -- playbooks/site.yml --check --diff"
+
+[tasks."ansible:apply:tailscale"]
+description = "Apply the site playbook through Tailscale"
+raw_args = true
+run = "mise run playbook:tailscale -- playbooks/site.yml"

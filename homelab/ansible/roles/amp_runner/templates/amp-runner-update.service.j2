@@ -1,0 +1,17 @@
+[Unit]
+Description=Update Amp and restart the remote runner
+After=network-online.target tailscaled.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=amp
+Group=amp
+WorkingDirectory=/home/amp
+EnvironmentFile=/etc/amp-runner.env
+Environment=HOME=/home/amp
+Environment=PATH=/usr/local/bin:/usr/bin:/bin:/home/amp/.local/bin
+Environment=NPM_CONFIG_PREFIX=/home/amp/.local
+ExecStart=/home/amp/.local/bin/amp update
+ExecStartPost=+/usr/bin/systemctl try-restart amp-runner.service
+PrivateTmp=true

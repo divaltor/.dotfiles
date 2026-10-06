@@ -89,6 +89,26 @@ Hosts use mDNS: `proxmox.local`, `homelab.local`, `opera.local`, `div.local`, `s
 Tasks load secrets from 1Password. Always verify a changed SSH host key at the
 host console.
 
+When remote, connect Tailscale and use these tasks (also works behind a VPN
+that interferes with DNS or routing):
+
+```sh
+mise run ansible:ping:tailscale
+mise run ansible:check:tailscale
+mise run ansible:apply:tailscale
+mise run playbook:tailscale -- playbooks/vm_opera.yml --tags amp_runner
+mise run ansible:tailscale -- opera -m ping
+```
+
+The `inventory/tailscale.yml` extra-vars file uses built-in Ansible lookups to
+discover peer addresses and the local SSH host-key file through the Tailscale
+CLI, and connects using `tailscale nc`.
+It preserves host-key verification and requires no machine-specific paths.
+Inventory aliases map `proxmox_host` to the tailnet's `proxmos` and `shared`
+to `div`; other inventory names match their Tailscale peer names directly.
+Hosts not registered in Tailscale cannot be reached by these tasks; use
+`--limit opera` (or another host) to scope site operations when needed.
+
 ## Opera Amp runner
 
 VM 107 (`opera`) is a Debian 13 runner with 12 host CPU cores, 8 GB RAM, an
@@ -99,6 +119,14 @@ OpenCode state. The account has passwordless `sudo` access and user lingering
 enabled so runner setup can install packages and manage services like an Orb.
 It installs the standard Orb toolset, current Node.js LTS, Amp, OpenCode V2,
 Bun, pnpm, Yarn, uv, and agent-browser releases.
+
+The `amp-runner-update.timer` runs `amp update` as `amp` daily at 04:00 VM
+local time, with up to 15 minutes of jitter, and catches up after downtime.
+After a successful update check, it restarts the running Amp service to load
+the installed version; this briefly disconnects the runner and can interrupt
+active work. Failed updates leave the runner running. Inspect update logs with
+`journalctl -u amp-runner-update.service`, or trigger an update immediately with
+`sudo systemctl start amp-runner-update.service`.
 
 Before provisioning, add `AMP_API_KEY` and a Tailscale auth key authorized for
 `tag:homelab` to the 1Password environment. Optionally add `GH_TOKEN` so the
