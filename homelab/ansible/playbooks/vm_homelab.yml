@@ -21,8 +21,6 @@
     - role: docker-logs
       tags: [docker-logs]
     - role: tailscale
-      vars:
-        tailscale_ssh_enabled: true
     - role: avahi
       vars:
         avahi_allow_interfaces: ens18
