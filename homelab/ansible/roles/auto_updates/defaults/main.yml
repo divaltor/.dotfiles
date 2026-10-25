@@ -1,0 +1,18 @@
+---
+# unattended-upgrades Origins-Pattern entries. Patterns for repositories that a
+# host does not configure simply never match.
+auto_updates_origins:
+  - origin=Debian,codename=${distro_codename},label=Debian
+  - origin=Debian,codename=${distro_codename}-updates,label=Debian
+  - origin=Debian,codename=${distro_codename}-security,label=Debian-Security
+  - origin=Tailscale
+  - origin=Docker
+  - origin=cloudflared
+  - origin=Plex Media Server Repository
+  - site=apt.grafana.com
+auto_updates_package_blacklist: []
+# Restart services still running old libraries after an upgrade (needrestart).
+auto_updates_restart_services: true
+# Reboot right after the upgrade run when a package requires it.
+auto_updates_reboot: true
+auto_updates_on_calendar: "*-*-* 04:30 Europe/Sofia"

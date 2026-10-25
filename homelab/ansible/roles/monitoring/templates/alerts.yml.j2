@@ -26,4 +26,20 @@ groups:
           severity: warning
         annotations:
           summary: "Disk {{ $labels.device }} on {{ $labels.instance }} is saturated"
+
+      - alert: RebootRequired
+        expr: node_reboot_required == 1
+        for: 1d
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.instance }} needs a reboot to finish applying updates"
+
+      - alert: SecurityUpdatesPending
+        expr: sum by (instance) (apt_upgrades_pending{origin=~".*-security.*"}) > 0
+        for: 2d
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.instance }} has {{ $value }} security updates that unattended-upgrades did not install"
 {% endraw %}

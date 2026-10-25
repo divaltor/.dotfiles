@@ -84,6 +84,17 @@ mise run ansible:check
 mise run ansible:apply
 ```
 
+## Automatic updates
+
+The `auto_updates` role runs `unattended-upgrades` nightly at 04:30
+Europe/Sofia. It covers Debian and the Tailscale, Docker, cloudflared, Plex and
+Grafana repositories. Guests restart outdated services and reboot themselves
+when a package requires it. The Proxmox host installs only Debian security and
+Tailscale updates and never reboots on its own; upgrade it manually with
+`apt full-upgrade` and reboot when Grafana shows `RebootRequired`.
+`alloy`, `loki` and `tempo` stay at the versions pinned in `group_vars/all.yml`.
+The `shared` NixOS VM is not covered.
+
 Hosts use mDNS: `proxmox.local`, `homelab.local`, `opera.local`, `div.local`, `smb.local`,
 `sftpgo.local`, `kino.local`, `qbittorrent.local`, and `monitoring.local`.
 Tasks load secrets from 1Password. Always verify a changed SSH host key at the

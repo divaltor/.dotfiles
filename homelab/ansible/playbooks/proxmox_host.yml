@@ -20,6 +20,16 @@
     - role: swappiness
       tags: [swappiness]
     - proxmox_repositories
+    - role: auto_updates
+      tags: [auto_updates]
+      vars:
+        # Proxmox packages and kernels are upgraded manually; reboots restart
+        # every guest, so the host only alerts when one is required.
+        auto_updates_origins:
+          - origin=Debian,codename=${distro_codename}-security,label=Debian-Security
+          - origin=Tailscale
+        auto_updates_restart_services: false
+        auto_updates_reboot: false
     - role: proxmox_storage
       tags: [proxmox_bootstrap]
     - role: proxmox_pci_mapping

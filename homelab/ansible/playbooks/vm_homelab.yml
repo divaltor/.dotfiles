@@ -12,6 +12,8 @@
   roles:
     - ssh
     - common
+    - role: auto_updates
+      tags: [auto_updates]
     - role: swappiness
       tags: [swappiness]
     - role: node_exporter
@@ -21,6 +23,8 @@
     - role: docker-logs
       tags: [docker-logs]
     - role: tailscale
+    - role: cloudflared
+      tags: [cloudflared]
     - role: avahi
       vars:
         avahi_allow_interfaces: ens18

@@ -42,6 +42,19 @@
     state: started
     enabled: true
 
+- name: Read Tailscale preferences
+  ansible.builtin.command: tailscale debug prefs
+  register: tailscale_prefs
+  changed_when: false
+  check_mode: false
+
+# unattended-upgrades owns package updates; Tailscale's updater would race it for the APT lock.
+- name: Disable Tailscale's built-in updater
+  ansible.builtin.command:
+    argv: [tailscale, set, --auto-update=false]
+  when: (tailscale_prefs.stdout | from_json).AutoUpdate.Apply | default(false)
+  changed_when: true
+
 - name: Read Tailscale status
   ansible.builtin.command: tailscale status --json
   register: tailscale_status

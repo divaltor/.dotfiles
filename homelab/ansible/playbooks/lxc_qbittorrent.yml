@@ -20,6 +20,8 @@
   roles:
     - ssh
     - common
+    - role: auto_updates
+      tags: [auto_updates]
     - role: node_exporter
       tags: [node_exporter]
       vars:

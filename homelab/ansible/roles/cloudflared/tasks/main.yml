@@ -1,0 +1,78 @@
+---
+# Cloudflared role — Cloudflare Tunnel connector from Cloudflare's APT repository
+
+- name: Require the Cloudflare Tunnel token
+  ansible.builtin.assert:
+    that:
+      - cloudflared_tunnel_token | length > 0
+    fail_msg: "Cloudflare Tunnel token is not set; provide CLOUDFLARED_TUNNEL_TOKEN via 1Password"
+  no_log: true
+
+- name: Install Cloudflare apt key
+  ansible.builtin.get_url:
+    url: https://pkg.cloudflare.com/cloudflare-public-v2.gpg
+    dest: /usr/share/keyrings/cloudflare-public-v2.gpg
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Remove the hand-installed Cloudflare apt source
+  ansible.builtin.file:
+    path: /etc/apt/sources.list.d/cloudflared.list
+    state: absent
+
+- name: Configure the Cloudflare apt repository
+  ansible.builtin.deb822_repository:
+    name: cloudflared
+    types: [deb]
+    uris: https://pkg.cloudflare.com/cloudflared
+    suites: [any]
+    components: [main]
+    signed_by: /usr/share/keyrings/cloudflare-public-v2.gpg
+    state: present
+  register: cloudflared_apt_repository
+
+- name: Update apt cache after adding the Cloudflare repository
+  ansible.builtin.apt:
+    update_cache: true
+  when: cloudflared_apt_repository.changed
+
+- name: Install cloudflared
+  ansible.builtin.package:
+    name: cloudflared
+    state: present
+
+- name: Create the cloudflared config directory
+  ansible.builtin.file:
+    path: /etc/cloudflared
+    state: directory
+    owner: root
+    group: root
+    mode: "0700"
+
+- name: Install the Cloudflare Tunnel token
+  ansible.builtin.copy:
+    dest: /etc/cloudflared/tunnel-token
+    content: "{{ cloudflared_tunnel_token }}"
+    owner: root
+    group: root
+    mode: "0600"
+  no_log: true
+  notify: Restart cloudflared
+
+- name: Install the cloudflared systemd unit
+  ansible.builtin.template:
+    src: cloudflared.service.j2
+    dest: /etc/systemd/system/cloudflared.service
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - Reload cloudflared systemd unit
+    - Restart cloudflared
+
+- name: Ensure cloudflared is running
+  ansible.builtin.systemd_service:
+    name: cloudflared
+    state: started
+    enabled: true

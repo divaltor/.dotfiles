@@ -45,6 +45,8 @@
   roles:
     - ssh
     - common
+    - role: auto_updates
+      tags: [auto_updates]
     - role: docker
       tags: [docker]
     - role: swapfile

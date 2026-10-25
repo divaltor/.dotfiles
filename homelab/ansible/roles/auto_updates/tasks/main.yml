@@ -1,0 +1,71 @@
+---
+# Auto updates role — nightly unattended-upgrades for Debian and vendor repos
+
+- name: Install unattended-upgrades
+  ansible.builtin.apt:
+    name: "{{ ['unattended-upgrades'] + (['needrestart'] if auto_updates_restart_services else []) }}"
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Restart outdated services automatically
+  ansible.builtin.copy:
+    dest: /etc/needrestart/conf.d/50-homelab.conf
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      # Managed by Ansible
+      $nrconf{restart} = 'a';
+  when: auto_updates_restart_services
+
+- name: Enable periodic APT updates
+  ansible.builtin.copy:
+    dest: /etc/apt/apt.conf.d/20auto-upgrades
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      // Managed by Ansible
+      APT::Periodic::Update-Package-Lists "1";
+      APT::Periodic::Unattended-Upgrade "1";
+      APT::Periodic::AutocleanInterval "7";
+
+- name: Configure unattended-upgrades
+  ansible.builtin.template:
+    src: 52homelab-unattended-upgrades.j2
+    dest: /etc/apt/apt.conf.d/52homelab-unattended-upgrades
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Create the APT upgrade timer drop-in directory
+  ansible.builtin.file:
+    path: /etc/systemd/system/apt-daily-upgrade.timer.d
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Schedule unattended upgrades
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/apt-daily-upgrade.timer.d/schedule.conf
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      # Managed by Ansible
+      [Timer]
+      OnCalendar=
+      OnCalendar={{ auto_updates_on_calendar }}
+      RandomizedDelaySec=15m
+  notify: Reload APT upgrade timer
+
+- name: Ensure APT timers are enabled
+  ansible.builtin.systemd_service:
+    name: "{{ item }}"
+    state: started
+    enabled: true
+  loop:
+    - apt-daily.timer
+    - apt-daily-upgrade.timer

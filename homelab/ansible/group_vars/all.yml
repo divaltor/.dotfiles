@@ -236,6 +236,9 @@ tailscale_apt_release: "{{ ansible_facts['distribution_release'] }}"
 tailscale_up_args:
   - --advertise-tags=tag:homelab
 
+# Cloudflare Tunnel (VM: homelab only)
+cloudflared_tunnel_token: "{{ lookup('env', 'CLOUDFLARED_TUNNEL_TOKEN') }}"
+
 # Opera Amp runner
 amp_api_key: "{{ lookup('env', 'AMP_API_KEY') }}"
 amp_github_token: "{{ lookup('env', 'GH_TOKEN') }}"

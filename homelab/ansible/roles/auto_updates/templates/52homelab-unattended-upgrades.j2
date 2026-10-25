@@ -1,0 +1,26 @@
+// Managed by Ansible — replaces the origin list from 50unattended-upgrades
+#clear Unattended-Upgrade::Origins-Pattern;
+Unattended-Upgrade::Origins-Pattern {
+{% for origin in auto_updates_origins %}
+        "{{ origin }}";
+{% endfor %}
+};
+
+#clear Unattended-Upgrade::Package-Blacklist;
+Unattended-Upgrade::Package-Blacklist {
+{% for package in auto_updates_package_blacklist %}
+        "^{{ package }}$";
+{% endfor %}
+};
+
+// Keep local config files on conffile prompts instead of skipping the package.
+Dpkg::Options {
+        "--force-confdef";
+        "--force-confold";
+};
+
+Unattended-Upgrade::Remove-Unused-Kernel-Packages "true";
+Unattended-Upgrade::Remove-Unused-Dependencies "true";
+Unattended-Upgrade::Automatic-Reboot "{{ auto_updates_reboot | lower }}";
+Unattended-Upgrade::Automatic-Reboot-WithUsers "true";
+Unattended-Upgrade::Automatic-Reboot-Time "now";
