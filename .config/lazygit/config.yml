@@ -34,8 +34,8 @@ gui:
       - red # Love
     defaultFgColor:
       - default
-  authorColors:
-    "*": magenta # Iris
+    authorColors:
+      "*": magenta # Iris
 git:
   diffRenderers:
     - colorArg: always
