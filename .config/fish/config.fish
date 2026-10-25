@@ -60,6 +60,25 @@ end
 
 if type -q yt-dlp
     function mp4
+        argparse --strict-longopts --ignore-unknown 'q/quality=' 'h/help' -- $argv
+        or return
+
+        if set -q _flag_help
+            echo 'Usage: mp4 [-q HEIGHT | --quality HEIGHT] [yt-dlp options] URL'
+            echo 'Quality: maximum video height (e.g. 480, 720, 1080), or best (default).'
+            echo 'Use mp4 -F URL to list available formats and sizes.'
+            return 0
+        end
+
+        set -l format_args
+        if set -q _flag_quality; and test "$_flag_quality" != best
+            if not string match -qr '^[1-9][0-9]*$' -- "$_flag_quality"
+                echo 'mp4: quality must be a positive height (e.g. 480 or 720), or best' >&2
+                return 2
+            end
+            set format_args -f "bv[height<=$_flag_quality]+ba/b[height<=$_flag_quality]"
+        end
+
         # The PATH ffmpeg may exist yet be unrunnable (stale brew dylib
         # link), which yt-dlp reports as "ffmpeg is not installed" and
         # leaves a silent video + orphan audio. Verify before use.
@@ -95,6 +114,7 @@ if type -q yt-dlp
             --extractor-args "youtube:player-client=default,-tv_simply" \
             -o "$HOME/youtube/%(title)s.%(ext)s" \
             --remote-components ejs:github \
+            $format_args \
             $argv
     end
 end
