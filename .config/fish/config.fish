@@ -137,8 +137,6 @@ fish_add_path $HOME/.local/bin
 
 set -U -x DO_NOT_TRACK 1
 
-set -U -x UV_PREVIEW_FEATURES content-addressed-cache
-
 set -U -x AMP_DISABLE_AMP_COAUTHOR_TRAILER 1
 
 fish_add_path /opt/homebrew/opt/ffmpeg-full/bin
