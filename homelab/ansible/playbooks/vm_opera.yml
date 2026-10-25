@@ -45,6 +45,8 @@
   roles:
     - ssh
     - common
+    - role: docker
+      tags: [docker]
     - role: swapfile
       tags: [swapfile]
     - role: swappiness

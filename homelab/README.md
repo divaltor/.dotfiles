@@ -112,7 +112,8 @@ Hosts not registered in Tailscale cannot be reached by these tasks; use
 ## Opera Amp runner
 
 VM 107 (`opera`) is a Debian 13 runner with 12 host CPU cores, 8 GB RAM, an
-extendable 400 GB disk, and an 8 GB swap file with swappiness 10. Ansible creates
+extendable 400 GB disk, and an 8 GB swap file with swappiness 10. Docker Engine
+comes from Docker's official Debian repository and starts at boot. Ansible creates
 the unprivileged `amp` account and serves the shared `/workspace` directory from
 one Amp runner. The service uses `/home/amp` for Amp and
 OpenCode state. The account has passwordless `sudo` access and user lingering

@@ -1,0 +1,52 @@
+---
+# Docker role — Docker Engine from Docker's official Debian repository
+
+- name: Install Docker repository prerequisites
+  ansible.builtin.package:
+    name:
+      - ca-certificates
+      - curl
+      - python3-debian
+    state: present
+
+- name: Install Docker apt key
+  ansible.builtin.get_url:
+    url: https://download.docker.com/linux/debian/gpg
+    dest: /etc/apt/keyrings/docker.asc
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Configure the Docker apt repository
+  ansible.builtin.deb822_repository:
+    name: docker
+    types: [deb]
+    uris: https://download.docker.com/linux/debian
+    suites: ["{{ ansible_facts['distribution_release'] }}"]
+    components: [stable]
+    architectures: ["{{ 'arm64' if ansible_facts['architecture'] == 'aarch64' else 'amd64' }}"]
+    signed_by: /etc/apt/keyrings/docker.asc
+    state: present
+  register: docker_apt_repository
+
+- name: Update apt cache after adding the Docker repository
+  ansible.builtin.apt:
+    update_cache: true
+  when: docker_apt_repository.changed
+
+- name: Install Docker Engine
+  ansible.builtin.package:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-buildx-plugin
+      - docker-compose-plugin
+    state: present
+  notify: Restart Docker
+
+- name: Ensure Docker is running
+  ansible.builtin.service:
+    name: docker
+    state: started
+    enabled: true
