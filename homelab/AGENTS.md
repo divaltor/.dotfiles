@@ -25,6 +25,18 @@ does not preserve line breaks. Read SSH keys directly from their 1Password item
 with `op read` and the `?ssh-format=openssh` query parameter. Never print secret
 field values while inspecting item metadata.
 
+Use the 1Password Environments MCP server (`1password` in Amp) to list
+Environments and variable names and to add or rotate variables. It never
+returns secret values, so do not ask it for them and do not fall back to
+`op environment read` or `printenv`. Execute tasks with the existing `mise`
+tasks, which load the Environment through `op run`.
+
+The homelab Environment belongs to the personal 1Password account; pass its
+`account_id` from `op account list --format=json`. Do not update an existing
+variable unless the task is explicitly a rotation, and do not mount the homelab
+Environment as a local `.env` file. Deleting a variable requires the desktop
+app. The MCP server is unavailable in orbs; do not attempt secret changes there.
+
 ## Other
 
 For any additional info how to run Opentofu or Ansible read README.md
