@@ -9,6 +9,8 @@
       - gnupg
     state: present
 
+# pkgs.tailscale.com sends no Last-Modified or ETag, and get_url only sends
+# HEAD in check mode, so a dry run would always report these files as changed.
 - name: Install Tailscale apt keyring
   ansible.builtin.get_url:
     url: "https://pkgs.tailscale.com/stable/{{ tailscale_apt_distribution }}/{{ tailscale_apt_release }}.noarmor.gpg"
@@ -16,6 +18,7 @@
     owner: root
     group: root
     mode: "0644"
+  when: not ansible_check_mode
 
 - name: Install Tailscale apt source
   ansible.builtin.get_url:
@@ -25,6 +28,7 @@
     group: root
     mode: "0644"
   register: tailscale_apt_source
+  when: not ansible_check_mode
 
 - name: Update apt cache after adding Tailscale source
   ansible.builtin.apt:
