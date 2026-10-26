@@ -55,8 +55,9 @@
       tags: [swappiness]
     - role: tailscale
     - role: avahi
+      tags: [avahi]
       vars:
-        avahi_allow_interfaces: ens18
+        avahi_allow_interfaces: eth0
     - role: amp_runner
       tags: [amp_runner]
 
