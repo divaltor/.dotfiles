@@ -13,4 +13,4 @@
 
 - name: Set timezone
   community.general.timezone:
-    name: UTC
+    name: Etc/UTC
