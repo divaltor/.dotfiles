@@ -40,7 +40,7 @@
   ansible.builtin.file:
     path: "{{ item.path }}"
     state: directory
-    owner: "{{ item.owner }}"
+    owner: "{{ item.owner | default(omit) }}"
     group: "{{ zfs_share_group }}"
     mode: "2775"
   loop: "{{ samba_shares }}"

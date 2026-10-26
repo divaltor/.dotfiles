@@ -93,7 +93,7 @@ samba_shares:
     force_create_mode: "0664"
     directory_mask: "0775"
     force_directory_mode: "0775"
-    owner: divaltor
+    # The qbittorrent role owns this dataset root; Samba leaves its owner alone.
     group: divaltor
 
 samba_users:
