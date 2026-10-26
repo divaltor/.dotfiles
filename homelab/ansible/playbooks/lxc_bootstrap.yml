@@ -66,6 +66,7 @@
         label: "{{ item }} ({{ hostvars[item].lxc_vmid }})"
       register: lxc_bootstrap_addresses
       changed_when: false
+      check_mode: false
       until: lxc_bootstrap_addresses.stdout | length > 0
       retries: 12
       delay: 5
@@ -84,6 +85,7 @@
         label: "{{ item }} ({{ hostvars[item].lxc_vmid }})"
       register: lxc_bootstrap_host_keys
       changed_when: false
+      check_mode: false
 
     - name: Create known-hosts file for discovered LXC addresses
       ansible.builtin.tempfile:
@@ -91,6 +93,7 @@
         prefix: ansible-lxc-known-hosts-
       delegate_to: localhost
       register: lxc_bootstrap_known_hosts
+      check_mode: false
 
     - name: Trust LXC host keys obtained through Proxmox
       ansible.builtin.known_hosts:
@@ -102,6 +105,7 @@
         index_var: lxc_bootstrap_index
         label: "{{ item.item }} ({{ lxc_bootstrap_addresses.results[lxc_bootstrap_index].stdout }})"
       delegate_to: localhost
+      check_mode: false
 
     - name: Use discovered addresses for this playbook run
       ansible.builtin.add_host:

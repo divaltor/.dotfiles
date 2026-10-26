@@ -123,6 +123,7 @@
       - homelab.local
   register: monitoring_homelab_address
   changed_when: false
+  check_mode: false
 
 - name: Make the Docker host resolvable to static Go services
   ansible.builtin.lineinfile:

@@ -22,6 +22,7 @@
   register: proxmox_vm_pool_check
   changed_when: false
   failed_when: false
+  check_mode: false
 
 - name: Import the existing VM ZFS pool after host replacement
   ansible.builtin.command:
@@ -33,6 +34,7 @@
     argv: [zpool, status, -P, "{{ proxmox_vm_pool_name }}"]
   register: proxmox_vm_pool_status
   changed_when: false
+  check_mode: false
 
 - name: Verify that VM pool uses the expected NVMe
   ansible.builtin.assert:
@@ -120,6 +122,7 @@
   loop: "{{ proxmox_lxc_bind_mounts }}"
   register: proxmox_lxc_bind_mount_configs
   changed_when: false
+  check_mode: false
 
 - name: Verify managed LXC mount slots are available
   ansible.builtin.assert:
@@ -151,6 +154,7 @@
   register: proxmox_vm_storage
   changed_when: false
   failed_when: false
+  check_mode: false
 
 - name: Register the VM ZFS storage in Proxmox
   ansible.builtin.command:

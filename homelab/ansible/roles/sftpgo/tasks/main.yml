@@ -16,6 +16,7 @@
     owner: root
     group: root
     mode: "0644"
+  register: sftpgo_package_download
 
 - name: Install SFTPGo
   ansible.builtin.apt:
@@ -23,6 +24,8 @@
     policy_rc_d: 101
     state: present
   notify: Restart SFTPGo
+  # Check mode does not download the package, so there is no file to inspect.
+  when: not (ansible_check_mode and sftpgo_package_download is changed)
 
 - name: Ensure the shared ZFS access group exists
   ansible.builtin.group:
