@@ -53,13 +53,29 @@
 
 - name: Wait for Plex preferences to be created
   ansible.builtin.wait_for:
-    path: /var/lib/plexmediaserver/Library/Application Support/Plex Media Server/Preferences.xml
+    path: "{{ plex_preferences_path }}"
     timeout: 60
 
+- name: Read Plex preferences
+  ansible.builtin.slurp:
+    src: "{{ plex_preferences_path }}"
+  register: plex_preferences
+
+- name: Determine which Plex preferences need editing
+  ansible.builtin.set_fact:
+    plex_preferences_need_lan_update: >-
+      {{ ('allowedNetworks="' ~ plex_allowed_networks ~ '"') not in plex_preferences_xml
+         or ('customConnections="' ~ plex_custom_connections ~ '"') not in plex_preferences_xml }}
+    plex_preferences_need_claim: "{{ plex_claim_token | length > 0 and 'PlexOnlineToken=' not in plex_preferences_xml }}"
+  vars:
+    plex_preferences_xml: "{{ plex_preferences.content | b64decode }}"
+
+# Stopping Plex interrupts playback, so stop it only when an edit is due.
 - name: Stop Plex Media Server before editing preferences
   ansible.builtin.service:
     name: plexmediaserver
     state: stopped
+  when: plex_preferences_need_lan_update or plex_preferences_need_claim
 
 - name: Allow local LAN setup and advertise local Plex URL
   ansible.builtin.command:
@@ -68,18 +84,19 @@
       - -0pi
       - -e
       - >-
-        BEGIN { $allowed='{{ plex_allowed_networks | default("192.168.0.0/16,10.0.0.0/8,172.16.0.0/12") }}'; $custom='{{ plex_custom_connections | default("https://" ~ inventory_hostname ~ ".local,http://" ~ inventory_hostname ~ ".local:32400") }}'; }
+        BEGIN { $allowed='{{ plex_allowed_networks }}'; $custom='{{ plex_custom_connections }}'; }
         s/\sallowedNetworks="[^"]*"//g;
         s/\scustomConnections="[^"]*"//g;
         s/<Preferences\b([^>]*)\/>/<Preferences$1 allowedNetworks="$allowed" customConnections="$custom"\/>/;
-      - /var/lib/plexmediaserver/Library/Application Support/Plex Media Server/Preferences.xml
+      - "{{ plex_preferences_path }}"
+  when: plex_preferences_need_lan_update
 
 - name: Claim Plex Media Server when PLEX_CLAIM_TOKEN is provided
   ansible.builtin.shell:
     cmd: |
       set -eu
 
-      pref='/var/lib/plexmediaserver/Library/Application Support/Plex Media Server/Preferences.xml'
+      pref='{{ plex_preferences_path }}'
       claim_token="$PLEX_CLAIM_TOKEN"
 
       if grep -q 'PlexOnlineToken=' "$pref"; then
@@ -104,9 +121,9 @@
 
     executable: /bin/sh
   environment:
-    PLEX_CLAIM_TOKEN: "{{ plex_claim_token | default(lookup('env', 'PLEX_CLAIM_TOKEN'), true) }}"
+    PLEX_CLAIM_TOKEN: "{{ plex_claim_token }}"
   no_log: true
-  when: (plex_claim_token | default(lookup("env", "PLEX_CLAIM_TOKEN"), true) | length) > 0
+  when: plex_preferences_need_claim
 
 - name: Ensure Plex Media Server is running after configuration
   ansible.builtin.service:
