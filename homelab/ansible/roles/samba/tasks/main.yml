@@ -57,10 +57,12 @@
 - name: Create Samba users (if any)
   ansible.builtin.shell: |
     (pdbedit -L | grep -q "^{{ item.name }}:") || \
-    (echo "{{ item.password }}" | smbpasswd -s -a {{ item.name }})
+    (echo "{{ item.password }}" | smbpasswd -s -a {{ item.name }} && echo created)
   args:
     executable: /bin/bash
   loop: "{{ samba_users }}"
+  register: samba_user_create
+  changed_when: "'created' in samba_user_create.stdout_lines"
   when: samba_users | length > 0
   no_log: true
 
