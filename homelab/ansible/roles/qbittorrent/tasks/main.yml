@@ -53,15 +53,16 @@
     - /media/cold/downloads
     - "{{ qbittorrent_download_path }}"
 
-- name: Check qBittorrent download path
+- name: Check managed qBittorrent preferences
   community.general.ini_file:
     path: /var/lib/qbittorrent/.config/qBittorrent/qBittorrent.conf
-    section: BitTorrent
-    option: 'Session\DefaultSavePath'
-    value: "{{ qbittorrent_download_path }}"
+    section: "{{ item.section }}"
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
     no_extra_spaces: true
+  loop: "{{ qbittorrent_managed_preferences }}"
   check_mode: true
-  register: qbittorrent_download_path_check
+  register: qbittorrent_preferences_check
 
 - name: Gather service facts
   ansible.builtin.service_facts:
@@ -71,7 +72,7 @@
     name: qbittorrent
     state: stopped
   when:
-    - qbittorrent_download_path_check.changed
+    - qbittorrent_preferences_check.changed
     - ansible_facts.services['qbittorrent.service'] is defined
 
 - name: Enforce managed qBittorrent preferences
