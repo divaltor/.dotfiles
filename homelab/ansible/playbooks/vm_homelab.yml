@@ -35,14 +35,39 @@
         name: firmware-amd-graphics
         state: present
 
-    - name: Let applications opt in to transparent huge pages
+    # amdgpu.cwsr_enable=0 works around the gfx1150 (Radeon 890M) MES hang
+    # ("MES ring buffer is full") on Debian 6.12.113+ under ROCm compute:
+    # https://github.com/ROCm/legacy-rocm-build/issues/5590
+    - name: Configure kernel command line
       ansible.builtin.lineinfile:
         path: /etc/default/grub
         regexp: ^GRUB_CMDLINE_LINUX_DEFAULT=
-        line: 'GRUB_CMDLINE_LINUX_DEFAULT="quiet transparent_hugepage=madvise"'
+        line: 'GRUB_CMDLINE_LINUX_DEFAULT="quiet transparent_hugepage=madvise amdgpu.cwsr_enable=0"'
         validate: /bin/sh -n %s
       notify:
         - Update GRUB
+
+    - name: Create Docker systemd drop-in directory
+      ansible.builtin.file:
+        path: /etc/systemd/system/docker.service.d
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+
+    # Docker fails GPU containers permanently (exit 128) if amdgpu has not
+    # created the render node yet, and does not retry them.
+    - name: Start Docker after the GPU render node appears
+      ansible.builtin.copy:
+        dest: /etc/systemd/system/docker.service.d/wait-for-gpu.conf
+        owner: root
+        group: root
+        mode: "0644"
+        content: |
+          [Service]
+          ExecStartPre=-/usr/bin/timeout 60 /bin/sh -c 'until [ -e /dev/dri/renderD128 ]; do sleep 1; done'
+      notify:
+        - Reload systemd
 
     - name: Apply transparent huge pages policy
       ansible.builtin.shell:
@@ -59,3 +84,7 @@
     - name: Update GRUB
       ansible.builtin.command: update-grub
       changed_when: true
+
+    - name: Reload systemd
+      ansible.builtin.systemd_service:
+        daemon_reload: true
