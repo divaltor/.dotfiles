@@ -83,7 +83,8 @@
     value: "{{ item.value }}"
     owner: qbittorrent
     group: qbittorrent
-    mode: "0600"
+    # qBittorrent saves with its UMask=0002; the 0700 home directory keeps it private.
+    mode: "0664"
     no_extra_spaces: true
   loop: "{{ qbittorrent_managed_preferences }}"
 
