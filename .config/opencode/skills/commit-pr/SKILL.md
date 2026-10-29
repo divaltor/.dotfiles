@@ -1,6 +1,6 @@
 ---
 name: commit-pr
-description: "Write, review, or improve Git commit messages and GitHub PR descriptions. Use when the user asks for a commit message or a PR description."
+description: "Write, review, or improve Git commit messages, GitHub PR descriptions, and PR comments that explain a change. Use when the user asks for a commit message, a PR description, or a PR comment/reply."
 ---
 
 # Commit and PR Descriptions
@@ -27,15 +27,11 @@ defaults below only when history gives no signal.
 ```text
 Capitalize the subject, ~50 chars, imperative, no final period
 
-Optional body: how it worked before, what was wrong with that, and why
-another direction would be worse. Wrap every line at 72 characters.
-Never state what changed and how — the diff shows both.
-
-- Bullets are okay: hyphen, single space
-- Blank lines between multi-line bullets
+Optional body, max 3 lines: the cause, then the cost of doing nothing.
+Wrap at 72 characters. Details live in the PR or the linked thread.
 
 Resolves: #123
-See also: #456, #789
+Amp-Thread-ID: https://ampcode.com/threads/T-…
 ```
 
 - Imperative test: the subject must complete "If applied, this commit will
@@ -59,7 +55,89 @@ See also: #456, #789
 - If the subject won't fit in ~50 characters, the commit probably does too
   much — prefer splitting into atomic commits.
 - Never append generated attribution footers or `Co-Authored-By` trailers
-  unless the user asks.
+  unless the user asks. Issue and thread link trailers are not
+  attribution; see below.
+
+## Commit bodies: terse, details live in the PR
+
+A commit body answers one question: why did this change happen. The
+mechanism, measurements, and deploy order live in the PR or the agent
+thread, and the commit links there.
+
+- Max 3 lines. The cause, then the cost of doing nothing. Fragments are
+  fine.
+- Terse voice: answer first, no ceremony, no recap, articles optional.
+  Never drop not / never / only / except. Code names and numbers stay
+  exact.
+- A before/after number is one arrow with its unit and scope written once:
+  `Rows read (8-day test): 18.6B → 94M`. In a commit, an arrow means only
+  "becomes".
+- Optional limit line, only when a reader would assume more was fixed:
+  `Not covered: adserver_api_event, not sorted by date.`
+- Trailers, after a blank line: related issues when they exist
+  (`Resolves: #123`, `Related: #612`, or the repo's own style), and the
+  agent thread URL only when you know it exactly and teammates can open
+  it. Amp adds `Amp-Thread-ID: <thread URL>` itself when it commits, so
+  never add a second one. OpenCode sessions are private by default: add
+  `Session: <share URL>` only after `/share` returned that URL. Never
+  guess or build a URL. No PR link: GitHub already shows the PR for
+  every commit.
+
+```text
+Use raw date ranges in sp_monitoring_and_dq
+
+DATE(time_stamp) hides the sort key, so Redshift reads every block of
+events_mastertable. Rows read (8-day test): 18.6B → 94M.
+
+Related: #612
+Amp-Thread-ID: https://ampcode.com/threads/T-…
+```
+
+## Reader-first (PR text, PR comments)
+
+Commit bodies follow the terse rules above; these rules are for longer
+text. Grammar alone does not make text easy. Cut load: fewer facts, fewer terms,
+fewer numbers. Reading test: a teammate from another team can repeat the main
+point after one read.
+
+- First sentence is the whole answer, readable alone. Bold it in Markdown.
+  Everything after it is support the reader may skip.
+- One mechanism, max 3 sentences. Drop side facts that do not change the
+  conclusion (edge cases, percentages, "plus some extra rows from…").
+- Max 3 numbers per paragraph, rounded (`3.6B`, not `3,632,958,680`).
+  Prefer one ratio (`~99% less`) over several raw counts. Keep only numbers
+  that size the problem or the payoff. Keep each number's scope: a figure
+  measured over an 8-day window is not "every day".
+- Mark an estimate with one word (`~2 GB, estimated`), not a caveat
+  sentence about how it was estimated.
+- Jargon only when the reader needs the word later. Otherwise say what the
+  thing does: "Redshift keeps the min and max value of each block", not
+  "zone maps". If you keep a term, define it once in under 10 words.
+- One name per object. Pick it on first mention and never switch ("date
+  folder" everywhere, not folder / partition / prefix in turn).
+- No hedges or meta-talk: no "prior read-only investigation", "not a
+  post-change benchmark", "nothing else changes", "not run in production
+  yet". An unmerged change is obviously not in production.
+- No "I checked…" / "I verified…" sentences and no separate verification
+  part. A check appears only as evidence inside the reason, as a fact:
+  "Each date folder holds only rows from that date across all 3.6B rows,
+  so skipping old date folders loses nothing." Never mention linters,
+  type checks, tests passing, or other routine checks.
+- No instructions to the reader ("must load it by hand", "make sure to…").
+  State the fact; the reader draws the conclusion. The only allowed
+  directive is a required order of steps (see PR descriptions).
+- No bullet lists in the output. Write prose. Write an ordered procedure
+  as one arrow line: `create table → register folders → deploy procedure`.
+- Show contrasts, do not narrate them. Two options → two code lines with a
+  short comment each, or a two-row table.
+- Diagrams: max 5 rows, labels instead of raw data (`skip` / `read`, not
+  full timestamps).
+- One screen: the visible part stays under ~150 words. On GitHub, raw
+  measurements and depth go in `<details><summary>Measurements</summary>…
+  </details>`. Otherwise cut them.
+- Cold-reader check before output: read only the text, as someone who never
+  saw the code or the thread (use a subagent when available). Every word or
+  step that reader would not understand gets replaced or cut.
 
 ## STE-mini (bodies and PR paragraphs)
 
@@ -72,8 +150,9 @@ Write bodies and PR text in plain, simple English. Same subset as the
 - One term per thing. No synonyms, no jargon, no idioms. Reuse the same word.
 - No `-ing` clauses to carry order or cause. Write two plain sentences instead.
 - Short paragraphs, one topic each.
-- Exception: the commit subject is not a full STE sentence. It stays an
-  imperative fragment, ~50 chars, no final period.
+- Exception: commit subjects and bodies are not full STE sentences. The
+  subject stays an imperative fragment, ~50 chars, no final period; the
+  body follows the terse commit rules.
 
 ## PR descriptions: freeform, no headers, no PM template
 
@@ -81,12 +160,57 @@ Default: one or two short plain-text paragraphs. Freeform — what was found,
 the problem, why it should be fixed. Like the user writes it, not a product
 template.
 
+Order for longer PRs, each part only when it exists:
+
+1. Bold sentence: the problem and its size, or the payoff.
+2. Why it happens and why the change is safe, one short paragraph. Checks
+   appear here only as facts inside the reason.
+3. Required step order (deploy, migration, backfill) as one arrow line.
+   Put an exception inside the step it affects, in parentheses, instead of
+   its own sentence.
+4. `<details>` with raw measurements, when they exist.
+5. Stack and links last: `Stacked on #556.`
+
+GitHub alerts (`> [!WARNING]`) are rare. Use one only for a real problem the
+reader can cause or miss: silent data loss, an outage, an irreversible step.
+Never for style, performance notes, or general caution. When the step order
+is the risk, the alert holds the risk sentence and the arrow line.
+
+Example of the full shape:
+
+```markdown
+**`sp_load_moat_new` scans ~250 GB of S3 every day to keep ~33M rows.
+Reading only the recent date folders drops that to ~2 GB (estimated).**
+
+Today Redshift does not know the IAS table is split into date folders, so
+every run reads every file. Last week that took up to 18 minutes per run.
+Each date folder holds only rows from that date across all 3.6B rows, so
+skipping old date folders loses nothing.
+
+> [!WARNING]
+> Redshift ignores a date folder until it is registered, and the load
+> then skips its rows without any error. Deploy in this order: create the
+> table → register the 739 existing date folders (all except
+> `backfill_11_10-21_10/`, a duplicate of 2024-10-21) → deploy
+> org/data-platform-dags#2798 → register date folders created after
+> 2026-10-29 → deploy the procedure.
+
+<details><summary>Measurements</summary>
+
+17.9k files and 3.68B rows scanned per run, 98–1,072 s per run,
+~$37/month saved.
+
+</details>
+
+Stacked on #556.
+```
+
 - No headers by default. Applies to text you write, not to this file. Never
   use `#` or `##`. Use `####` only when a long description cannot stay
   readable without a split, max 1–2 per description.
 - No generic sections: no `Summary`, `Why`, `Validation`, `Test plan`,
-  no checklists, no `As a… I want… So that…`. No routine validation details.
-  Use a structured format only when the user explicitly requests one.
+  no checklists, no `As a… I want… So that…`. Use a structured format only
+  when the user explicitly requests one.
 - Same why-rule as commits: never narrate what the diff shows or restate the
   change as an action. Good: "DuckDB 1.5 rejects the virtual-hosted URL
   because it does not match the wildcard certificate, which failed
@@ -122,8 +246,12 @@ In order:
 
 ```text
 imperative → ≤72-char subject → capitalized → no period → blank line
-→ optional 72-wrapped body → subtraction test passes → no closing
-action → STE-mini sentences → no headers (#{1,2} absent, #### only if needed)
+→ optional ≤3-line 72-wrapped body → issue / shared thread
+trailers, no PR link → subtraction test passes → no closing
+action → answer in sentence 1 → ≤3 rounded numbers, no undefined
+jargon → one name per object → no hedges, "I checked", reader
+instructions, or bullet lists → alert only for a real risk → cold-reader
+check → STE-mini sentences → no headers (#{1,2} absent, #### only if needed)
 → references at bottom → no literal \n escapes
 ```
 

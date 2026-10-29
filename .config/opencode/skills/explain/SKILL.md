@@ -8,6 +8,11 @@ visual, at most three sentences outside blocks, one visual per question unless
 the user asks for more. Include only the calls, files, props, states, and
 boundaries needed to answer it.
 
+Reader-first prose: sentence 1 is the whole answer, readable alone. Then one
+mechanism, no side facts. Max 3 numbers per paragraph, rounded; prefer one
+ratio. Say what a thing does instead of naming jargon, or define the term once
+in under 10 words. Show contrasts as two code lines or a two-row table, not prose.
+
 Precedence: if the active agent defines a communication or diagram style,
 it wins over this skill. Mermaid fences render natively in the OpenCode TUI,
 so use them freely; HTML artifacts still need an explicit user request or a
