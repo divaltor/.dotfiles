@@ -7,68 +7,58 @@ description: "Use when the user asks for ASCII diagrams, timeline diagrams, flow
 
 Use this skill when a diagram will explain timing, data flow, state, architecture, comparisons, profiling, or operational behavior more clearly than prose.
 
-Not for code-shape diffs or rendered HTML artifacts — use the `explain` skill for those. This skill outputs terminal-safe text only.
+Not for code-shape diffs or rendered HTML artifacts — use the `explain` skill for those.
 
-## Mermaid first — the TUI renders it natively
+## Pick the output
 
-The OpenCode TUI renders Mermaid directly (flowchart, sequence, state, timeline, gantt, gitGraph). ASCII is the fallback, not the default:
+The OpenCode TUI renders Mermaid directly, so Mermaid is the default for every shape it supports. ASCII is for shapes Mermaid cannot draw and for surfaces that cannot render Mermaid. Walk this tree every time:
 
-| Content                                                              | Output                          |
-| -------------------------------------------------------------------- | ------------------------------- |
-| Flows, pipelines, dependencies, decision logic                        | **Mermaid** `flowchart`         |
-| Schedules, ranges, durations, parallel tracks                         | **Mermaid** `gantt`             |
-| Time-anchored before/after, phases                                   | **Mermaid** `timeline`          |
-| Request lifecycles across services                                   | **Mermaid** `sequenceDiagram`   |
-| State machines, drift, migrations                                    | **Mermaid** `stateDiagram-v2`   |
-| Branch/merge history                                                 | **Mermaid** `gitGraph`          |
-| Call stacks, hot paths, flamegraphs                                  | **ASCII** (below)               |
-| Value vs continuous axis (curves, drift, spread)                      | **ASCII** XY plot (below)       |
-| Memory/buffer layout, geometry, spatial relationships                 | **ASCII** (below)               |
-| Bars, thresholds, one-off comparisons                                 | **ASCII** simple (below)        |
-| User explicitly asks for ASCII                                       | **ASCII** (below)               |
+```text
+Did the user ask for ASCII, or is the target plain text
+(commit body, code comment, terminal output)?
+├── Yes → ASCII shape tree below
+└── No
+    ├── Arrows between steps, services, or dependencies?  → Mermaid flowchart
+    ├── Request lifecycle across services?                → Mermaid sequenceDiagram
+    ├── States and transitions, migrations, drift?        → Mermaid stateDiagram-v2
+    ├── Ranges, durations, parallel tracks?               → Mermaid gantt
+    ├── Time-anchored phases, before/after?               → Mermaid timeline
+    ├── Branch and merge history?                         → Mermaid gitGraph
+    ├── 3+ parallel rows of facts?                        → Markdown pipe table
+    └── Otherwise                                         → ASCII shape tree below
 
-Keep Mermaid syntax plain: short real labels, no exotic diagram types, no styling directives — unrenderable syntax degrades to raw source in the TUI. Put measured values, real identifiers, and `←` causes into labels, edge text, and Notes.
+ASCII shape tree
+├── One value, ratio, threshold, before/after, ≤5 rows?   → Shape 1 Simple
+├── Width means time or share across nested calls?        → Shape 3 Flamegraph
+├── Nesting or causality of calls, no time axis?          → Shape 3 Call tree
+├── Value against a continuous axis; the curve matters?   → Shape 5 XY plot
+├── Position means offset, address, or geometry?          → Shape 6 Layout
+├── Events or ranges on a time axis?                      → Shape 4 Timeline
+└── Arrows between distinct nodes carry meaning?          → Shape 2 Flow
+```
 
-Use the ASCII shapes below only for the rows marked **ASCII**, or when the target surface cannot render Mermaid.
+The tree checks the smaller shapes first. Never wrap a number, a ratio, or a two-line answer in a flow: the reader has to trace arrows to find a fact that a bar or a sentence states directly.
 
-## Pick the right ASCII shape first
-
-Once ASCII is the chosen output (per the routing table above), do not default to a flow diagram. Match the diagram to the problem.
-
-| Problem shape                                                                  | Use                          |
-| ------------------------------------------------------------------------------ | ---------------------------- |
-| One value, ratio, threshold, before/after, simple comparison, short enumeration | **Simple ASCII** (bars, list, table) |
-| Movement between steps/services/states, pipelines, request lifecycles, deps   | **Flow diagram** (or Mermaid `flowchart`/`sequenceDiagram` first) |
-| Call stacks, hot paths, CPU/memory profiles, nested time spent, blame trees   | **Stack / flamegraph**       |
-| Time-anchored events, schedules, ranges, durations                            | **Timeline** (or Mermaid `gantt`/`timeline` first) |
-| A value plotted against a continuous axis (time, distance, progress); curves, drift, spread | **XY plot** |
-| Memory/buffer layout, geometry, or spatial relationships                       | **Other** (layouts, vectors) |
-
-If two shapes fit, pick the smaller one. When in doubt, prefer the simplest shape that still answers the question — never wrap a number, ratio, or 2-line answer in a flow.
+Keep Mermaid plain: short real labels, only the diagram types listed above, no styling directives. Unrenderable syntax degrades to raw source in the TUI. Put measured values, real identifiers, and `←` causes into labels, edge text, and Notes.
 
 ## Style
 
-Aim for clean, premium, Apple/Uber-like text styling:
-
-- minimal visual noise
-- generous spacing
-- short headings
-- **open flows by default:** plain labels joined by connectors; boxed sections with rounded corners only when a boundary adds clarity
-- **rounded corners always:** draw box and container corners with `╭ ╮ ╰ ╯`, never square `┌ ┐ └ ┘`; keep interior junctions (`┬ ┴ ├ ┤ ┼`) and plot axis origins (`└─▶`) as they are
-- aligned columns and timelines
-- one strong visual idea per section
-- concise summary at the end
+- **Open flows by default.** Plain labels joined by connectors. Add a border only when it marks a real boundary (external system, process or host edge, component group); borders everywhere hide which boundaries matter.
+- **Rounded corners always.** Draw box corners with `╭ ╮ ╰ ╯`, never `┌ ┐ └ ┘`. Square corners read as terminal UI chrome; rounded ones match the open, light style. Keep interior junctions (`┬ ┴ ├ ┤ ┼`) and plot axis origins (`└─▶`) as they are.
+- **One idea per block.** More than ~8 nodes or more than two rails in one band means split into sections or switch shape.
+- **Labels ≤ 4 words** plus the exact identifier or number that makes the point.
+- **Summary only for a decision.** End with a one-line summary only when there is a decision or conclusion worth restating; otherwise end at the diagram.
 
 ## Shape 1 — Simple ASCII
 
 Use for ratios, magnitudes, short comparisons, config snapshots, or enumerations. Often the best answer is a single bar chart or a 3-row table — not a diagram.
 
-Horizontal bar comparison:
+Bar length is proportional: `cells = round(value / max × width)`, with width ≤ 40 cells. Values sit in one right-aligned column. Wrong proportions tell the reader a false ratio before they read the numbers.
 
 ```text
-p50   ▇▇▇                              42 ms
-p95   ▇▇▇▇▇▇▇▇▇▇▇▇                    180 ms
-p99   ▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇    640 ms
+p50   ▇▇                                  42 ms
+p95   ▇▇▇▇▇▇▇▇                           180 ms
+p99   ▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇     640 ms
 ```
 
 Before / after:
@@ -86,8 +76,7 @@ Tiny enumeration:
 • failover   ~3 s, no data loss
 ```
 
-Reference table — 3+ parallel rows always separate their header row,
-even inside a fence:
+Reference table inside a fence (ASCII forced) — always separate the header row:
 
 ```text
 value            meaning                  safe use
@@ -97,17 +86,13 @@ event.timestamp  asset emission time      observability
 dag_run.run_id   unique consumer run      storage paths
 ```
 
-Outside explicit ASCII requests, prefer a native Markdown pipe table over
-fenced column alignment: the renderer draws the border grid and bolds the
-header automatically.
-
 ## Shape 2 — Flow diagram
 
 Use only when arrows between distinct nodes carry meaning (services, steps, states, dependencies).
 
-Default linear flows to left-to-right. Use top-to-bottom only for naturally hierarchical structures or when shortening labels cannot produce a readable horizontal layout.
+Lay linear flows left-to-right: the reader scans in the same direction as text, and the diagram stays a few lines tall. Use top-to-bottom only for hierarchies, or when labels shortened to ≤ 4 words still exceed ~100 columns.
 
-**Open flow (default).** Nodes are plain text labels joined by connectors — no borders. Put payload or type notes in parentheses on a line below their node, indented to the node's first character. Drop branches with a vertical rail (`│`) and `▼`.
+**Open flow (default).** Nodes are plain text labels joined by connectors. Put payload or type notes in parentheses on the line below their node, starting under the node's first character. Drop branches with a vertical rail (`│`) and `▼`.
 
 ```text
 user mentions @bot in chat X ──▶ Update.guest_message ──▶ bot.on("guest_message")
@@ -117,14 +102,10 @@ user mentions @bot in chat X ──▶ Update.guest_message ──▶ bot.on("gu
             "inline_query" to your bot      (InlineQueryResult, like inline mode)
 ```
 
-Rules for open flows:
+- One connector family per diagram: `──▶` horizontal, `│ ▼ └──` vertical. Never mix arrow styles (`→ ▶` with `◄ ⤷`).
+- Each rail stays in one column: every `│`, `▼`, and `└` of the same rail sits in that column on every line.
 
-- one connector family per diagram: `──▶` horizontal, `│ ▼ └──` vertical; never mix arrow styles
-- keep each rail in one column — every `│`, `▼`, and `└` of the same rail sits in that column on every line it appears
-- annotation lines start under the first character of the node they describe
-- more than two rails per band usually means the diagram should split into sections
-
-**Boxed flow (only when a boundary matters).** Reserve borders for real boundaries: external systems, process or host edges, grouped components. Keep each box small and route connectors outside the borders; follow the width-safety recipe below.
+**Boxed flow (only when a boundary matters).** Keep each box small and route connectors outside the borders; follow Width safety below.
 
 ```text
 ╭────────╮     ╭─────╮     ╭──────────╮
@@ -137,19 +118,17 @@ Rules for open flows:
               ╰────────╯
 ```
 
-Keep nodes few. If you need more than ~8 nodes, split into sections or switch shape.
-
 ## Shape 3 — Stack / flamegraph
 
-Use for call stacks, hot paths, profiles, nested durations, or "where did the time go". Width = time or share. Stacked rows = caller → callee (root on top or bottom; be consistent).
+Use for call stacks, hot paths, profiles, nested durations, or "where did the time go".
 
-Flamegraph (root on top, width ∝ time):
+**Flamegraph:** root on top, width ∝ time, using the same proportional rule as Shape 1. Label first, bar below, time or % right-aligned. Collapse irrelevant frames into `…`.
 
 ```text
 main                                                          1000 ms
 ████████████████████████████████████████████████████████████
   handleRequest                                               820 ms
-  ██████████████████████████████████████████████████
+  █████████████████████████████████████████████████
     parseBody                                                 120 ms
     ███████
     queryDB                                                   560 ms
@@ -159,10 +138,10 @@ main                                                          1000 ms
     render                                                    140 ms
     ████████
   log                                                         180 ms
-  ██████████
+  ███████████
 ```
 
-Call stack / call tree (causality and nesting, no time axis). Use an indented tree with `→` arrows in a language-tagged code block so identifiers get syntax highlighting:
+**Call tree** (causality and nesting, no time axis): 2-space indent per level, `→` on every child, one exact identifier per line (`Module.method()`). Separate independent stacks with a blank line and a heading line. Tag the block with the language (`ts`, `py`, `go`) so identifiers get syntax highlighting.
 
 ````text
 ```ts
@@ -192,28 +171,26 @@ PluginBoot background fiber
 ```
 ````
 
-Rules:
-
-- **trees:** 2-space indent per level, `→` on every child, one exact identifier per line (`Module.method()`); separate independent stacks with a blank line under a heading; tag the block (`ts`, `py`, `go`, …) so identifiers highlight.
-- **flamegraphs:** align all bars to the same left edge, label first then bar, show time/% on the right, collapse irrelevant frames into `…`.
-
 ## Shape 4 — Timeline
 
-Use when the X axis is time and you need to show events or ranges.
+Use when the X axis is time and Mermaid cannot be used. Keep every day rail in its column on every line.
 
 ```text
 Sun        Mon        Tue        Wed        Thu        Fri
  │          │          │          │          │          │
- │          ▲          │          │          │          │
- │     deploy v2
- │          █████████████████████████████████████████████
- │          ▲
- │      canary window
+ │          ▲ deploy v2           │          │          │
+ │          ███████████████████████████████████████████
+ │          ▲ canary window       │          │          │
 ```
 
 ## Shape 5 — XY plot
 
-Use when a value changes over a continuous axis (time, distance, progress) and the *shape of the curve* is the point: growth, drift, deltas, spread. Y axis labeled on the left, X axis along the bottom with an arrow, `┤` / `┼` for tick joints.
+Use when a value changes over a continuous axis (time, distance, progress) and the *shape of the curve* is the point: growth, drift, deltas, spread.
+
+- Label the Y axis above the top tick; put the X axis label after the arrow.
+- `┤` for plain ticks, `┼` where a zero/baseline line crosses.
+- One glyph per column so points stay vertically aligned.
+- Legend on one line under the plot, never inside it.
 
 Single curve (elapsed time vs track progress):
 
@@ -229,7 +206,7 @@ elapsed
        0        0.42            1
 ```
 
-Signed values around a zero baseline (delta above/below a reference):
+Signed values around a zero baseline:
 
 ```text
  +Δ ┤      ▇  ▇
@@ -240,7 +217,7 @@ Signed values around a zero baseline (delta above/below a reference):
     0                          1   +Δ behind · −Δ ahead · 0 reference
 ```
 
-Curve plus an envelope/spread band (`█` actual run, `░` ±σ band):
+Curve plus an envelope band (`█` actual run, `░` ±σ band):
 
 ```text
 e + ┤                       ░░░░
@@ -251,18 +228,9 @@ e − ┤             ░░░░░░░░░░░░░
     └──────────────────────────▶ t
 ```
 
-Rules for XY plots:
-
-- label the Y axis above the top tick; put the X axis label after the arrow
-- use `┤` for plain ticks, `┼` where a zero/baseline line crosses
-- keep one glyph per column so points stay vertically aligned
-- legend goes on one line under the plot, not inside it
-
 ## Shape 6 — Layout / geometry
 
 Use for memory and buffer layouts, on-disk formats, or spatial/vector relationships — anything where *position* carries the meaning.
-
-Ring buffer / memory layout:
 
 ```text
         head ─┐ (next write)
@@ -272,8 +240,6 @@ Ring buffer / memory layout:
       ╰────┴────┴────┴────┴────╯
         ↑ oldest          newest ↑
 ```
-
-Geometric projection (project a point onto the nearest segment):
 
 ```text
               ● point
@@ -287,27 +253,20 @@ Geometric projection (project a point onto the nearest segment):
   t = clamp(0, (● − A)·(B − A) / |B − A|², 1)
 ```
 
-## Rules
+## Output rules
 
-- **Separate rendering:** put every ASCII diagram, chart, table, tree, or layout in its own fenced code block (normally `text`; use a language tag for a call tree when syntax highlighting is useful). Never place explanatory prose, headings, conclusions, or Markdown lists inside an ASCII code block.
-- Write all ordinary explanation as normal rendered Markdown before or after the block. Do not make the user manually separate prose from a copied diagram.
-- Return one `text` code block containing only the diagram when the user asks for a single ASCII output.
-- Do not use Mermaid or other rendered diagram syntaxes.
-- Keep labels short; include only the details needed to make the point.
-- Prefer compact horizontal sections over one huge crowded diagram.
-- End with a compact summary box only when there is a decision or conclusion worth restating.
+- Put every ASCII diagram, chart, table, tree, or layout in its own fenced block (`text`, or a language tag for call trees). Never put prose, headings, conclusions, or Markdown lists inside the fence: the user copies the block as-is and should not have to strip prose out of it.
+- Write explanation as rendered Markdown before or after the block, and never repeat in prose what the diagram already shows.
+- When the user asks for a single ASCII output, return one `text` block containing only the diagram.
 
-### Width safety (keep bordered boxes aligned)
+## Width safety
 
-Bordered boxes read well and are encouraged when a boundary carries meaning. A right border only stays straight when every interior line has the **same display width**, so the drift you see is a width-consistency problem, not a reason to drop borders. A tall box with a different arrow on each interior line is the usual cause. Follow this recipe:
+A right border stays straight only when every interior line has the same display width. Drift is a width problem, not a reason to drop the border.
 
-- **Pad every interior line to one width.** Between `│ … │` pad each line with trailing spaces to the identical width, and make the top and bottom border (`─` run) that same width. That is what keeps the right border aligned.
-- **Keep interiors simple.** Prefer ASCII text (every character is one cell, so the count is reliable) or a single uniformly repeated glyph (`●●●●●`). Small, uniform interiors pad correctly; tall boxes packed with varied content drift.
-- **Put flow outside the box.** Route arrows, branches, and connectors (`│ ▼ ├ ─▶`) in the open space around boxes, not on interior lines. Different arrows on different interior lines are the main cause of drift.
-- **One box, one idea.** Split a tall multi-line box into small boxes joined by external connectors instead of stacking many aligned rows inside one border.
-- **Pick one glyph family.** Do not mix arrow styles (`→ ▶` vs `◄ ⤷`) in the same diagram, so width assumptions stay consistent. Some glyphs are East Asian "Ambiguous" width (`→ ▶ ▲ ▼ │`) and render as 1 or 2 cells depending on the terminal; others are always 1 cell (`◄ ↻ ⤷`).
-
-Bordered box with the flow kept outside (aligns reliably):
+- **Pad every interior line** between `│ … │` with trailing spaces to one width, and make the top and bottom `─` runs that same width.
+- **Interiors hold text only.** Put ASCII text or one repeated glyph (`●●●●●`) inside a box; never put arrows or other symbols there. Glyphs like `→ ▶ ▲ ▼` render 2 cells wide in some terminals and push the right border out of line.
+- **Flow goes outside the box.** Route arrows and branches (`│ ▼ ├ ─▶`) in the open space around boxes.
+- **One box, one idea.** Split a tall multi-line box into small boxes joined by external connectors.
 
 ```text
         ╭─────────────╮
@@ -317,3 +276,11 @@ in ────▶│  worker: 5  │────▶ out
                ▼
             dropped
 ```
+
+## Verify before output
+
+1. The output choice came from the tree in "Pick the output".
+2. Every rail character (`│ ▼ └ ┴`) sits in the same column on every line it spans.
+3. Every box's interior lines and borders have the same width.
+4. Bar and flamegraph lengths match `round(value / max × width)`.
+5. No prose, headings, or lists inside a fence.
