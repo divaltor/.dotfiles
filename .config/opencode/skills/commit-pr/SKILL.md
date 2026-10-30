@@ -44,7 +44,18 @@ result-producing statement…".
 
 **Subtraction test (mandatory before output):** cover the diff and read the
 text alone. If a sentence lets you guess what the code does, delete it. If
-nothing remains, a commit ships subject-only. Mention the fix only as
+nothing remains, a commit ships subject-only and a PR ships with no body.
+
+**Known-fact test (mandatory before output):** the reader already has the
+title, the diff, and the repo's conventions. Delete every sentence that one
+of these already gives a teammate: what the title says, which callers the
+diff updates, framework or tool behavior the team relies on daily (a name
+prefix the framework adds, Airflow keeping runs under the old DAG ID).
+Such sentences look like context but only bury the one fact the reader
+lacks. Keep a convention only when the diff breaks or depends on it in a
+way a teammate would not expect.
+
+Mention the fix only as
 `because + outside-diff fact`, never as an action. The last sentence states
 the cost of doing nothing, why the alternative loses, or the tradeoff —
 never the change restated as an action.
@@ -159,8 +170,29 @@ point after one read.
 
 ## PR descriptions
 
-Default: one or two short plain-text paragraphs — what was found, the
-problem, why it should be fixed. No headers, no template sections.
+Decide the size before writing:
+
+```text
+Do the title and the diff explain the change to a teammate?
+├── Yes (rename, typo, version bump, small config change)
+│   → No body. If the user asks for one, one sentence with the single
+│     outside-diff fact, or nothing.
+└── No → One or two short paragraphs with only the missing facts.
+```
+
+An empty body is a valid result, not a missing one. Padding a small PR
+teaches reviewers to skip descriptions, including the ones that matter.
+
+Wrong, for a PR titled `Rename monthly Adbook order DAG` that also updates
+two sensors: "Airflow exposes it as `biteam_adbook_monthly_order` because
+FTDAG adds the team prefix. Both booking DAGs depend on this DAG; stale
+sensor targets would leave them waiting. Airflow keeps old runs under the
+old DAG ID." Every sentence is the title, the diff, or team knowledge. Right:
+no body.
+
+Default for larger PRs: one or two short plain-text paragraphs — what was
+found, the problem, why it should be fixed. No headers, no template
+sections.
 
 Order for longer PRs, each part only when it exists:
 
@@ -250,19 +282,25 @@ gh pr create --body-file body.md   # or gh pr edit --body-file body.md
 
 ## Verify
 
+Run this checklist silently. Never print it, its results, or a
+"verified / checks passed" note in the response: the user asked for the
+text, and a list of ticks only adds reading. Output the final text alone.
+Mention a check only when a rule could not be met and the user must decide.
+
 **Commit**
 
 1. Subject: imperative, capitalized, no final period, ≤50 target, ≤72 hard.
 2. Blank line after the subject.
 3. Body absent, or ≤3 lines wrapped at 72, no diagram.
-4. Subtraction test passes; last sentence is not the change as an action.
+4. Subtraction and known-fact tests pass; last sentence is not the change
+   as an action.
 5. Trailers: issues and shared-thread URL only, no PR link, no attribution.
 6. Real newlines, no literal `\n`.
 
 **PR description or comment**
 
 1. Sentence 1 is the whole answer (bold in a description).
-2. Subtraction test passes.
+2. Subtraction and known-fact tests pass; a small PR has no body.
 3. ≤3 rounded numbers per paragraph; every kept term defined.
 4. One name per object; sentences ≤25 words.
 5. No hedges, "I checked", reader instructions, or bullet lists.
@@ -271,7 +309,8 @@ gh pr create --body-file body.md   # or gh pr edit --body-file body.md
 8. Real newlines, no literal `\n`.
 
 When reviewing existing text, report only the broken rules, with a
-corrected version. Cheap history pass for the hard limit:
+corrected version. When asked to review history, a cheap pass for the hard
+limit:
 
 ```bash
 git log --format=%s | awk 'length > 72'
