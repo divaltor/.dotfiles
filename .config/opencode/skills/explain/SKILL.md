@@ -1,6 +1,6 @@
 ---
 name: explain
-description: "Explain code, changes, architecture, or technical concepts when the user asks for an explanation. Choose the clearest medium: concise prose, code-shape sketches, diffs, call/component/file trees, Mermaid, or a focused HTML artifact. For ASCII-only output, flamegraphs, XY plots, memory layouts, or when the user asks for ASCII diagrams, use the ascii-diagrams skill."
+description: "Explain code, changes, architecture, or technical concepts when the user asks for an explanation. Choose the clearest medium: concise prose, code-shape sketches, diffs, call/component/file trees, Mermaid, or a focused HTML artifact. For ASCII-only output, charts with real numbers, wireframes, flamegraphs, XY plots, memory layouts, or when the user asks for ASCII diagrams, use the ascii-diagrams skill."
 ---
 
 Explain the current topic. Skip the preamble. Budget: one lead-in sentence per
@@ -15,7 +15,8 @@ in under 10 words. Show contrasts as two code lines or a two-row table, not pros
 
 Precedence: if the active agent defines a communication or diagram style,
 it wins over this skill. Mermaid fences render natively in the OpenCode TUI,
-so use them freely; HTML artifacts still need an explicit user request or a
+so use them freely there; in GitHub PRs, follow the ascii-diagrams routing,
+which prefers ASCII; HTML artifacts still need an explicit user request or a
 confirmed rendered target.
 
 Every code-shaped artifact goes in a fenced block — source code, pseudocode,
@@ -34,6 +35,7 @@ what lives where                component / file tree
 which branch runs               pseudocode or control-flow diff
 flow, sequence, state           mermaid fence
 timing, profile, memory         ascii-diagrams skill
+numbers, chart, wireframe       ascii-diagrams skill (renders it)
 visual UI, dense concept        HTML artifact (request only)
 ```
 
