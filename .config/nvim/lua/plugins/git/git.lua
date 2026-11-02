@@ -14,9 +14,10 @@ return {
   },
   {
     -- tsugit.nvim ships a lazy.lua spec that force-loads flatten.nvim at
-    -- startup; we never open files from a terminal, so it is dead weight.
+    -- startup, and its setup() requires the module. Keep it lazy so it loads
+    -- on the first tsugit toggle instead of on every startup.
     "willothy/flatten.nvim",
-    enabled = false,
+    lazy = true,
   },
   {
     "mikavilpas/tsugit.nvim",
