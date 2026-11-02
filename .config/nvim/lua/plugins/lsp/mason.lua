@@ -16,6 +16,11 @@ return {
     dependencies = {
       "mason-org/mason.nvim",
     },
+    -- VeryLazy, not eager: without a trigger lazy.nvim loads the plugin (and
+    -- its mason.nvim dependency, ~40ms of registry setup) on every startup.
+    -- swapson's own guard defers patching until mason has setup, so it only
+    -- needs to be loaded before the first install, not before the first buffer.
+    event = "VeryLazy",
     opts = {
       npm = {
         enabled = true,

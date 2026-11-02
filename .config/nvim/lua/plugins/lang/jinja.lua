@@ -36,6 +36,9 @@ return {
   {
     "cathaysia/nvim-jinja",
     dependencies = { "nvim-treesitter/nvim-treesitter" },
+    -- Its plugin/ file only registers a FileType autocmd for `j2`; nothing is
+    -- needed at startup, so let the first jinja buffer load it.
+    ft = { "jinja", "sql.jinja", "j2" },
     config = function()
       require("nvim-jinja").setup({
         enabled = true,

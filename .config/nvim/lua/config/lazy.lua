@@ -34,13 +34,16 @@ require("lazy").setup({
       -- disable some rtp plugins
       disabled_plugins = {
         "gzip",
-        -- "matchit",
-        -- "matchparen",
+        -- matchit: ~4.5ms of startup. Costs `%` on keyword/tag pairs
+        -- (if/endif, HTML tags); `%` on brackets is built into Neovim.
+        "matchit",
         -- "netrwPlugin",
+        -- lazy matches the runtime file's base name: plugin/zip.lua here,
+        -- plugin/zipPlugin.vim on older Neovim.
+        "zip",
         "tarPlugin",
         "tohtml",
         "tutor",
-        "zipPlugin",
       },
     },
   },

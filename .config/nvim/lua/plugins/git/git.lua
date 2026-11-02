@@ -13,6 +13,12 @@ return {
     },
   },
   {
+    -- tsugit.nvim ships a lazy.lua spec that force-loads flatten.nvim at
+    -- startup; we never open files from a terminal, so it is dead weight.
+    "willothy/flatten.nvim",
+    enabled = false,
+  },
+  {
     "mikavilpas/tsugit.nvim",
     keys = {
       {

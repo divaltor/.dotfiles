@@ -1,11 +1,12 @@
--- @type Symbol
-local SymbolKind = vim.lsp.protocol.SymbolKind
-
 return {
   {
     "Wansmer/symbol-usage.nvim",
     event = "LspAttach",
     opts = function()
+      -- Looked up inside opts, not at the top of the file: a top-level
+      -- require("vim.lsp") costs ~7ms on every startup while resolving specs.
+      local SymbolKind = vim.lsp.protocol.SymbolKind
+
       local function h(name)
         return vim.api.nvim_get_hl(0, { name = name })
       end
