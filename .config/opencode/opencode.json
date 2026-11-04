@@ -10,13 +10,12 @@
           "rudolf": {
             "color": "#8994B8",
             "name": "diana"
+          },
+          "bellno": {
+            "model": "github-copilot/claude-opus-5.5#medium"
           }
         },
-        "experimental": {
-          "communication": {
-            "enabled": true
-          }
-        }
+        "use_fff": true
       }
     }
   ],
@@ -25,17 +24,22 @@
       "action": "todowrite",
       "resource": "*",
       "effect": "deny"
-    },
-    {
-      "action": "t3-code_*",
-      "resource": "*",
-      "effect": "deny"
     }
   ],
   "providers": {
     "openai": {
       "settings": {
-        "textVerbosity": "low"
+        "textVerbosity": "low",
+        "compaction": {
+          "type": "native"
+        }
+      }
+    },
+    "anthropic": {
+      "settings": {
+        "cache": {
+          "ttl": "1h"
+        }
       }
     },
     "github-copilot": {
@@ -54,6 +58,24 @@
           "GRAFANA_URL": "https://monitoring.divaltor.dev",
           "GRAFANA_API_KEY": "{env:GRAFANA_API_KEY}"
         }
+      },
+      "atlassian": {
+        "type": "remote",
+        "url": "https://mcp.atlassian.com/v2/mcp"
+      },
+      "slack": {
+        "type": "remote",
+        "url": "https://mcp.slack.com/mcp",
+        "disabled": true
+      },
+      "github": {
+        "type": "remote",
+        "url": "https://api.githubcopilot.com/mcp/readonly",
+        "oauth": false,
+        "headers": {
+          "Authorization": "Bearer {env:GITHUB_TOKEN}",
+          "X-MCP-Toolsets": "repos,pull_requests,issues,actions"
+        }
       }
     }
   },
@@ -65,7 +87,8 @@
         "resource": "amazon-bedrock",
         "effect": "deny"
       }
-    ]
+    ],
+    "background_compaction": true
   },
   "references": {
     "opencode": {

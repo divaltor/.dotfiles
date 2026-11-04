@@ -1,3 +1,7 @@
+## Chat output and tools
+
+- Do not use T3 tools unless explicitly requested; their rendered output is not visible in the user's client. Present results directly in chat using Markdown, text, and Mermaid diagrams instead of HTML previews or renders.
+
 ## Design principles
 
 Optimize the design for the normal flow. If the happy path is 95% of behavior, it should be ~95% of what a reader sees.
