@@ -207,6 +207,8 @@ What does this part carry?
 │    option A vs option B)
 ├── A flow, state change, or alignment    → ASCII in a `text` block
 │   that prose needs 3+ lines for           (see Diagrams)
+├── Measured before/after numbers         → result card image above
+│                                           <details> with the numbers
 └── Anything else                         → prose sentences, never bullets
 ```
 
@@ -224,6 +226,18 @@ What does this part carry?
   every sentence the table already says.
 - **Max one table or diagram** per description, placed after the
   why-paragraph. Two visual blocks compete with the opening sentence.
+- **Measurements lead with a result card:** an image drawn from the data,
+  where a reviewer sees the size of a change at a glance, while rows of
+  numbers take a read each. Draw it with `rsbench.py card` from the
+  benchmarking-sql skill (an rsbench experiment, or a hand-written
+  `card.json` for numbers from anywhere else), or with `strobe report
+  experiment <exp> --format card`. The card goes right above
+  `<details><summary>Measurements</summary>`, its alt text is the
+  opening sentence, and the numbers stay as text inside the drawer, so
+  search, screen readers, and copy-paste still work. It does not count
+  toward the one table or diagram.
+- **Draw only measured numbers**, with their ranges. Reviewers remember the
+  image, so a wrong card misleads more than a wrong sentence.
 
 ## PR descriptions
 
@@ -258,7 +272,7 @@ Order for longer PRs, each part only when it exists:
    appear only as facts inside the reason.
 3. Required step order (deploy, migration, backfill) as one arrow line.
    Put an exception inside the step it affects, in parentheses.
-4. `<details>` with raw measurements, when they exist.
+4. Result card, then `<details>` with raw measurements, when they exist.
 5. Links last, only those GitHub does not already show.
 
 - **No stack lines:** GitHub shows the base branch and linked PRs, so leave
@@ -338,6 +352,16 @@ EOF
 gh pr create --body-file body.md   # or gh pr edit --body-file body.md
 ```
 
+A result card goes up with the body. The body references it as
+`![<opening sentence>](./card.svg)`. Run from the card's directory, and gh
+uploads the file and puts its URL in place of `./card.svg`:
+
+```bash
+gh pr edit 123 --body-file body.md --attach ./card.svg
+```
+
+Attach `card.svg`, not the PNG: it follows the reader's light or dark theme.
+
 ## Verify
 
 Run this checklist silently. Never print it, its results, or a
@@ -362,7 +386,8 @@ Mention a check only when a rule could not be met and the user must decide.
 3. ≤3 rounded numbers per paragraph; every kept term defined.
 4. One name per object; sentences ≤25 words.
 5. No hedges, "I checked", reader instructions, or bullet lists.
-6. Each part shaped by the shape tree; ≤1 table or diagram.
+6. Each part shaped by the shape tree; ≤1 table or diagram; a card above
+   measurements.
 7. No em dashes, slop verbs, or label lead-ins.
 8. No `#`/`##`; alert only for a real risk; no stack or merge-order line
    unless the order is a requirement the UI cannot show.
