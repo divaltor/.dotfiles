@@ -12,9 +12,9 @@ The diff shows *what*; the text supplies only the *why*.
 
 ```text
 What are you writing?
-├── Commit message     → Match the repo → Why-only rule → Commits → Verify: commit
-├── PR description     → Match the repo → Why-only rule → Reader-first → PR descriptions → Verify: PR
-└── PR comment / reply → Why-only rule → Reader-first → PR comments → Verify: PR
+├── Commit message     → Match the repo → Why-only rule → Plain words → Commits → Verify: commit
+├── PR description     → Match the repo → Why-only rule → Plain words → Reader-first → Shape tree → PR descriptions → Verify: PR
+└── PR comment / reply → Why-only rule → Plain words → Reader-first → Shape tree → PR comments → Verify: PR
 ```
 
 ## Match the repo first
@@ -29,7 +29,9 @@ History decides **format**: subject dialect (plain imperative vs `type:`
 prefixes), trailer and ticket-reference style, wrapping, and language.
 This skill decides **content**: the why-only rule always applies, even when
 history is full of what-narrating bodies. Use the format defaults below only
-when history gives no signal.
+when history gives no signal. Recent PR descriptions do not override the
+bold, shape, or stack rules either: many were written by an older version
+of this skill, so copying them repeats its mistakes.
 
 ## Why-only rule (all artifacts)
 
@@ -64,6 +66,27 @@ Good: "DuckDB 1.5 rejects the virtual-hosted URL because it does not match
 the wildcard certificate, which failed `convert_details` after the
 upgrade." Wrong: "Configure the DuckDB S3 secret to use path-style URLs." —
 that is the diff, spoken aloud.
+
+## Plain words (all artifacts)
+
+Readers spot generated text from repeated habits, not one mistake. Strip
+these from every commit body, PR description, and comment.
+
+- No em dashes. End the sentence or use a comma.
+- Plain verbs: use, help, show, improve. Not leverage, utilize, facilitate,
+  enhance, ensure, streamline. Write "is" and "has", not "serves as",
+  "features", or "boasts".
+- No promotional adjectives (robust, seamless, comprehensive, critical).
+  Give the number or the consequence instead.
+- No trailing clause that adds an unproven conclusion ("…, ensuring
+  correctness", "…, improving performance"). Cut it, or give it its own
+  sentence with evidence.
+- No "not just X, but Y". State Y. Count the real items instead of padding
+  a list to three.
+- No label lead-ins that restate their line: `Note:`, `Merge order:`,
+  `Checked locally:`, `**Impact:**`. A label turns prose into a form and
+  says nothing the sentence does not. Write the sentence.
+- Straight quotes in Markdown and commit text.
 
 ## Commits
 
@@ -129,8 +152,14 @@ Grammar alone does not make text easy. Cut load: fewer facts, fewer terms,
 fewer numbers. A teammate from another team must be able to repeat the main
 point after one read.
 
-- **Answer first.** The first sentence is the whole answer, readable alone,
-  bold in Markdown. Everything after it is support the reader may skip.
+- **Answer first.** The first sentence is the whole answer, readable alone.
+  Everything after it is support the reader may skip.
+- **Bold is rare.** Bold at most one short phrase per description, and only
+  a good outcome the change delivers: `drops that to **~2 GB**`. Never bold
+  a whole sentence, the opening by default, a warning, a step order, a code
+  name, or a label. A skimming reviewer reads bold first, so the bold must
+  be the win; when several things are bold, none of them stands out. A
+  change with no clear win to show gets no bold.
 - **One mechanism, max 3 sentences.** Drop side facts that do not change the
   conclusion (edge cases, percentages, "plus some extra rows from…").
 - **Max 3 numbers per paragraph, rounded** (`3.6B`, not `3,632,958,680`).
@@ -156,10 +185,7 @@ point after one read.
 - **No instructions to the reader** ("must load it by hand", "make sure
   to…"). State the fact; the reader draws the conclusion. The only allowed
   directive is a required step order.
-- **No bullet lists.** Write prose. Write an ordered procedure as one arrow
-  line: `create table → register folders → deploy procedure`.
-- **Show contrasts, do not narrate them.** Two options → two code lines with
-  a short comment each, or a two-row table.
+- **Shape each part with the shape tree below.** Never bullets.
 - **One screen.** The visible part stays under 150 words. On GitHub, raw
   measurements go in `<details><summary>Measurements</summary>…</details>`;
   elsewhere cut them.
@@ -167,6 +193,37 @@ point after one read.
   the text, as someone who never saw the code or the thread (use a subagent
   when available). Replace or cut every word or step that reader would not
   understand. Shorter text skips this; the subtraction test covers it.
+
+## Shape tree (PR descriptions and comments)
+
+Walk this for each part of the text, not once for the whole text:
+
+```text
+What does this part carry?
+├── A cause, a reason, a tradeoff         → prose
+├── Steps that must happen in order       → one arrow line: a → b → c
+├── 2+ cases with the same attributes     → table
+│   (run modes, before/after per object,
+│    option A vs option B)
+├── A flow, state change, or alignment    → ASCII in a `text` block
+│   that prose needs 3+ lines for           (see Diagrams)
+└── Anything else                         → prose sentences, never bullets
+```
+
+- **Prose is the default** because a reason needs "because" and "so". A
+  bullet drops those words, so the reader gets facts without the link
+  between them. Bullets also look equally important and invite padding.
+- **A table earns its place** when the reader compares down a column: which
+  call each run mode makes, what each object reads before and after. Prose
+  makes the reader hold row 1 in memory while reading row 3. A table needs
+  at least 2 rows and 2 columns of real data; one row is a sentence. Such a
+  table passes the subtraction test even when the diff implies its rows: it
+  states the behavior the reviewer checks the diff against, which is
+  otherwise spread across several files.
+- **A table or diagram replaces prose**, it does not repeat it. Delete
+  every sentence the table already says.
+- **Max one table or diagram** per description, placed after the
+  why-paragraph. Two visual blocks compete with the opening sentence.
 
 ## PR descriptions
 
@@ -196,14 +253,18 @@ sections.
 
 Order for longer PRs, each part only when it exists:
 
-1. Bold sentence: the problem and its size, or the payoff.
+1. Opening sentence: the problem and its size, or the payoff.
 2. Why it happens and why the change is safe, one short paragraph. Checks
    appear only as facts inside the reason.
 3. Required step order (deploy, migration, backfill) as one arrow line.
    Put an exception inside the step it affects, in parentheses.
 4. `<details>` with raw measurements, when they exist.
-5. Stack and links last: `Stacked on #556.`
+5. Links last, only those GitHub does not already show.
 
+- **No stack lines:** GitHub shows the base branch and linked PRs, so leave
+  out `Stacked on #…` and merge-order lines. Name another PR only when its
+  order is a requirement the UI cannot show, such as a PR in another repo
+  that must deploy first. That PR then goes into the step-order arrow line.
 - **Headers:** never `#` or `##`. Use `####` only when the description
   exceeds 150 visible words and has two separate topics; max 2.
 - **No generic sections:** no `Summary`, `Why`, `Validation`, `Test plan`,
@@ -213,17 +274,16 @@ Order for longer PRs, each part only when it exists:
   or miss: silent data loss, an outage, an irreversible step. Never for
   style, performance notes, or general caution. When the step order is the
   risk, the alert holds the risk sentence and the arrow line.
-- **Diagrams:** none by default. Add one, after the why-paragraph, only when
-  the why has visual shape (before/after flow, state change, request
-  lifecycle) and prose needs more than two lines. Max 5 rows, labels
-  instead of raw data (`skip` / `read`, not timestamps). Pick the shape with
-  the `ascii-diagrams` skill; prefer ASCII in a `text` block because it
-  survives copy-paste and plain-text renderers, and use Mermaid only for
-  branching graphs.
+- **Diagrams:** the shape tree decides when one replaces prose: the why has
+  visual shape (before/after flow, state change, request lifecycle) and
+  prose needs 3+ lines. Max 5 rows, labels instead of raw data (`skip` /
+  `read`, not timestamps). Pick the shape with the `ascii-diagrams` skill;
+  prefer ASCII in a `text` block because it survives copy-paste and
+  plain-text renderers, and use Mermaid only for branching graphs.
 
 ```markdown
-**`sp_load_moat_new` scans ~250 GB of S3 every day to keep ~33M rows.
-Reading only the recent date folders drops that to ~2 GB (estimated).**
+`sp_load_moat_new` scans ~250 GB of S3 every day to keep ~33M rows.
+Reading only the recent date folders drops that to **~2 GB** (estimated).
 
 Today Redshift does not know the IAS table is split into date folders, so
 every run reads every file. Last week that took up to 18 minutes per run.
@@ -244,8 +304,6 @@ skipping old date folders loses nothing.
 ~$37/month saved.
 
 </details>
-
-Stacked on #556.
 ```
 
 ## PR comments and replies
@@ -299,14 +357,17 @@ Mention a check only when a rule could not be met and the user must decide.
 
 **PR description or comment**
 
-1. Sentence 1 is the whole answer (bold in a description).
+1. Sentence 1 is the whole answer. Bold only one payoff phrase, or none.
 2. Subtraction and known-fact tests pass; a small PR has no body.
 3. ≤3 rounded numbers per paragraph; every kept term defined.
 4. One name per object; sentences ≤25 words.
 5. No hedges, "I checked", reader instructions, or bullet lists.
-6. No `#`/`##`; alert only for a real risk; references at the bottom.
-7. Visible text ≤150 words (comments ≤80); cold-reader check if >80.
-8. Real newlines, no literal `\n`.
+6. Each part shaped by the shape tree; ≤1 table or diagram.
+7. No em dashes, slop verbs, or label lead-ins.
+8. No `#`/`##`; alert only for a real risk; no stack or merge-order line
+   unless the order is a requirement the UI cannot show.
+9. Visible text ≤150 words (comments ≤80); cold-reader check if >80.
+10. Real newlines, no literal `\n`.
 
 When reviewing existing text, report only the broken rules, with a
 corrected version. When asked to review history, a cheap pass for the hard
