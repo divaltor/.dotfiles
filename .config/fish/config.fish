@@ -1,11 +1,10 @@
 set fish_greeting ""
 
-set -U -x HOMEBREW_NO_AUTO_UPDATE 1
-set -U -x HOMEBREW_NO_ENV_HINTS 1
 set -U -x XDG_CONFIG_HOME $HOME/.config
 set -U -x nvm_default_version lts
 
-eval "$(/opt/homebrew/bin/brew shellenv)"
+# Homebrew bottles installed by `mise bootstrap packages`; mise tools take precedence
+fish_add_path --global --move --append --path /opt/homebrew/bin /opt/homebrew/sbin
 
 if type -q devbox
     devbox global shellenv --init-hook | source
@@ -13,8 +12,14 @@ end
 
 set -U -x PKG_CONFIG_PATH $DEVBOX_PACKAGES_DIR/lib/pkgconfig
 
-# uv
+# uv, mise
 fish_add_path "/Users/divaltor/.local/bin"
+
+if status is-interactive
+    mise activate fish | source
+else
+    mise activate fish --shims | source
+end
 
 if type -q bat
     alias cat bat
@@ -79,11 +84,11 @@ if type -q yt-dlp
             set format_args -f "bv[height<=$_flag_quality]+ba/b[height<=$_flag_quality]"
         end
 
-        # The PATH ffmpeg may exist yet be unrunnable (stale brew dylib
+        # The PATH ffmpeg may exist yet be unrunnable (stale dylib
         # link), which yt-dlp reports as "ffmpeg is not installed" and
         # leaves a silent video + orphan audio. Verify before use.
         set -l ffmpeg_bin
-        for candidate in (command -s ffmpeg 2>/dev/null) /opt/homebrew/bin/ffmpeg /opt/homebrew/opt/ffmpeg-full/bin/ffmpeg
+        for candidate in (command -s ffmpeg 2>/dev/null)
             if test -x "$candidate" && "$candidate" -version >/dev/null 2>&1
                 set ffmpeg_bin "$candidate"
                 break
@@ -91,7 +96,7 @@ if type -q yt-dlp
         end
 
         if test -z "$ffmpeg_bin"
-            echo "mp4: no working ffmpeg found (binary present but won't run?) — try `brew reinstall ffmpeg`, then retry" >&2
+            echo "mp4: no working ffmpeg found (binary present but won't run?) — try `mise install --force conda:ffmpeg`, then retry" >&2
             return 1
         end
 
@@ -138,5 +143,3 @@ fish_add_path $HOME/.local/bin
 set -U -x DO_NOT_TRACK 1
 
 set -U -x AMP_DISABLE_AMP_COAUTHOR_TRAILER 1
-
-fish_add_path /opt/homebrew/opt/ffmpeg-full/bin

@@ -1,0 +1,63 @@
+[settings]
+minimum_release_age = "0d"
+
+[tools]
+mr-boxington = { version = "latest", workflow = "release.yml@refs/heads/main" }
+rust = { version = "latest", mr_boxington = true }
+
+age = "latest"
+ansible = "latest"
+ast-grep = "latest"
+bat = "latest"
+claude-code = "latest"
+cloudflared = "latest"
+delta = "latest"
+dust = "latest"
+eza = "latest"
+fd = "latest"
+fzf = "latest"
+gh = "latest"
+go = "latest"
+helix = "latest"
+hyperfine = "latest"
+lazygit = "latest"
+mole = "latest"
+neovim = "latest"
+op = "latest"
+opentofu = "latest"
+"github:ouch-org/ouch" = "latest"  # aqua recipe picks the x86_64 build
+pnpm = "latest"
+rclone = "latest"
+ripgrep = "latest"
+starship = "latest"
+tlrc = "latest"
+uv = "latest"
+yazi = "latest"
+zig = "latest"
+zoxide = "latest"
+"github:dmtrKovalenko/fff" = { version = "latest", asset_pattern = "fff-mcp-aarch64-apple-darwin" }
+"github:omlahore/RemoveMacAI" = "latest"
+"github:pgrundev/pgbot" = "latest"
+
+# No native recipe, so these come from conda-forge
+"conda:btop" = "latest"       # aqua:aristocratos/btop is Linux-only
+"conda:git" = "latest"
+"conda:wget" = "latest"
+"conda:pkgconf" = "latest"
+"conda:postgresql" = "latest"  # for psql; conda:libpq ships only pg_config
+"conda:ffmpeg" = "latest"      # lacks rav1e, whisper, vmaf, zscale; use brew:ffmpeg-full for those
+
+# fish: the official signed build from the GitHub release
+"github:fish-shell/fish-shell" = { version = "latest", asset_pattern = "fish-*.app.zip", strip_components = 1, bin_path = "Contents/Resources/base/usr/local/bin" }
+
+# Only available as Homebrew bottles; mise installs them without the brew CLI
+[bootstrap.packages]
+"brew:duti" = "latest"
+"brew:mkvtoolnix" = "latest"
+"brew:smartmontools" = "latest"
+"brew:stow" = "latest"
+"brew:weave" = "latest"
+
+[bootstrap.user]
+# The `latest` symlink keeps this path stable across fish upgrades
+login_shell = "/Users/divaltor/.local/share/mise/installs/github-fish-shell-fish-shell/latest/Contents/Resources/base/usr/local/bin/fish"
