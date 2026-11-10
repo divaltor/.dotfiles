@@ -80,3 +80,8 @@ run = "mise run playbook:tailscale -- playbooks/site.yml --check --diff"
 description = "Apply the site playbook through Tailscale"
 raw_args = true
 run = "mise run playbook:tailscale -- playbooks/site.yml"
+
+[tasks."skills:sync"]
+description = "Mirror .agents/skills into the Amp user skills repository (pass --dry-run to preview)"
+raw_args = true
+run = "scripts/sync-amp-skills.py"
