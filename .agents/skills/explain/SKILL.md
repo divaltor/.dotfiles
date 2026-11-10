@@ -1,6 +1,8 @@
 ---
 name: explain
 description: "Explain code, changes, architecture, or technical concepts when the user asks for an explanation. Choose the clearest medium: concise prose, code-shape sketches, diffs, call/component/file trees, Mermaid, or a focused HTML artifact. For ASCII-only output, charts with real numbers, wireframes, flamegraphs, XY plots, memory layouts, or when the user asks for ASCII diagrams, use the ascii-diagrams skill."
+metadata:
+  scope: local
 ---
 
 Explain the current topic. Skip the preamble. Budget: one lead-in sentence per

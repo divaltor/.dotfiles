@@ -1,6 +1,8 @@
 ---
 name: airflow-operations
 description: "Investigate deployed FT Airflow in AWS dev/prod: DAG failures, missing task logs, scheduler/parser/triggerer issues, EKS, Splunk, EFS, CloudWatch, deployment drift and permissions. Not for starting local Airflow. For Doppler connections, variables or token routing, also load airflow-doppler."
+metadata:
+  scope: local
 ---
 
 # FT Airflow operations

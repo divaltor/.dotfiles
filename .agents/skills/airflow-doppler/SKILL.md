@@ -1,6 +1,8 @@
 ---
 name: airflow-doppler
 description: "Use and troubleshoot Doppler in FT data-platform-airflow and team DAG projects: choose project/config, safely check secret names, route connections and variables, diagnose token/operator sync, and use local Docker/Minikube startup. Not a general Doppler administration guide."
+metadata:
+  scope: local
 ---
 
 # FT Airflow Doppler
