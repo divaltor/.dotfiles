@@ -1,6 +1,8 @@
 ---
 name: jira-issue
 description: "Write, review, or improve Jira issues in plain simple English. Use when the user asks for a Jira ticket, Jira issue, or Jira description."
+metadata:
+  scope: local
 ---
 
 # Jira Issues in Plain English

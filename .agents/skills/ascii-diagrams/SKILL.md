@@ -1,6 +1,8 @@
 ---
 name: ascii-diagrams
 description: "Use when the user asks for ASCII diagrams, timeline diagrams, flow diagrams, charts, sparklines, wireframes, schedule explanations, stack traces, flamegraphs, or a single user-friendly ASCII output with Apple/Uber-like clean styling. Routes Mermaid-renderable shapes to Mermaid in the TUI, prefers ASCII in GitHub PRs, renders charts, flows, plans and wireframes from a spec with a bundled glyph-kit renderer, and hand-draws flamegraphs, XY plots, and memory layouts."
+metadata:
+  scope: local
 ---
 
 # ASCII Diagrams
@@ -75,7 +77,7 @@ Hand-draw Shape 2 only for services or components talking to each other,
 where boundaries and annotations carry the point.
 
 `<skill>` is this skill's base directory (normally
-`~/.config/opencode/skills/ascii-diagrams`). `scripts/glyph-kit.mjs` is a
+`~/.agents/skills/ascii-diagrams`). `scripts/glyph-kit.mjs` is a
 dependency-free fork of [glyph-kit](https://github.com/alextraykov/glyph-kit)
 (MIT, `LICENSE`) that draws light frames with rounded corners. Write scratch
 specs in the user's workspace or `/tmp`, never in `<skill>`.
