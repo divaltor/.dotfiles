@@ -6,6 +6,7 @@
 ^README\.md$
 ^mise\.toml$
 ^homelab$
+^scripts$
 
 # Stow control file
 ^\.stow-local-ignore$
