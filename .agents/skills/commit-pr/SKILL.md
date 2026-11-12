@@ -7,8 +7,7 @@ description: "Write, review, or improve Git commit messages, GitHub PR descripti
 
 Write so a reader learns **why** the change happened, not what changed.
 The diff shows *what*; the text supplies only the *why*. In a PR or comment,
-put the one thing the reader must know or do first (BLUF), then only the
-facts the code cannot show.
+put the main why first (BLUF), then only the facts the code cannot show.
 
 ## Route by artifact
 
@@ -46,9 +45,12 @@ includes imperatives like `Treat / Use / Add / Keep / Split / Pin / Switch`,
 facts instead: "Psycopg 3 exposes the first result…", not "Use one
 result-producing statement…".
 
-The one imperative allowed is a required action the diff cannot show, such
-as "Merge before the first run of X". It is the bottom line of a PR, not a
-description of the code.
+The one imperative allowed is a required step the diff cannot show, such
+as a deploy order. In a PR it goes in the step-order arrow line, never in
+the first sentence.
+
+Quoting the one line of code that decides the behavior is evidence, not a
+restatement, when the sentence above it gives the why (layout B below).
 
 **Subtraction test (mandatory before output):** cover the diff and read the
 text alone. If a sentence lets you guess what the code does, delete it. If
@@ -80,6 +82,10 @@ these from every commit body, PR description, and comment.
   sentence with evidence.
 - No "not just X, but Y". State Y. Count the real items instead of padding
   a list to three.
+- No contrast or scope disclaimers: "X, not Y", "deploys the prerequisites,
+  not the fix", "This PR does not…", "Merging this PR…", "This PR adds…".
+  They describe the PR instead of the reason. State the reason; work left
+  for later appears only as a step in the arrow line.
 - No label lead-ins that restate their line: `Note:`, `Merge order:`,
   `Checked locally:`, `**Impact:**`. A label turns prose into a form and
   says nothing the sentence does not. Write the sentence.
@@ -145,31 +151,35 @@ Related: #612
 
 ## BLUF (PR descriptions and comments)
 
-BLUF, bottom line up front: the first sentence is what the reader must know
-or do, and everything after it is optional support, ordered so the reader
-can stop at any point. A reviewer opens the PR to decide something. Give
-the decision input first, not the story of how you got there.
+BLUF, bottom line up front: the first sentence is the main why, and
+everything after it is optional support, ordered so the reader can stop at
+any point.
 
-**The bottom line is the first sentence and stands alone.** Pick the first
-item that applies:
+**The first sentence is the main why and stands alone.** It names the code
+object in backticks and states the cause and its consequence:
+"`<object>` does X, so Y happens." Never open with what merging the PR
+does, what it leaves out, a deploy order, or a warning. Those go in the
+arrow line or an alert below.
 
-```text
-What is the most important thing for the reader?
-├── An action or order they must follow  → that (merge before X, deploy order)
-├── A risk they can cause or miss        → that (silent data loss, outage)
-├── A verdict you need from them         → that (the decision and your pick)
-└── Otherwise                            → the problem and its size, or the payoff
-```
+Wrong: "Merging this PR deploys the AWS prerequisites, not the Lambda fix."
+Right: "The shared CircleCI role trusts every branch of a project, so any
+feature branch of `data-platform-redshift-ddls-backup` could deploy to
+Prod."
 
 **Support, in order of importance.** Each paragraph is one short block of
 facts the reader cannot get elsewhere. Write it so cutting the last
 paragraph never breaks the one before it.
 
+**Code formatting.** Every repo, file, table, column, DAG, function, role,
+stack, claim, branch, and flag name goes in backticks, every time. Naming
+the object inside a why sentence is required; explaining what it does is
+not.
+
 **Inherited-from-code test (mandatory before output).** The reader opens
 the diff next to your text. Delete every sentence the code, the title, or
 the repo already gives them:
 
-- what a file, table, DAG, or function does, and what it is called
+- what a file, table, DAG, or function does
 - lists of columns, fields, flags, or types, and how they map
 - which callers or sensors the diff touches
 - a restatement of the title
@@ -188,16 +198,15 @@ bulleted "Notes on the types" for four columns. All of it is the DDL read
 aloud. Right:
 
 ```markdown
-Merge before the first run of `load_longitude_recognition_board`, which
-needs this table to exist.
-
 The table omits the last 15 of the file's 37 columns, because they are
-empty in all 1,982 rows of the current export. The DAG fails validation
-if they ever carry data.
+empty in all 1,982 rows of the current export. `load_longitude_recognition_board`
+fails validation if they ever carry data.
+
+`load_longitude_recognition_board` needs this table before its first run.
 ```
 
-The first sentence is the one required step. The second paragraph is the
-one choice a reviewer cannot see in the DDL, because it lives in the data.
+The first sentence is the one choice a reviewer cannot see in the DDL,
+because it lives in the data. The required order comes second.
 
 ### Keep the text easy to read
 
@@ -225,7 +234,7 @@ one choice a reviewer cannot see in the DDL, because it lives in the data.
   linters, type checks, or passing tests.
 - **No instructions to the reader** ("make sure to..."). State the fact. The
   only allowed directive is a required step order, and it belongs in the
-  bottom line.
+  arrow line.
 - **One screen.** The visible part stays under 150 words. On GitHub, raw
   measurements go in `<details><summary>Measurements</summary>...</details>`;
   elsewhere cut them.
@@ -241,23 +250,30 @@ Walk this for each part of the text, not once for the whole text:
 ```text
 What does this part carry?
 ├── A cause, a reason, a tradeoff         → prose
+├── A code name                           → inline `code`, always
+├── The line of code that decides the     → fenced block with a language tag,
+│   behavior the why is about               only that line, trimmed with …
 ├── Steps that must happen in order       → one arrow line: a → b → c
-├── 2+ cases with the same attributes     → table
-│   (run modes, before/after per object,
-│    option A vs option B)
+├── 3+ cases compared on 2+ attributes    → table (see the table test)
+├── 2 cases, or 1 attribute               → one sentence: `160 MiB → 76 MiB`
 ├── A flow, state change, or alignment    → ASCII in a `text` block
 │   that prose needs 3+ lines for           (see Diagrams)
-├── Measured before/after numbers         → <details> with the numbers
+├── Raw measurement dumps                 → <details> with the numbers
 └── Anything else                         → prose sentences, never bullets
 ```
 
 - **Prose is the default** because a reason needs "because" and "so". A
   bullet drops those words, and bullets invite padding.
-- **A table earns its place** when the reader compares down a column. It
-  needs at least 2 rows and 2 columns of real data; one row is a sentence.
-- **A table or diagram replaces prose**, it does not repeat it. Delete
-  every sentence the table already says.
-- **Max one table or diagram** per description, placed after the bottom line.
+- **Table test:** would the reader scan down a column to compare cases? If
+  they read each row once, left to right, it is a sentence. A table below
+  3 rows or 2 compared columns costs more than the sentence it replaces: it
+  breaks the reading flow and drops the "because". Wrong: a 2-row
+  before/after table for one metric. Right: "Peak memory: ~160 MiB →
+  **~76 MiB**." Code names inside cells stay in backticks.
+- **A table, code quote, or diagram replaces prose**, it does not repeat
+  it. Delete every sentence it already says.
+- **Max one code quote and one table or diagram** per description, placed
+  after the first sentence.
 
 ## PR descriptions
 
@@ -266,9 +282,11 @@ Decide the size before writing:
 ```text
 Do the title and the diff explain the change to a teammate?
 ├── Yes (rename, typo, version bump, small config change, plain DDL)
-│   → No body. If the user asks for one, the bottom line alone, or nothing.
-└── No → Bottom line, then only the paragraphs that pass the
-         inherited-from-code test.
+│   → No body. If the user asks for one, the first sentence alone, or nothing.
+├── No, and one reason explains it (a step order may follow)
+│   → Layout A: prose with inline code
+└── No, and it has a choice between alternatives or 2+ reasons
+    → Layout B: why, then the deciding code and parts below as they apply
 ```
 
 An empty body is a valid result, not a missing one. Padding a small PR
@@ -280,16 +298,62 @@ FTDAG adds the team prefix. Both booking DAGs depend on this DAG; stale
 sensor targets would leave them waiting." Every sentence is the title, the
 diff, or team knowledge. Right: no body.
 
-Order for longer PRs, each part only when it exists:
+### Layout A: small PRs
 
-1. **Bottom line:** one or two sentences, chosen by the tree above.
-2. **Why it happens and why the change is safe,** one short paragraph.
-3. **Required step order** (deploy, migration, backfill) as one arrow line.
-   Put an exception inside the step it affects, in parentheses. When the
-   order is a risk, the alert below carries it instead of the bottom line
-   repeating it.
-4. **Raw measurements** in `<details>`, when they exist.
-5. **Links last,** only those GitHub does not already show.
+The why as one or two short prose paragraphs with every code name in
+backticks, then the arrow line when an order exists. No code block, no
+table. Visible text under 80 words.
+
+```markdown
+The shared CircleCI role trusts every branch of a project, so any feature
+branch of `data-platform-redshift-ddls-backup` could deploy to Prod.
+`CircleCI-role-data-platform-redshift-ddls-backup` trusts only
+`refs/heads/master` of that repo, so it needs no CircleCI project UUID.
+
+Composer deploy → import `RedshiftDDLsBackup` → enable CI deploys in
+Financial-Times/data-platform-redshift-ddls-backup#2
+```
+
+### Layout B: larger PRs
+
+Each part only when it exists, in this order. Always quote the deciding
+line when one line of code decides the behavior, because it is the
+evidence a reviewer would otherwise hunt for in the diff. A table appears
+only when it passes the table test; a B description with no table is
+normal.
+
+1. **The main why:** one sentence, cause and consequence, code names in
+   backticks.
+2. **The deciding line of code** in a fenced block with a language tag.
+   Quote only the line the why is about, trimmed with `…`.
+3. **Comparison table**, only when it passes the table test: 3+
+   alternatives a reviewer would ask about, with the chosen option as the
+   last row, or 3+ cases with measured numbers.
+4. **Required step order** (deploy, migration, backfill) as one arrow line.
+   Put an exception or its reason inside the step, in parentheses. When the
+   order is a risk, an alert carries it instead.
+5. **Raw measurements** in `<details>`, when they exist.
+6. **Links last,** only those GitHub does not already show.
+
+````markdown
+The shared CircleCI role trusts every branch, so a feature branch push to
+`data-platform-redshift-ddls-backup` could replace the Prod Lambda.
+
+```yaml
+sub: org/677bda31-…/project/*/user/*/vcs-origin/github.com/Financial-Times/data-platform-redshift-ddls-backup/vcs-ref/refs/heads/master
+```
+
+| Trust `sub` | Branches that deploy | Needs project UUID |
+|---|---|---|
+| Shared template: `project/<uuid>/user/*` | every branch | yes |
+| `project/<uuid>` + `refs/heads/master` | `master` | yes |
+| `project/*` + repo + `refs/heads/master` | `master` | no |
+
+Composer deploy → import `RedshiftDDLsBackup` (the role has `UpdateStack`
+only) → enable CI deploys in Financial-Times/data-platform-redshift-ddls-backup#2
+````
+
+### Rules for both layouts
 
 - **No stack lines:** GitHub shows the base branch and linked PRs, so leave
   out `Stacked on #...` and merge-order lines. Name another PR only when its
@@ -307,6 +371,9 @@ Order for longer PRs, each part only when it exists:
   change, request lifecycle) and prose needs 3+ lines. Max 5 rows, labels
   instead of raw data. Pick the shape with the `ascii-diagrams` skill;
   prefer ASCII in a `text` block and use Mermaid only for branching graphs.
+
+Layout B where no single line of code decides it, so the evidence is a
+number, an alert carries a risky order, and raw numbers sit in `<details>`:
 
 ```markdown
 `sp_load_moat_new` scans ~250 GB of S3 every day to keep ~33M rows.
@@ -383,13 +450,17 @@ Mention a check only when a rule could not be met and the user must decide.
 
 **PR description or comment**
 
-1. Sentence 1 is the bottom line and stands alone. Bold only one payoff
-   phrase, or none.
+1. Sentence 1 is the main why (cause and consequence) and stands alone. No
+   "X, not Y", "Merging this PR…", or "This PR…" anywhere. Bold only one
+   payoff phrase, or none.
 2. Subtraction and inherited-from-code tests pass; a small PR has no body.
 3. ≤3 rounded numbers per paragraph; every kept term defined.
-4. One name per object; sentences ≤25 words.
+4. One name per object, in backticks when it is a code name; sentences
+   ≤25 words.
 5. No hedges, "I checked", reader instructions, or bullet lists.
-6. Each part shaped by the shape tree; ≤1 table or diagram.
+6. Layout A for one reason, B for a choice or 2+ reasons; B quotes the
+   deciding line when one exists; every table passes the table test; ≤1
+   code quote and ≤1 table or diagram.
 7. No em dashes, slop verbs, or label lead-ins.
 8. No `#`/`##`; alert only for a real risk; no stack or merge-order line
    unless the order is a requirement the UI cannot show.
