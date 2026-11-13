@@ -9,14 +9,61 @@ Write so a reader learns **why** the change happened, not what changed.
 The diff shows *what*; the text supplies only the *why*. In a PR or comment,
 put the main why first (BLUF), then only the facts the code cannot show.
 
+## Body or no body (decide first)
+
+**Default: no body.** A PR ships with its title only; a commit ships
+subject-only. Most changes are obvious from the title and the diff, and a
+body on an obvious change teaches reviewers to skip bodies, including the
+ones that matter.
+
+Write a body only when a teammate who reads the title and the diff would
+still ask "why?", and the answer is a fact neither of them shows. That
+means at least one of these is true:
+
+- A bug fix whose cause is not in the title (the input, state, or upstream
+  change that broke it).
+- A choice a reviewer would question: a rejected alternative, a tradeoff,
+  an approach that looks wrong but is not.
+- A required order outside the diff: deploy, migration, backfill, another
+  repo's PR first.
+- A number or constraint from outside the repo: a measurement, a cost, a
+  vendor limit, a fact about the data.
+- A risk the reader can cause or miss: silent data loss, an outage, an
+  irreversible step.
+
+None is true → no body. Diff size does not decide it: a one-line timeout
+change with a measured reason needs a body, a 300-line rename does not.
+
+Asking for a PR or a commit is not asking for a body. Write a body for an
+obvious change only when the user explicitly asks for a description, and
+then only the one sentence a reviewer could not guess.
+
+A body never consists of:
+
+- the title or the diff restated ("The list now starts collapsed").
+- what still works ("The chevron still expands and collapses it").
+- the history of the code ("#11 made the list collapsible").
+- how it was checked (browser clicks, tests, lint).
+- team knowledge every reviewer has (naming prefixes, which sensors depend
+  on a DAG).
+
+Wrong, for `Collapse Abacus sidebar modules by default`, a one-line diff
+that removes `defaultOpen`: three paragraphs saying the list starts
+collapsed, the chevron still works, #11 had set `defaultOpen`, and a
+browser check passed. Every sentence is the title, the diff, or a check.
+Right: no body.
+
 ## Route by artifact
 
 ```text
 What are you writing?
-├── Commit message     → Match the repo → Why-only rule → Plain words → Commits → Verify: commit
-├── PR description     → Match the repo → Why-only rule → Plain words → BLUF → Shape tree → PR descriptions → Verify: PR
+├── Commit message     → Body gate → Match the repo → Why-only rule → Plain words → Commits → Verify: commit
+├── PR description     → Body gate → Match the repo → Why-only rule → Plain words → BLUF → Shape tree → PR descriptions → Verify: PR
 └── PR comment / reply → Why-only rule → Plain words → BLUF → Shape tree → PR comments → Verify: PR
 ```
+
+When the body gate says no body, stop there: write the subject or title
+and nothing else.
 
 ## Match the repo first
 
@@ -114,8 +161,7 @@ Resolves: #123
 
 **Body**
 
-- Optional. When the subject and the diff make the why obvious
-  (`Fix typo in installation guide`), skip the body.
+- Only when the body gate passes. Otherwise subject-only.
 - Max 3 lines total, including an optional limit line. Mechanism,
   measurements, and deploy order belong in the PR.
 - Terse voice: answer first, no recap, fragments fine, articles optional.
@@ -277,26 +323,14 @@ What does this part carry?
 
 ## PR descriptions
 
-Decide the size before writing:
+Only after the body gate passes, pick the layout:
 
 ```text
-Do the title and the diff explain the change to a teammate?
-├── Yes (rename, typo, version bump, small config change, plain DDL)
-│   → No body. If the user asks for one, the first sentence alone, or nothing.
-├── No, and one reason explains it (a step order may follow)
-│   → Layout A: prose with inline code
-└── No, and it has a choice between alternatives or 2+ reasons
+How many reasons does the body carry?
+├── One reason (a step order may follow) → Layout A: prose with inline code
+└── A choice between alternatives, or 2+ reasons
     → Layout B: why, then the deciding code and parts below as they apply
 ```
-
-An empty body is a valid result, not a missing one. Padding a small PR
-teaches reviewers to skip descriptions, including the ones that matter.
-
-Wrong, for a PR titled `Rename monthly Adbook order DAG` that also updates
-two sensors: "Airflow exposes it as `biteam_adbook_monthly_order` because
-FTDAG adds the team prefix. Both booking DAGs depend on this DAG; stale
-sensor targets would leave them waiting." Every sentence is the title, the
-diff, or team knowledge. Right: no body.
 
 ### Layout A: small PRs
 
@@ -430,6 +464,7 @@ EOF
 
 ```bash
 gh pr create --body-file body.md   # or gh pr edit --body-file body.md
+gh pr create --title "Collapse Abacus sidebar modules by default" --body ""   # no body
 ```
 
 ## Verify
@@ -443,7 +478,8 @@ Mention a check only when a rule could not be met and the user must decide.
 
 1. Subject: imperative, capitalized, no final period, ≤50 target, ≤72 hard.
 2. Blank line after the subject.
-3. Body absent, or ≤3 lines wrapped at 72, no diagram.
+3. Body absent unless the body gate passes; then ≤3 lines wrapped at 72,
+   no diagram.
 4. Subtraction test passes; last sentence is not the change as an action.
 5. Trailers: issues and shared-thread URL only, no PR link, no attribution.
 6. Real newlines, no literal `\n`.
@@ -453,7 +489,8 @@ Mention a check only when a rule could not be met and the user must decide.
 1. Sentence 1 is the main why (cause and consequence) and stands alone. No
    "X, not Y", "Merging this PR…", or "This PR…" anywhere. Bold only one
    payoff phrase, or none.
-2. Subtraction and inherited-from-code tests pass; a small PR has no body.
+2. A body exists only because a body-gate condition holds; subtraction and
+   inherited-from-code tests pass.
 3. ≤3 rounded numbers per paragraph; every kept term defined.
 4. One name per object, in backticks when it is a code name; sentences
    ≤25 words.
