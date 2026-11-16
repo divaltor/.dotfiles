@@ -1,3 +1,8 @@
+## Isolated workspaces
+
+- Before creating, listing, or removing an isolated checkout, load the `using-rift` skill. Use Rift when its CLI and source repository are supported; follow the skill's prerequisites when they are not.
+- Create the workspace with the Rift CLI and start OpenCode there rather than using an automatic Git worktree option. An explicit request for a Git linked worktree takes precedence.
+
 ## Chat output and tools
 
 - Do not use T3 tools unless explicitly requested; their rendered output is not visible in the user's client. Present results directly in chat using Markdown, text, and Mermaid diagrams instead of HTML previews or renders.
