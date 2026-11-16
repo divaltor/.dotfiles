@@ -14,7 +14,7 @@ proxmox_vm_storage_blocksize: 16k
 proxmox_vm_datasets:
   - name: vmdata/qbittorrent
     mountpoint: /vmdata/qbittorrent
-    quota: 1T
+    quota: 1774G
     recordsize: 1M
 proxmox_lxc_bind_mounts:
   - vmid: 101

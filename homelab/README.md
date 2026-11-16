@@ -4,7 +4,7 @@
 
 - Samsung 970 EVO Plus 500 GB (`S4EVNX0T102553F`): Proxmox ext4/LVM system disk.
 - WD_BLACK SN850X 4 TB (`252639802020`): single-disk ZFS `vmdata`, storage `fast-nvme`, all VM/LXC disks.
-  The `vmdata/qbittorrent` child dataset has a 1 TB quota, is shared with Samba,
+  The `vmdata/qbittorrent` child dataset has a 1774 GB quota (1 TB + 750 GB), is shared with Samba,
   and is intentionally excluded from backup.
 - 4× Seagate IronWolf 6 TB: RAIDZ1 `pool`, mounted at `/media/cold`.
 - AirDisk 128 GB: retired; do not use for persistent data.

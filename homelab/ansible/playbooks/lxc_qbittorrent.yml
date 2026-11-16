@@ -2,7 +2,7 @@
 # ============================================================
 # LXC: qbittorrent (103) — qBittorrent server + Avahi mDNS
 # ============================================================
-# qBittorrent writes downloads to the 1 TB SSD-backed bind mount at
+# qBittorrent writes downloads to the SSD-backed bind mount at
 # /media/ssd/downloads and is served locally as qt.local and torrent.local.
 # ============================================================
 
