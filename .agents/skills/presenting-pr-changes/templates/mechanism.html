@@ -1,0 +1,145 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  @font-face { font-family: 'IBM Plex Sans'; font-weight: 400; src: url('file:///Users/vlad.vladov/Library/Fonts/IBMPlexSans-Regular.ttf'); }
+  @font-face { font-family: 'IBM Plex Sans'; font-weight: 500; src: url('file:///Users/vlad.vladov/Library/Fonts/IBMPlexSans-Medium.ttf'); }
+  @font-face { font-family: 'IBM Plex Sans'; font-weight: 600; src: url('file:///Users/vlad.vladov/Library/Fonts/IBMPlexSans-SemiBold.ttf'); }
+  @font-face { font-family: 'Ioskeley Mono'; font-weight: 400; src: url('file:///Users/vlad.vladov/Library/Fonts/IoskeleyMono-Regular.ttf'); }
+  @font-face { font-family: 'Ioskeley Mono'; font-weight: 500; src: url('file:///Users/vlad.vladov/Library/Fonts/IoskeleyMono-Medium.ttf'); }
+
+  :root {
+    --paper: #FFF1E5;
+    --paper-2: #F2DFCE;
+    --ink: #262A33;
+    --muted: #66605C;
+    --faint: #A39A92;
+    --rule: #E6D2C0;
+    --claret: #990F3D;
+    --teal: #0D7680;
+    --sans: 'IBM Plex Sans', sans-serif;
+    --mono: 'Ioskeley Mono', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1080px; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    -webkit-font-smoothing: antialiased;
+    padding: 72px 72px 64px;
+  }
+  code { font-family: var(--mono); font-weight: 500; font-size: 0.92em; }
+
+  .rule { font: 400 17px/1 var(--mono); color: var(--muted); }
+  .rule b { font-weight: 500; color: var(--claret); }
+  h1 { font: 600 50px/1.1 var(--sans); letter-spacing: -0.02em; margin-top: 20px; text-wrap: balance; }
+  h1 code { font-size: 0.9em; }
+  .lead { font: 400 22px/1.45 var(--sans); margin-top: 20px; }
+
+  h2 { font: 600 17px/1 var(--sans); }
+
+  /* timeline */
+  .timeline { margin-top: 44px; display: grid; grid-template-columns: 80px 1fr; row-gap: 22px; column-gap: 16px; }
+  .timeline h2 { padding-top: 13px; }
+  .track { display: grid; grid-template-columns: 20fr 29fr 20fr 31fr; column-gap: 4px; }
+  .seg { height: 42px; border-radius: 3px; display: flex; align-items: center; padding: 0 12px; font: 400 15px/1 var(--sans); white-space: nowrap; background: var(--paper-2); color: var(--muted); }
+  .seg.work { background: #fff; color: var(--ink); font: 500 15px/1 var(--mono); }
+  .ctx { margin-top: 6px; }
+  .bar { height: 6px; border-radius: 3px; }
+  .bar.claret { background: var(--claret); }
+  .bar.teal { background: var(--teal); }
+  .note { display: flex; justify-content: space-between; font: 400 16px/1.3 var(--sans); margin-top: 8px; }
+  .note.b { color: var(--claret); }
+  .note.a { color: var(--teal); }
+  .note strong { font-weight: 600; }
+
+  /* code */
+  .code { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; margin-top: 44px; }
+  .code h2 { margin-bottom: 10px; }
+  pre { font: 400 13.5px/1.65 var(--mono); background: #fff; border-radius: 4px; padding: 14px 16px; white-space: pre; color: var(--faint); }
+  pre b { font-weight: 500; color: var(--ink); }
+  .test { font: 400 17px/1.4 var(--sans); color: var(--muted); margin-top: 14px; }
+
+  /* overall */
+  .overall { margin-top: 48px; border-top: 1px solid var(--rule); padding-top: 24px; }
+  .facts { display: grid; grid-template-columns: max-content 1fr; row-gap: 8px; column-gap: 16px; margin-top: 16px; font: 400 18px/1.35 var(--sans); }
+  .facts dt { font-weight: 600; font-variant-numeric: tabular-nums; text-align: right; }
+  .facts dd { color: var(--muted); }
+  .ci { font: 400 18px/1.4 var(--sans); margin-top: 14px; }
+
+  code, pre, .seg { font-feature-settings: 'calt' 0, 'liga' 0, 'dlig' 0; }
+</style>
+</head>
+<body>
+  <div class="rule">ruff <b>ASYNC119</b> yield-in-context-manager-in-async-generator</div>
+  <h1>Every trigger kept its team context open across <code>yield</code></h1>
+  <p class="lead"><code>FtBaseTrigger.run()</code> is an async generator. It set the team <code>ContextVar</code>, then yielded events inside the <code>with</code> block. An async generator runs in its caller&rsquo;s context, so every <code>yield</code> returned control to Airflow&rsquo;s triggerer with the team still set. When the triggerer later closed the generator from a different context, <code>reset()</code> rejected the token.</p>
+
+  <div class="timeline">
+    <h2>Before</h2>
+    <div>
+      <div class="track">
+        <div class="seg work">execute()</div>
+        <div class="seg">triggerer handles event</div>
+        <div class="seg work">execute()</div>
+        <div class="seg">closed from another context</div>
+      </div>
+      <div class="ctx"><div class="bar claret"></div></div>
+      <div class="note b"><span>team stays set while the triggerer runs</span><strong>reset() raises ValueError</strong></div>
+    </div>
+
+    <h2>After</h2>
+    <div>
+      <div class="track">
+        <div class="seg work">execute()</div>
+        <div class="seg">triggerer handles event</div>
+        <div class="seg work">execute()</div>
+        <div class="seg">closed from another context</div>
+      </div>
+      <div class="track ctx"><div class="bar teal"></div><div></div><div class="bar teal"></div><div></div></div>
+      <div class="note a"><span>team set only while <code>execute()</code> runs</span><strong>nothing to reset</strong></div>
+    </div>
+  </div>
+
+  <div class="code">
+    <div><h2>Before</h2>
+<pre>async def run(self) -&gt; AsyncIterator[TriggerEvent]:
+<b>    with DAGMetaService.team_context(self.team):</b>
+        try:
+            async for event in self.execute():
+<b>                yield event</b></pre>
+    </div>
+    <div><h2>After</h2>
+<pre>events = self.execute()
+while True:
+    try:
+<b>        with DAGMetaService.team_context(self.team):</b>
+<b>            event = await anext(events)</b>
+    except StopAsyncIteration:
+        return
+    …
+<b>    yield event</b></pre>
+    </div>
+  </div>
+  <p class="test">A new test closes the generator from another context. It fails on the old code and passes on the new.</p>
+
+  <section class="overall">
+    <h2>Across the codebase</h2>
+    <dl class="facts">
+      <dt>549</dt><dd>files reformatted in one commit that git blame skips</dd>
+      <dt>1,930</dt><dd>findings fixed by hand in 433 files</dd>
+      <dt>54</dt><dd>suppressions, each with a written reason</dd>
+      <dt>844</dt><dd>team DAGs parse the same before and after</dd>
+    </dl>
+    <p class="ci">A <code>lint</code> CI job now runs next to <code>tests</code>, and <code>prek</code> runs the same checks before each commit.</p>
+  </section>
+<script>
+  document.fonts.ready.then(() => {
+    document.body.dataset.fonts = document.fonts.check('16px "IBM Plex Sans"') && document.fonts.check('16px "Ioskeley Mono"')
+    document.body.dataset.height = Math.ceil(document.body.getBoundingClientRect().height)
+  })
+</script>
+</body>
+</html>
