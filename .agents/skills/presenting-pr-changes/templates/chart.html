@@ -1,0 +1,173 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  @font-face { font-family: 'IBM Plex Sans'; font-weight: 400; src: url('file:///Users/vlad.vladov/Library/Fonts/IBMPlexSans-Regular.ttf'); }
+  @font-face { font-family: 'IBM Plex Sans'; font-weight: 500; src: url('file:///Users/vlad.vladov/Library/Fonts/IBMPlexSans-Medium.ttf'); }
+  @font-face { font-family: 'IBM Plex Sans'; font-weight: 600; src: url('file:///Users/vlad.vladov/Library/Fonts/IBMPlexSans-SemiBold.ttf'); }
+  @font-face { font-family: 'Ioskeley Mono'; font-weight: 400; src: url('file:///Users/vlad.vladov/Library/Fonts/IoskeleyMono-Regular.ttf'); }
+  @font-face { font-family: 'Ioskeley Mono'; font-weight: 500; src: url('file:///Users/vlad.vladov/Library/Fonts/IoskeleyMono-Medium.ttf'); }
+
+  :root {
+    --paper: #FFF1E5;
+    --ink: #262A33;
+    --muted: #66605C;
+    --faint: #A39A92;
+    --rule: #E6D2C0;
+    --base: #C9BDB2;
+    --teal: #0D7680;
+    --claret: #990F3D;
+    --sans: 'IBM Plex Sans', sans-serif;
+    --mono: 'Ioskeley Mono', monospace;
+    --label: 230px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1080px; }
+  body { background: var(--paper); color: var(--ink); font-family: var(--sans); -webkit-font-smoothing: antialiased; padding: 72px 72px 64px; }
+  code, .id { font-family: var(--mono); font-weight: 500; font-size: 0.92em; font-feature-settings: 'calt' 0, 'liga' 0, 'dlig' 0; }
+
+  .chart + .chart { margin-top: 72px; }
+  h1 { font: 600 34px/1.2 var(--sans); letter-spacing: -0.015em; text-wrap: balance; }
+  .sub { font: 400 19px/1.4 var(--sans); color: var(--muted); margin-top: 8px; }
+  .legend { display: flex; gap: 24px; margin-top: 28px; font: 400 17px/1 var(--sans); color: var(--muted); }
+  .legend span { display: flex; align-items: center; gap: 8px; }
+  .legend i { width: 12px; height: 12px; border-radius: 2px; }
+  .legend i.dot { border-radius: 50%; }
+
+  .plot { position: relative; margin-top: 20px; padding-right: 110px; }
+  .grid { position: absolute; top: 0; bottom: 36px; left: var(--label); right: 110px; pointer-events: none; }
+  .grid div { position: absolute; top: 0; bottom: 0; border-left: 1px solid var(--rule); }
+  .group { font: 500 18px/1 var(--sans); padding: 18px 10px 8px 0; position: relative; width: fit-content; background: var(--paper); }
+  .dname { font: 400 17px/1 var(--sans); color: var(--muted); padding: 14px 10px 0 0; position: relative; width: fit-content; background: var(--paper); }
+  .plot.dumbbell { --label: 0px; }
+  .row { display: grid; grid-template-columns: var(--label) 1fr; align-items: center; height: 40px; position: relative; }
+  .row .name { font: 400 17px/1 var(--sans); color: var(--muted); }
+  .track { position: relative; height: 100%; }
+  .bar { position: absolute; top: 9px; height: 22px; }
+  .val { position: absolute; top: 50%; transform: translateY(-50%); font: 500 16px/1 var(--sans); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .val em { font-style: normal; font-weight: 400; color: var(--muted); margin-left: 6px; }
+  .line { position: absolute; top: 50%; height: 3px; margin-top: -1.5px; background: var(--rule); }
+  .pt { position: absolute; top: 50%; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; }
+  .axis { position: relative; height: 36px; margin-left: var(--label); font: 400 15px/1 var(--sans); color: var(--muted); font-variant-numeric: tabular-nums; }
+  .axis span { position: absolute; top: 14px; transform: translateX(-50%); white-space: nowrap; }
+  .axis span:first-child { transform: none; }
+  .note { font: 400 16px/1.5 var(--sans); color: var(--muted); margin-top: 18px; }
+</style>
+</head>
+<body>
+<main id="charts"></main>
+
+<script>
+// Example values from a past memory PR (stacked splits read off its chart). Replace every value with
+// measured numbers; each must come from a command output you can point to.
+// Bars (stacked): length encodes size, so the axis always starts at 0.
+// Dumbbell: only position encodes size, so the axis may start above 0.
+const DATA = [
+  {
+    type: 'stacked',
+    title: 'Both changes together cut task pod memory by 29% to 39%',
+    sub: 'Pod memory (PSS of the supervisor and task processes), prod image, prod DAG config',
+    unit: 'MB', domain: [0, 500], ticks: [0, 250, 500],
+    series: [{ name: 'Supervisor', color: 'var(--base)' }, { name: 'Task process', color: 'var(--teal)' }],
+    groups: [
+      { name: 'events_cdc (Spoor ETL)', rows: [
+        { name: 'before', parts: [106, 303] },
+        { name: 'after', parts: [106, 167], delta: -136 },
+        { name: 'after + gc.freeze', parts: [95, 156], delta: -158 },
+      ] },
+      { name: 'S3 to Redshift ingester (ETLReusableDAG)', rows: [
+        { name: 'before', parts: [106, 386] },
+        { name: 'after', parts: [105, 266], delta: -121 },
+        { name: 'after + gc.freeze', parts: [95, 255], delta: -142 },
+      ] },
+    ],
+    note: 'Both run a full GC before PSS is read from <code>smaps_rollup</code>. Without the freeze, repeated runs ranged up to 26 MB higher.',
+  },
+  {
+    type: 'dumbbell',
+    title: 'A typical task process drops from 339 MB to 230 MB, 32% less',
+    sub: 'Task process RSS after parsing the DAG file in a worker pod',
+    unit: 'MB', domain: [150, 450], ticks: [150, 250, 350, 450],
+    series: [{ name: 'before', color: 'var(--faint)' }, { name: 'after', color: 'var(--teal)' }],
+    rows: [
+      { name: '40 random DAG files, median', before: 339, after: 230 },
+      { name: 'bilayer_prospector_daily_usage_report', id: true, before: 371, after: 194 },
+      { name: 'events_cdc', id: true, before: 340, after: 206 },
+      { name: 'test_node_selector', id: true, before: 361, after: 263 },
+    ],
+    note: 'Medians of 5 runs for single DAGs, one run per file for the sample.',
+  },
+]
+
+const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e }
+const pct = (c, v) => ((v - c.domain[0]) / (c.domain[1] - c.domain[0])) * 100
+const fmt = d => (d < 0 ? '\u2212' + -d : '+' + d)
+
+function legend(c) {
+  const l = el('div', 'legend')
+  for (const s of c.series) {
+    const item = el('span')
+    const sw = el('i', c.type === 'dumbbell' ? 'dot' : '')
+    sw.style.background = s.color
+    item.append(sw, s.name)
+    l.append(item)
+  }
+  return l
+}
+
+function axis(c, plot) {
+  const grid = el('div', 'grid'), ax = el('div', 'axis')
+  c.ticks.forEach((t, i) => {
+    const g = el('div'); g.style.left = pct(c, t) + '%'; grid.append(g)
+    const s = el('span', '', i === c.ticks.length - 1 ? `${t} ${c.unit}` : t); s.style.left = pct(c, t) + '%'; ax.append(s)
+  })
+  plot.prepend(grid); plot.append(ax)
+}
+
+function stackedRow(c, r) {
+  const row = el('div', 'row'), track = el('div', 'track')
+  row.append(el('div', 'name', r.name), track)
+  let x = 0
+  r.parts.forEach((v, i) => {
+    const b = el('div', 'bar'); b.style.left = pct(c, x) + '%'; b.style.width = `calc(${pct(c, v) - pct(c, 0)}% - 2px)`
+    b.style.background = c.series[i].color; track.append(b); x += v
+  })
+  const v = el('div', 'val', `${x} ${c.unit}` + (r.delta ? `<em>${fmt(r.delta)}</em>` : ''))
+  v.style.left = `calc(${pct(c, x)}% + 10px)`; track.append(v)
+  return row
+}
+
+function dumbbellRow(c, r) {
+  const row = el('div', 'row'), track = el('div', 'track')
+  row.append(el('div'), track)
+  const [lo, hi] = [Math.min(r.before, r.after), Math.max(r.before, r.after)]
+  const line = el('div', 'line'); line.style.left = pct(c, lo) + '%'; line.style.width = pct(c, hi) - pct(c, lo) + '%'; track.append(line)
+  for (const [k, s] of [['before', c.series[0]], ['after', c.series[1]]]) {
+    const p = el('div', 'pt'); p.style.left = pct(c, r[k]) + '%'; p.style.background = s.color; track.append(p)
+  }
+  const a = el('div', 'val', r.after); a.style.right = `calc(${100 - pct(c, r.after)}% + 14px)`; track.append(a)
+  const b = el('div', 'val', `${r.before}<em>${fmt(r.after - r.before)}</em>`); b.style.left = `calc(${pct(c, r.before)}% + 14px)`; track.append(b)
+  return [el('div', 'dname', r.id ? `<span class="id">${r.name}</span>` : r.name), row]
+}
+
+const root = document.getElementById('charts')
+for (const c of DATA) {
+  const sec = el('section', 'chart')
+  sec.append(el('h1', '', c.title), el('p', 'sub', c.sub), legend(c))
+  const plot = el('div', 'plot ' + c.type)
+  if (c.type === 'stacked') for (const g of c.groups) { plot.append(el('div', 'group', g.name)); g.rows.forEach(r => plot.append(stackedRow(c, r))) }
+  else c.rows.forEach(r => plot.append(...dumbbellRow(c, r)))
+  axis(c, plot)
+  sec.append(plot)
+  if (c.note) sec.append(el('p', 'note', c.note))
+  root.append(sec)
+}
+
+document.fonts.ready.then(() => {
+  document.body.dataset.fonts = document.fonts.check('16px "IBM Plex Sans"') && document.fonts.check('16px "Ioskeley Mono"')
+  document.body.dataset.height = Math.ceil(document.body.getBoundingClientRect().height)
+})
+</script>
+</body>
+</html>
