@@ -1,0 +1,108 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  @font-face { font-family: 'Inter'; font-weight: 100 900; src: url('file:///Users/vlad.vladov/Library/Fonts/InterVariable.ttf'); }
+  @font-face { font-family: 'Geist Mono'; font-weight: 100 900; src: url('file:///Users/vlad.vladov/Library/Fonts/GeistMono-Variable.ttf'); }
+
+  :root {
+    --bg: oklch(99.3% 0.002 80);
+    --surface: oklch(96.8% 0.003 80);
+    --line: oklch(91.5% 0.004 80);
+    --context: oklch(76% 0.006 80);
+    --muted: oklch(47% 0.008 80);
+    --ink: oklch(20% 0.005 80);
+    --accent: oklch(55% 0.19 256);
+    --worse: oklch(55% 0.2 27);
+    --sans: 'Inter', sans-serif;
+    --mono: 'Geist Mono', monospace;
+    --lane: 112px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1080px; }
+  body { background: var(--bg); color: var(--ink); font-family: var(--sans); font-optical-sizing: auto; font-synthesis: none; -webkit-font-smoothing: antialiased; padding: 64px 72px 56px; }
+  code { font-family: var(--mono); font-weight: 450; font-size: 0.94em; font-feature-settings: 'calt' 0, 'liga' 0, 'dlig' 0; }
+
+  .source { font: 450 15px/1 var(--mono); color: var(--muted); margin-bottom: 16px; }
+  h1 { font: 600 34px/1.15 var(--sans); letter-spacing: -0.022em; text-wrap: balance; }
+  .sub { font: 400 19px/1.45 var(--sans); letter-spacing: -0.011em; color: var(--muted); margin-top: 8px; max-width: 62ch; text-wrap: pretty; }
+
+  .plot { position: relative; margin-top: 44px; }
+  .segs, .lane { display: grid; grid-template-columns: var(--lane) 1fr; position: relative; }
+  .cols { display: grid; column-gap: 4px; }
+  .seg { height: 44px; border-radius: 6px; background: var(--surface); display: flex; align-items: center; padding: 0 12px; font: 400 16px/1 var(--sans); color: var(--muted); white-space: nowrap; overflow: hidden; }
+  .seg.code { font: 450 16px/1 var(--mono); color: var(--ink); }
+  .lane { margin-top: 36px; align-items: center; }
+  .lane h2 { font: 500 17px/1 var(--sans); }
+  .track { position: relative; height: 12px; }
+  .track::before { content: ''; position: absolute; left: 0; right: 0; top: 5.5px; border-top: 1px dashed var(--context); }
+  .span { position: absolute; top: 0; height: 12px; border-radius: 2px; }
+  .notes { grid-column: 2; display: flex; justify-content: space-between; gap: 24px; margin-top: 12px; font: 400 17px/1.3 var(--sans); }
+  .notes span { color: var(--muted); }
+  .notes strong { font-weight: 500; white-space: nowrap; }
+  .note { font: 400 16px/1.5 var(--sans); color: var(--muted); margin-top: 40px; max-width: 70ch; text-wrap: pretty; }
+</style>
+</head>
+<body>
+<main id="page"></main>
+
+<script>
+// Example from a past trigger fix. Replace every value with the facts of your change.
+// segments: the shared axis, left to right, with relative widths. `code: true` sets the label in mono.
+// lanes: one per state (before, after) or per caller. Each span [from, to) covers segment indexes where
+//        the state the title is about holds. tone 'worse' marks the broken state, 'accent' the fixed one.
+//        left: a lowercase fragment on what the bar shows; right: the end result.
+const DATA = {
+  source: 'ruff ASYNC119 yield-in-context-manager-in-async-generator',
+  title: 'Team context now ends at every <code>yield</code> instead of leaking into the triggerer',
+  sub: 'Where the team <code>ContextVar</code> is set while <code>FtBaseTrigger.run()</code> yields events',
+  segments: [
+    { label: 'execute()', code: true, width: 20 },
+    { label: 'triggerer handles event', width: 29 },
+    { label: 'execute()', code: true, width: 20 },
+    { label: 'closed from another context', width: 31 },
+  ],
+  lanes: [
+    { name: 'Before', tone: 'worse', spans: [[0, 4]], left: 'team stays set while the triggerer runs', right: '<code>reset()</code> raises <code>ValueError</code>' },
+    { name: 'After', tone: 'accent', spans: [[0, 1], [2, 3]], left: 'team set only while <code>execute()</code> runs', right: 'nothing to reset' },
+  ],
+  note: 'A new test that closes the generator from another context fails on the old code and passes on the new.',
+}
+
+const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e }
+const columns = DATA.segments.map(s => s.width + 'fr').join(' ')
+const total = DATA.segments.reduce((sum, s) => sum + s.width, 0)
+const at = i => (DATA.segments.slice(0, i).reduce((sum, s) => sum + s.width, 0) / total) * 100
+
+const page = document.getElementById('page')
+if (DATA.source) page.append(el('div', 'source', DATA.source))
+page.append(el('h1', '', DATA.title), el('p', 'sub', DATA.sub))
+
+const plot = el('div', 'plot')
+const segs = el('div', 'segs'), cols = el('div', 'cols'); cols.style.gridTemplateColumns = columns
+DATA.segments.forEach(s => cols.append(el('div', 'seg' + (s.code ? ' code' : ''), s.label)))
+segs.append(el('div'), cols)
+plot.append(segs)
+
+for (const lane of DATA.lanes) {
+  const row = el('div', 'lane'), track = el('div', 'track'), color = `var(--${lane.tone})`
+  for (const [from, to] of lane.spans) {
+    const inset = (from ? 2 : 0) + (to < DATA.segments.length ? 2 : 0)
+    const s = el('div', 'span'); s.style.left = `calc(${at(from)}% + ${from ? 2 : 0}px)`; s.style.width = `calc(${at(to) - at(from)}% - ${inset}px)`; s.style.background = color
+    track.append(s)
+  }
+  const notes = el('div', 'notes', `<span>${lane.left}</span><strong style="color:${color}">${lane.right}</strong>`)
+  row.append(el('h2', '', lane.name), track, notes)
+  plot.append(row)
+}
+page.append(plot)
+if (DATA.note) page.append(el('p', 'note', DATA.note))
+
+document.fonts.ready.then(() => {
+  document.body.dataset.fonts = document.fonts.check('16px "Inter"') && document.fonts.check('16px "Geist Mono"')
+  document.body.dataset.height = Math.ceil(document.body.getBoundingClientRect().height)
+})
+</script>
+</body>
+</html>
