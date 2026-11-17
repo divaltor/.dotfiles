@@ -12,8 +12,8 @@ width="${3:-1080}"
 scale="${4:-2}"
 chrome="${CHROME_PATH:-/Applications/Google Chrome.app/Contents/MacOS/Google Chrome}"
 
-for font in IBMPlexSans-Regular IBMPlexSans-Medium IBMPlexSans-SemiBold IoskeleyMono-Regular IoskeleyMono-Medium; do
-  [ -f "$HOME/Library/Fonts/$font.ttf" ] || { echo "missing ~/Library/Fonts/$font.ttf" >&2; exit 1; }
+for font in InterVariable GeistMono-Variable; do
+  [ -f "$HOME/Library/Fonts/$font.ttf" ] || { echo "missing ~/Library/Fonts/$font.ttf (Inter: rsms/inter releases, Geist Mono: vercel/geist-font releases)" >&2; exit 1; }
 done
 
 dom="$("$chrome" --headless=new --disable-gpu --allow-file-access-from-files \
@@ -21,7 +21,7 @@ dom="$("$chrome" --headless=new --disable-gpu --allow-file-access-from-files \
 height="$(printf '%s' "$dom" | sed -n 's/.*data-height="\([0-9]*\)".*/\1/p' | head -1)"
 fonts="$(printf '%s' "$dom" | sed -n 's/.*data-fonts="\([a-z]*\)".*/\1/p' | head -1)"
 [ -n "$height" ] || { echo "page never set body[data-height]" >&2; exit 1; }
-[ "$fonts" = "true" ] || { echo "IBM Plex Sans or Ioskeley Mono did not load" >&2; exit 1; }
+[ "$fonts" = "true" ] || { echo "Inter or Geist Mono did not load" >&2; exit 1; }
 
 "$chrome" --headless=new --disable-gpu --hide-scrollbars --allow-file-access-from-files \
   --window-size="$width,$height" --force-device-scale-factor="$scale" \

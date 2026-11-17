@@ -3,83 +3,87 @@
 <head>
 <meta charset="utf-8">
 <style>
-  @font-face { font-family: 'IBM Plex Sans'; font-weight: 400; src: url('file:///Users/vlad.vladov/Library/Fonts/IBMPlexSans-Regular.ttf'); }
-  @font-face { font-family: 'IBM Plex Sans'; font-weight: 500; src: url('file:///Users/vlad.vladov/Library/Fonts/IBMPlexSans-Medium.ttf'); }
-  @font-face { font-family: 'IBM Plex Sans'; font-weight: 600; src: url('file:///Users/vlad.vladov/Library/Fonts/IBMPlexSans-SemiBold.ttf'); }
-  @font-face { font-family: 'Ioskeley Mono'; font-weight: 400; src: url('file:///Users/vlad.vladov/Library/Fonts/IoskeleyMono-Regular.ttf'); }
-  @font-face { font-family: 'Ioskeley Mono'; font-weight: 500; src: url('file:///Users/vlad.vladov/Library/Fonts/IoskeleyMono-Medium.ttf'); }
+  @font-face { font-family: 'Inter'; font-weight: 100 900; src: url('file:///Users/vlad.vladov/Library/Fonts/InterVariable.ttf'); }
+  @font-face { font-family: 'Geist Mono'; font-weight: 100 900; src: url('file:///Users/vlad.vladov/Library/Fonts/GeistMono-Variable.ttf'); }
 
   :root {
-    --paper: #FFF1E5;
-    --ink: #262A33;
-    --muted: #66605C;
-    --faint: #A39A92;
-    --rule: #E6D2C0;
-    --base: #C9BDB2;
-    --teal: #0D7680;
-    --claret: #990F3D;
-    --sans: 'IBM Plex Sans', sans-serif;
-    --mono: 'Ioskeley Mono', monospace;
-    --label: 230px;
+    --bg: oklch(99.3% 0.002 80);
+    --surface: oklch(96.8% 0.003 80);
+    --line: oklch(91.5% 0.004 80);
+    --context: oklch(76% 0.006 80);
+    --muted: oklch(47% 0.008 80);
+    --ink: oklch(20% 0.005 80);
+    --accent: oklch(55% 0.19 256);
+    --worse: oklch(55% 0.2 27);
+    --sans: 'Inter', sans-serif;
+    --mono: 'Geist Mono', monospace;
+    --label: 240px;
+    --end: 140px;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { width: 1080px; }
-  body { background: var(--paper); color: var(--ink); font-family: var(--sans); -webkit-font-smoothing: antialiased; padding: 72px 72px 64px; }
-  code, .id { font-family: var(--mono); font-weight: 500; font-size: 0.92em; font-feature-settings: 'calt' 0, 'liga' 0, 'dlig' 0; }
+  body { background: var(--bg); color: var(--ink); font-family: var(--sans); font-optical-sizing: auto; font-synthesis: none; -webkit-font-smoothing: antialiased; padding: 64px 72px 56px; }
+  code, .id { font-family: var(--mono); font-weight: 450; font-size: 0.94em; font-feature-settings: 'calt' 0, 'liga' 0, 'dlig' 0; }
 
-  .chart + .chart { margin-top: 72px; }
-  h1 { font: 600 34px/1.2 var(--sans); letter-spacing: -0.015em; text-wrap: balance; }
-  .sub { font: 400 19px/1.4 var(--sans); color: var(--muted); margin-top: 8px; }
-  .legend { display: flex; gap: 24px; margin-top: 28px; font: 400 17px/1 var(--sans); color: var(--muted); }
-  .legend span { display: flex; align-items: center; gap: 8px; }
-  .legend i { width: 12px; height: 12px; border-radius: 2px; }
-  .legend i.dot { border-radius: 50%; }
+  .chart + .chart { margin-top: 80px; padding-top: 64px; border-top: 1px solid var(--line); }
+  h1 { font: 600 34px/1.15 var(--sans); letter-spacing: -0.022em; text-wrap: balance; }
+  .sub { font: 400 19px/1.45 var(--sans); letter-spacing: -0.011em; color: var(--muted); margin-top: 8px; text-wrap: pretty; }
 
-  .plot { position: relative; margin-top: 20px; padding-right: 110px; }
-  .grid { position: absolute; top: 0; bottom: 36px; left: var(--label); right: 110px; pointer-events: none; }
-  .grid div { position: absolute; top: 0; bottom: 0; border-left: 1px solid var(--rule); }
-  .group { font: 500 18px/1 var(--sans); padding: 18px 10px 8px 0; position: relative; width: fit-content; background: var(--paper); }
-  .dname { font: 400 17px/1 var(--sans); color: var(--muted); padding: 14px 10px 0 0; position: relative; width: fit-content; background: var(--paper); }
+  .plot { position: relative; margin-top: 40px; font-variant-numeric: tabular-nums; }
+  .grid { position: absolute; top: 0; bottom: 32px; left: var(--label); right: var(--end); pointer-events: none; }
+  .grid div { position: absolute; top: 0; bottom: 0; border-left: 1px solid var(--line); }
   .plot.dumbbell { --label: 0px; }
-  .row { display: grid; grid-template-columns: var(--label) 1fr; align-items: center; height: 40px; position: relative; }
-  .row .name { font: 400 17px/1 var(--sans); color: var(--muted); }
+  .group { font: 500 17px/1 var(--sans); padding: 20px 0 10px; position: relative; width: fit-content; background: var(--bg); padding-right: 12px; }
+  .group:first-child { padding-top: 0; }
+  .dname { font: 400 17px/1 var(--sans); color: var(--muted); padding-top: 18px; position: relative; width: fit-content; background: var(--bg); padding-right: 12px; }
+  .dname:first-child, .key + .dname { padding-top: 0; }
+  .dname .id { color: var(--ink); }
+  .row { display: grid; grid-template-columns: var(--label) 1fr var(--end); align-items: center; height: 40px; position: relative; }
+  .row .name { font: 400 17px/1.2 var(--sans); color: var(--muted); padding-right: 16px; }
+  .row .name .id { color: var(--ink); }
   .track { position: relative; height: 100%; }
-  .bar { position: absolute; top: 9px; height: 22px; }
-  .val { position: absolute; top: 50%; transform: translateY(-50%); font: 500 16px/1 var(--sans); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .bar { position: absolute; top: 8px; height: 24px; }
+  .val { position: absolute; top: 50%; transform: translateY(-50%); font: 500 17px/1 var(--sans); white-space: nowrap; background: var(--bg); padding: 4px; }
   .val em { font-style: normal; font-weight: 400; color: var(--muted); margin-left: 6px; }
-  .line { position: absolute; top: 50%; height: 3px; margin-top: -1.5px; background: var(--rule); }
+  .val em.worse { color: var(--worse); }
+  .line { position: absolute; top: 50%; height: 3px; margin-top: -1.5px; background: var(--line); }
   .pt { position: absolute; top: 50%; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; }
-  .axis { position: relative; height: 36px; margin-left: var(--label); font: 400 15px/1 var(--sans); color: var(--muted); font-variant-numeric: tabular-nums; }
-  .axis span { position: absolute; top: 14px; transform: translateX(-50%); white-space: nowrap; }
+  .key { position: relative; height: 28px; margin-left: var(--label); margin-right: var(--end); font: 500 15px/1 var(--sans); }
+  .key span { position: absolute; top: 0; white-space: nowrap; background: var(--bg); padding-right: 6px; }
+  .axis { position: relative; height: 32px; margin-left: var(--label); margin-right: var(--end); font: 400 15px/1 var(--sans); color: var(--muted); }
+  .axis span { position: absolute; top: 12px; transform: translateX(-50%); white-space: nowrap; }
   .axis span:first-child { transform: none; }
-  .note { font: 400 16px/1.5 var(--sans); color: var(--muted); margin-top: 18px; }
+  .note { font: 400 16px/1.5 var(--sans); color: var(--muted); margin-top: 24px; max-width: 70ch; text-wrap: pretty; }
 </style>
 </head>
 <body>
 <main id="charts"></main>
 
 <script>
-// Example values from a past memory PR (stacked splits read off its chart). Replace every value with
-// measured numbers; each must come from a command output you can point to.
-// Bars (stacked): length encodes size, so the axis always starts at 0.
-// Dumbbell: only position encodes size, so the axis may start above 0.
+// Example values: the stacked and dumbbell charts come from a past memory PR, the bars from counting
+// DAG files per team in this repo. Replace every value with measured numbers you can point to.
+// stacked: parts of a total per row; bar length encodes size, so the domain starts at 0.
+//          Put the part the claim is about first: only the first part has a common baseline.
+// dumbbell: before and after per row on one axis; only position encodes size, so it may start above 0.
+// bars: one value per item, sorted, value at the bar end, no axis. `highlight` marks what the title names.
+// better: 'lower' (default) or 'higher' decides when a delta or an after dot is drawn in --worse.
 const DATA = [
   {
     type: 'stacked',
     title: 'Both changes together cut task pod memory by 29% to 39%',
-    sub: 'Pod memory (PSS of the supervisor and task processes), prod image, prod DAG config',
+    sub: 'Pod memory (PSS of the task and supervisor processes), prod image, prod DAG config',
     unit: 'MB', domain: [0, 500], ticks: [0, 250, 500],
-    series: [{ name: 'Supervisor', color: 'var(--base)' }, { name: 'Task process', color: 'var(--teal)' }],
+    series: [{ name: 'Task process', color: 'var(--accent)' }, { name: 'Supervisor', color: 'var(--context)' }],
     groups: [
       { name: 'events_cdc (Spoor ETL)', rows: [
-        { name: 'before', parts: [106, 303] },
-        { name: 'after', parts: [106, 167], delta: -136 },
-        { name: 'after + gc.freeze', parts: [95, 156], delta: -158 },
+        { name: 'before', parts: [303, 106] },
+        { name: 'after', parts: [167, 106], delta: -136 },
+        { name: 'after + gc.freeze', parts: [156, 95], delta: -158 },
       ] },
       { name: 'S3 to Redshift ingester (ETLReusableDAG)', rows: [
-        { name: 'before', parts: [106, 386] },
-        { name: 'after', parts: [105, 266], delta: -121 },
-        { name: 'after + gc.freeze', parts: [95, 255], delta: -142 },
+        { name: 'before', parts: [386, 106] },
+        { name: 'after', parts: [266, 105], delta: -121 },
+        { name: 'after + gc.freeze', parts: [255, 95], delta: -142 },
       ] },
     ],
     note: 'Both run a full GC before PSS is read from <code>smaps_rollup</code>. Without the freeze, repeated runs ranged up to 26 MB higher.',
@@ -89,7 +93,7 @@ const DATA = [
     title: 'A typical task process drops from 339 MB to 230 MB, 32% less',
     sub: 'Task process RSS after parsing the DAG file in a worker pod',
     unit: 'MB', domain: [150, 450], ticks: [150, 250, 350, 450],
-    series: [{ name: 'before', color: 'var(--faint)' }, { name: 'after', color: 'var(--teal)' }],
+    series: [{ name: 'before', color: 'var(--context)' }, { name: 'after', color: 'var(--accent)' }],
     rows: [
       { name: '40 random DAG files, median', before: 339, after: 230 },
       { name: 'bilayer_prospector_daily_usage_report', id: true, before: 371, after: 194 },
@@ -98,74 +102,122 @@ const DATA = [
     ],
     note: 'Medians of 5 runs for single DAGs, one run per file for the sample.',
   },
+  {
+    type: 'bars',
+    title: 'Two teams own 543 of the 712 DAG files, 76%',
+    sub: 'Python files under each team folder that construct a DAG',
+    items: [
+      { name: 'biteam', id: true, value: 293, highlight: true },
+      { name: 'dataplatform', id: true, value: 250, highlight: true },
+      { name: 'ftspecialist', id: true, value: 85 },
+      { name: 'martech', id: true, value: 43 },
+      { name: 'Six other teams', value: 41, rest: true },
+    ],
+    note: 'Counted by matching <code>FTDAG</code> or <code>DAG(</code>, so a file with two DAGs counts once.',
+  },
 ]
 
 const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e }
 const pct = (c, v) => ((v - c.domain[0]) / (c.domain[1] - c.domain[0])) * 100
-const fmt = d => (d < 0 ? '\u2212' + -d : '+' + d)
-
-function legend(c) {
-  const l = el('div', 'legend')
-  for (const s of c.series) {
-    const item = el('span')
-    const sw = el('i', c.type === 'dumbbell' ? 'dot' : '')
-    sw.style.background = s.color
-    item.append(sw, s.name)
-    l.append(item)
-  }
-  return l
-}
+const signed = d => (d < 0 ? '\u2212' + -d : '+' + d)
+const isWorse = (c, d) => (c.better === 'higher' ? d < 0 : d > 0)
+const label = r => (r.id ? `<span class="id">${r.name}</span>` : r.name)
+const textColor = color => (color === 'var(--context)' ? 'var(--muted)' : color)
 
 function axis(c, plot) {
   const grid = el('div', 'grid'), ax = el('div', 'axis')
   c.ticks.forEach((t, i) => {
-    const g = el('div'); g.style.left = pct(c, t) + '%'; grid.append(g)
+    if (i > 0) { const g = el('div'); g.style.left = pct(c, t) + '%'; grid.append(g) }
     const s = el('span', '', i === c.ticks.length - 1 ? `${t} ${c.unit}` : t); s.style.left = pct(c, t) + '%'; ax.append(s)
   })
   plot.prepend(grid); plot.append(ax)
 }
 
+function stackedKey(c, r) {
+  const key = el('div', 'key')
+  let x = 0
+  r.parts.forEach((v, i) => {
+    const s = el('span', '', c.series[i].name); s.style.left = pct(c, x) + '%'; s.style.color = textColor(c.series[i].color)
+    key.append(s); x += v
+  })
+  return key
+}
+
 function stackedRow(c, r) {
   const row = el('div', 'row'), track = el('div', 'track')
-  row.append(el('div', 'name', r.name), track)
+  row.append(el('div', 'name', label(r)), track, el('div'))
   let x = 0
   r.parts.forEach((v, i) => {
     const b = el('div', 'bar'); b.style.left = pct(c, x) + '%'; b.style.width = `calc(${pct(c, v) - pct(c, 0)}% - 2px)`
     b.style.background = c.series[i].color; track.append(b); x += v
   })
-  const v = el('div', 'val', `${x} ${c.unit}` + (r.delta ? `<em>${fmt(r.delta)}</em>` : ''))
-  v.style.left = `calc(${pct(c, x)}% + 10px)`; track.append(v)
+  const delta = r.delta ? `<em class="${isWorse(c, r.delta) ? 'worse' : ''}">${signed(r.delta)}</em>` : ''
+  const v = el('div', 'val', `${x} ${c.unit}${delta}`); v.style.left = `calc(${pct(c, x)}% + 8px)`; track.append(v)
   return row
+}
+
+function dumbbellKey(c, r) {
+  const key = el('div', 'key')
+  for (const [k, s] of [['before', c.series[0]], ['after', c.series[1]]]) {
+    const span = el('span', '', s.name); span.style.left = pct(c, r[k]) + '%'; span.style.transform = 'translateX(-50%)'; span.style.color = textColor(s.color)
+    key.append(span)
+  }
+  return key
 }
 
 function dumbbellRow(c, r) {
   const row = el('div', 'row'), track = el('div', 'track')
-  row.append(el('div'), track)
+  row.append(el('div'), track, el('div'))
+  const d = r.after - r.before, worse = isWorse(c, d)
   const [lo, hi] = [Math.min(r.before, r.after), Math.max(r.before, r.after)]
   const line = el('div', 'line'); line.style.left = pct(c, lo) + '%'; line.style.width = pct(c, hi) - pct(c, lo) + '%'; track.append(line)
-  for (const [k, s] of [['before', c.series[0]], ['after', c.series[1]]]) {
-    const p = el('div', 'pt'); p.style.left = pct(c, r[k]) + '%'; p.style.background = s.color; track.append(p)
+  for (const [k, color] of [['before', c.series[0].color], ['after', worse ? 'var(--worse)' : c.series[1].color]]) {
+    const p = el('div', 'pt'); p.style.left = pct(c, r[k]) + '%'; p.style.background = color; track.append(p)
   }
-  const a = el('div', 'val', r.after); a.style.right = `calc(${100 - pct(c, r.after)}% + 14px)`; track.append(a)
-  const b = el('div', 'val', `${r.before}<em>${fmt(r.after - r.before)}</em>`); b.style.left = `calc(${pct(c, r.before)}% + 14px)`; track.append(b)
-  return [el('div', 'dname', r.id ? `<span class="id">${r.name}</span>` : r.name), row]
+  const afterText = `${r.after}<em class="${worse ? 'worse' : ''}">${signed(d)}</em>`
+  const [loText, hiText] = r.after < r.before ? [afterText, r.before] : [r.before, afterText]
+  const a = el('div', 'val', loText); a.style.right = `calc(${100 - pct(c, lo)}% + 12px)`; track.append(a)
+  const b = el('div', 'val', hiText); b.style.left = `calc(${pct(c, hi)}% + 12px)`; track.append(b)
+  return [el('div', 'dname', label(r)), row]
+}
+
+function barsRow(c, r, max) {
+  const row = el('div', 'row'), track = el('div', 'track')
+  row.append(el('div', 'name', label(r)), track, el('div'))
+  const w = (r.value / max) * 100
+  const b = el('div', 'bar'); b.style.left = 0; b.style.width = w + '%'; b.style.background = r.highlight ? 'var(--accent)' : 'var(--context)'; track.append(b)
+  const v = el('div', 'val', r.value); v.style.left = `calc(${w}% + 8px)`; if (r.rest) v.style.color = 'var(--muted)'; track.append(v)
+  return row
 }
 
 const root = document.getElementById('charts')
 for (const c of DATA) {
   const sec = el('section', 'chart')
-  sec.append(el('h1', '', c.title), el('p', 'sub', c.sub), legend(c))
+  sec.append(el('h1', '', c.title), el('p', 'sub', c.sub))
   const plot = el('div', 'plot ' + c.type)
-  if (c.type === 'stacked') for (const g of c.groups) { plot.append(el('div', 'group', g.name)); g.rows.forEach(r => plot.append(stackedRow(c, r))) }
-  else c.rows.forEach(r => plot.append(...dumbbellRow(c, r)))
-  axis(c, plot)
+  if (c.type === 'stacked') {
+    c.groups.forEach((g, i) => {
+      plot.append(el('div', 'group', g.name))
+      if (i === 0) plot.append(stackedKey(c, g.rows[0]))
+      g.rows.forEach(r => plot.append(stackedRow(c, r)))
+    })
+    axis(c, plot)
+  } else if (c.type === 'dumbbell') {
+    plot.append(dumbbellKey(c, c.rows[0]))
+    c.rows.forEach(r => plot.append(...dumbbellRow(c, r)))
+    axis(c, plot)
+  } else {
+    const items = [...c.items.filter(r => !r.rest).sort((a, b) => b.value - a.value), ...c.items.filter(r => r.rest)]
+    const max = Math.max(...items.map(r => r.value))
+    items.forEach(r => plot.append(barsRow(c, r, max)))
+  }
   sec.append(plot)
   if (c.note) sec.append(el('p', 'note', c.note))
   root.append(sec)
 }
 
 document.fonts.ready.then(() => {
-  document.body.dataset.fonts = document.fonts.check('16px "IBM Plex Sans"') && document.fonts.check('16px "Ioskeley Mono"')
+  document.body.dataset.fonts = document.fonts.check('16px "Inter"') && document.fonts.check('16px "Geist Mono"')
   document.body.dataset.height = Math.ceil(document.body.getBoundingClientRect().height)
 })
 </script>
