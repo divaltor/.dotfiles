@@ -92,6 +92,13 @@ includes imperatives like `Treat / Use / Add / Keep / Split / Pin / Switch`,
 facts instead: "Psycopg 3 exposes the first result…", not "Use one
 result-producing statement…".
 
+One exception in a PR or comment: a single "now" sentence that states the
+observable result in the reader's terms, such as "It now reports
+`invalid-argument-type`" or "A typical pod now needs ~260 MB". It names
+what the reader will see, never what the code does to get there. Ruff, ty,
+and Ghostty use exactly one such sentence after the symptom, because the
+reader needs the outcome and the diff shows only the mechanism.
+
 The one imperative allowed is a required step the diff cannot show, such
 as a deploy order. In a PR it goes in the step-order arrow line, never in
 the first sentence.
@@ -212,6 +219,12 @@ Right: "The shared CircleCI role trusts every branch of a project, so any
 feature branch of `data-platform-redshift-ddls-backup` could deploy to
 Prod."
 
+For a bug or incident, the first sentence is what the reader saw, in their
+nouns: the failure, the stuck deploy, the wrong number. "On 12 Nov the
+3.4.0 migration ran 25 minutes in prod and the deploy got stuck." The
+mechanism comes second. A reviewer recognizes a symptom at once; a cause
+needs the code open.
+
 **Support, in order of importance.** Each paragraph is one short block of
 facts the reader cannot get elsewhere. Write it so cutting the last
 paragraph never breaks the one before it.
@@ -261,7 +274,18 @@ because it lives in the data. The required order comes second.
   whole sentence, a warning, a step order, a code name, or a label. A change
   with no clear win to show gets no bold.
 - **One mechanism, max 3 sentences.** Drop side facts that do not change the
-  conclusion.
+  conclusion. When there are two separate bugs, say so and number them in
+  prose: "Two separate bugs here. (1) … (2) …", so neither hides inside the
+  other.
+- **Name the cost.** When the change has a price (memory kept, a broken
+  convention, a number that reads higher, a partly written result on
+  failure), give it one sentence: "The cost is ~1 extra page (~300 KB) for
+  an idle terminal." A reviewer trusts a change that admits its price, and
+  otherwise finds it in review. No cost, no sentence.
+- **Every number carries its conditions.** One line under a table, or one
+  clause in the sentence: dataset or env, run count and statistic, which
+  direction is better. "Medians of 5 runs, prod image `26487`." A number
+  without them cannot be checked.
 - **Max 3 numbers per paragraph, rounded** (`3.6B`, not `3,632,958,680`).
   Prefer one ratio over several raw counts. Keep each number's scope: a
   figure from an 8-day window is not "every day". Mark an estimate with one
@@ -277,7 +301,15 @@ because it lives in the data. The required order comes second.
 - **No "I checked..." / "I verified..."** and no verification section. A check
   appears only as a fact inside the reason: "Each date folder holds only
   rows from that date, so skipping old folders loses nothing." Never mention
-  linters, type checks, or passing tests.
+  linters, type checks, or passing tests. The strongest check is a sameness
+  fact on real inputs: "All 844 DAGs from the 12 team repos parse the same
+  as on `dev`." Ruff dropped Test Plan from its template because it
+  "prompts contributors to recap tests that already run in CI".
+- **One human judgment is allowed.** When the change rests on a call you
+  made, say it once in first person: "I think keeping the old image until
+  the transfer ends is nicer than Kitty's behavior." An honest doubt counts
+  too ("I'm not sure how long this has been broken"). One is a voice;
+  several are hedging.
 - **No instructions to the reader** ("make sure to..."). State the fact. The
   only allowed directive is a required step order, and it belongs in the
   arrow line.
@@ -297,6 +329,8 @@ Walk this for each part of the text, not once for the whole text:
 What does this part carry?
 ├── A cause, a reason, a tradeoff         → prose
 ├── A code name                           → inline `code`, always
+├── The input or error the reader saw     → fenced block: the failing query,
+│   (a bug they can reproduce)              call, or error line, trimmed
 ├── The line of code that decides the     → fenced block with a language tag,
 │   behavior the why is about               only that line, trimmed with …
 ├── Steps that must happen in order       → one arrow line: a → b → c
@@ -319,7 +353,8 @@ What does this part carry?
 - **A table, code quote, or diagram replaces prose**, it does not repeat
   it. Delete every sentence it already says.
 - **Max one code quote and one table or diagram** per description, placed
-  after the first sentence.
+  after the first sentence. For a bug, prefer the reproducer over the
+  deciding line: the reviewer can paste it and watch it fail.
 
 ## PR descriptions
 
@@ -356,18 +391,26 @@ evidence a reviewer would otherwise hunt for in the diff. A table appears
 only when it passes the table test; a B description with no table is
 normal.
 
-1. **The main why:** one sentence, cause and consequence, code names in
-   backticks.
-2. **The deciding line of code** in a fenced block with a language tag.
-   Quote only the line the why is about, trimmed with `…`.
+1. **The main why:** one sentence, cause and consequence (or the symptom,
+   for a bug), code names in backticks. At most one "now" sentence with
+   the observable result.
+2. **The reproducer or the deciding line of code** in a fenced block with
+   a language tag, trimmed with `…`.
 3. **Comparison table**, only when it passes the table test: 3+
    alternatives a reviewer would ask about, with the chosen option as the
-   last row, or 3+ cases with measured numbers.
-4. **Required step order** (deploy, migration, backfill) as one arrow line.
+   last row, or 3+ cases with measured numbers. Its conditions go in one
+   line under it.
+4. **The cost**, one sentence, when one exists.
+5. **Exposure** for a platform change that team DAGs consume: what other
+   repos see, and the sameness fact that bounds it. A table with one row
+   per behavior change and its team DAG exposure, when it passes the table
+   test; otherwise one sentence.
+6. **Required step order** (deploy, migration, backfill) as one arrow line.
    Put an exception or its reason inside the step, in parentheses. When the
    order is a risk, an alert carries it instead.
-5. **Raw measurements** in `<details>`, when they exist.
-6. **Links last,** only those GitHub does not already show.
+7. **Raw measurements** in `<details>`, when they exist.
+8. **Links last,** only those GitHub does not already show: `Fixes #…`,
+   upstream issues, specs, Jira.
 
 ````markdown
 The shared CircleCI role trusts every branch, so a feature branch push to
@@ -393,6 +436,11 @@ only) → enable CI deploys in Financial-Times/data-platform-redshift-ddls-backu
   out `Stacked on #...` and merge-order lines. Name another PR only when its
   order is a requirement the UI cannot show, such as a PR in another repo
   that must deploy first. That PR then goes into the step-order arrow line.
+- **One line per paragraph:** never hard-wrap PR descriptions or comments.
+  GitHub and Slack reflow text themselves, and a manual break at 72
+  characters folds into ragged short lines on narrow panes and breaks
+  copy-paste. Separate paragraphs with one blank line. The 72-column wrap
+  applies to commit bodies only.
 - **Headers:** never `#` or `##`. Use `####` only when the description
   exceeds 150 visible words and has two separate topics; max 2.
 - **No generic sections:** no `Summary`, `Why`, `Changes`, `Notes`,
@@ -486,15 +534,18 @@ Mention a check only when a rule could not be met and the user must decide.
 
 **PR description or comment**
 
-1. Sentence 1 is the main why (cause and consequence) and stands alone. No
-   "X, not Y", "Merging this PR…", or "This PR…" anywhere. Bold only one
-   payoff phrase, or none.
+1. Sentence 1 is the main why (cause and consequence, or the symptom for a
+   bug) and stands alone. At most one "now" sentence, stating an
+   observable result. No "X, not Y", "Merging this PR…", or "This PR…"
+   anywhere. Bold only one payoff phrase, or none.
 2. A body exists only because a body-gate condition holds; subtraction and
    inherited-from-code tests pass.
-3. ≤3 rounded numbers per paragraph; every kept term defined.
+3. ≤3 rounded numbers per paragraph, each with its conditions; every kept
+   term defined; the cost stated when one exists.
 4. One name per object, in backticks when it is a code name; sentences
    ≤25 words.
-5. No hedges, "I checked", reader instructions, or bullet lists.
+5. No hedges, "I checked", reader instructions, or bullet lists; at most
+   one first-person judgment.
 6. Layout A for one reason, B for a choice or 2+ reasons; B quotes the
    deciding line when one exists; every table passes the table test; ≤1
    code quote and ≤1 table or diagram.
@@ -502,7 +553,8 @@ Mention a check only when a rule could not be met and the user must decide.
 8. No `#`/`##`; alert only for a real risk; no stack or merge-order line
    unless the order is a requirement the UI cannot show.
 9. Visible text ≤150 words (comments ≤80); cold-reader check if >80.
-10. Real newlines, no literal `\n`.
+10. Real newlines, no literal `\n`; each paragraph on one line, no hard
+    wraps.
 
 When reviewing existing text, report only the broken rules, with a
 corrected version. When asked to review history, a cheap pass for the hard
