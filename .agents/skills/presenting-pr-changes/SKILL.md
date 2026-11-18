@@ -62,7 +62,7 @@ Both templates build the page from the `DATA` constant at the top. Edit only `DA
 The rules and the reason for each are in reference/taste.md. In short:
 
 - Near-white warm canvas, near-black ink, one muted gray for secondary text, one accent hue (`--accent`, blue) for the claim, `--worse` (red) for regressions. Tokens are OKLCH in each template's `:root`.
-- Inter (variable, optical sizes) for all text: title 34/600, subtitle 19/400, labels 17, ticks and notes 15–16. Geist Mono at 0.94em for identifiers. Both load with `@font-face` from `~/Library/Fonts`; `render.sh` stops if either is missing or fails to load.
+- Inter (variable, optical sizes) for all text: title 34/600, subtitle 19/400, labels 17, ticks and notes 15–16. Geist Mono at 0.94em for identifiers. Both load with `@font-face`. `render.sh` downloads them from the Google Fonts repository into `~/.cache/presenting-pr-changes/fonts` on first run, fills the templates' `{{FONTS}}` placeholder with that path, and stops if either fails to load.
 - **Ligatures off in mono:** `font-feature-settings: 'calt' 0, 'liga' 0, 'dlig' 0`. Never use `font-variant-ligatures`: every `font:` shorthand resets it, and `->` then renders as an arrow, which misquotes the code.
 - **Never:** boxes around charts, outlined badges, uppercase letter-spaced labels, rows of big-number stat cards, gradients, icons, emoji, shadows, or a brand palette.
 - **Canvas:** 1080 CSS px wide at device scale 2. The height follows the content.
