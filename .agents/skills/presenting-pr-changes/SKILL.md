@@ -61,14 +61,14 @@ Follow the layer order in reference/visualization.md: claim, data, transform, fo
 - **Note:** method, run counts and caveats in one or two sentences. A median says how many runs it is a median of.
 - **Source line** (timeline only, optional): one mono line naming the tool that found the problem, such as `ruff ASYNC119 yield-in-context-manager-in-async-generator`.
 
-`chart.html` and `timeline.html` build the page from the `DATA` constant at the top; edit only `DATA` unless the layout breaks. `diagram.html` edits the inline SVG directly following the construction table in `reference/visualization.md`.
+`chart.html` and `timeline.html` build the page from the `DATA` constant at the top; edit only `DATA` unless the layout breaks. In `timeline.html`, describe each lane as regions over stages (`set`, `broken`, `cleared`) with a label inside each one that matters, and put events such as `yield` in `boundaries`; the page refuses to render a label that does not fit its region. `diagram.html` edits the inline SVG directly following the construction table in `reference/visualization.md`.
 
 ## 5. Style
 
 The rules and the reason for each are in reference/taste.md. In short:
 
 - Near-white warm canvas, near-black ink, one muted gray for secondary text, one accent hue (`--accent`, blue) for the claim, `--worse` (red) for regressions. Tokens are OKLCH in each template's `:root`.
-- Marks use thin outlines and at most 7.5% tint, not solid fills. Hatch measured reductions or broken spans; do not add hatching to rankings where no change is measured.
+- Marks use thin outlines, at most 7.5% tint and a subtle 4px corner radius, not solid fills or square ends. Hatch measured reductions or the broken intervals of a timeline, only those intervals; do not add hatching to rankings where no change is measured.
 - Inter (variable, optical sizes) for all text: title 34/600, subtitle 19/400, labels 17, ticks and notes 15–16. Geist Mono at 0.94em for identifiers. Both load with `@font-face`. `render.sh` downloads them from the Google Fonts repository into `~/.cache/presenting-pr-changes/fonts` on first run, fills the templates' `{{FONTS}}` placeholder with that path, and stops if either fails to load.
 - **Ligatures off in mono:** `font-feature-settings: 'calt' 0, 'liga' 0, 'dlig' 0`. Never use `font-variant-ligatures`: every `font:` shorthand resets it, and `->` then renders as an arrow, which misquotes the code.
 - **Never:** boxes around charts, outlined badges, uppercase letter-spaced labels, rows of big-number stat cards, gradients, icons, emoji, shadows, or a brand palette.
@@ -86,6 +86,6 @@ Load `emil-unslop-design` and walk every element with its question: what breaks 
 
 1. Copy the template to `.amp/in/artifacts/<topic>/page.html` in the workspace, so the PNG can be embedded in the reply. Put `/.amp/in/` in the repo's `info/exclude` first.
 2. Run `python3 scripts/check.py .amp/in/artifacts/<topic>/page.html` and fix any errors before rendering.
-3. Run `scripts/render.sh .amp/in/artifacts/<topic>/page.html .amp/in/artifacts/<topic>/out/<name>.png`. It measures the content height, then screenshots at 2160px wide.
-4. Inspect the PNG with `view_media`. Name the checks in the objective: every number in the title is a labeled mark, no text overlaps a mark or gridline, nothing runs past the right edge, `->` shows as two characters, every number matches its source, and no arrow enters a target crookedly. With a reference image, also check the outlines, fills, hatching and guide geometry against it; typography alone is not a match.
+3. Run `scripts/render.sh .amp/in/artifacts/<topic>/page.html .amp/in/artifacts/<topic>/out/<name>.png`. It measures the content height, then screenshots the whole page at 2160px wide, padding included. When `chart.html` still holds several charts, render each one on its own padded canvas with a query: `scripts/render.sh '.amp/in/artifacts/<topic>/page.html?chart=stacked' out/stacked.png` (`?chart=` takes a type or a position from 1). Never deliver an element screenshot, such as agent-browser `screenshot .chart` or a DevTools node capture: it drops the page padding and the image runs to its edges.
+4. Inspect the PNG with `view_media`. Name the checks in the objective: the canvas keeps its margins on all four sides, every number in the title is a labeled mark, no text overlaps a mark or gridline, nothing runs past the right edge, `->` shows as two characters, every number matches its source, and no arrow enters a target crookedly. With a reference image, also check the outlines, fills, hatching and guide geometry against it; typography alone is not a match.
 5. Embed the PNG in the reply, keep `page.html` next to it, and say how to re-render. Offer one next step, such as a Slack post to go with the image.

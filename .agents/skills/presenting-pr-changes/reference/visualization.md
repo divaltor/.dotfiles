@@ -39,7 +39,7 @@ Most failed charts plot raw data in a default form and then write a title the ch
 | Parts of a total, before and after | outlined stacked bars, changed part first, hatched reduction to the before total | `chart.html`, `type: 'stacked'` |
 | Before/after reduction | outlined bars with a hatched reduction span and baseline projection | `chart.html`, `type: 'reduction'` |
 | Ranking or counts (findings per rule, files per team) | outlined horizontal bars sorted by value, named result lightly tinted; no delta hatching | `chart.html`, `type: 'bars'` |
-| What held when, in which order (a race, a leak across an await, a retry) | before and after lanes on one shared axis | `timeline.html` |
+| What held when, in which order (a race, a leak across an await, a retry) | before and after lanes on one shared axis of stages, with labeled regions | `timeline.html` |
 | What talks to what, or work moving across a boundary (deferred import, new queue, removed hop) | before and after blueprint diagram, same positions | `diagram.html` |
 | One or two numbers | a sentence in the Slack message, not an image | none |
 
@@ -76,7 +76,9 @@ Readers judge position best, then length, then angle and area, then color. Put t
 
 - Title 34px, weight 600; subtitle 19px muted. No eyebrow label above the title.
 - Plot: no frame, no background, no axis lines. Gridlines run only across the value axis, 1px `--line`.
-- Ranking bars: square ends, about 30% gap, value at the end; neutral outlines with 7.5% accent tint only on the named result. Stacked bars: outlined parts with light tint, no solid fills; project the before total and hatch any reduction. Reduction bars: 1.25px neutral before outline, 1.5px accent after outline with 7.5% fill, 4px corner radius, and a dashed hatched span to the projected baseline.
+- Every bar, part and span has a subtle 4px corner radius: ranking, stacked, reduction and timeline alike. Never square ends, never pills.
+- Ranking bars: about 30% gap, value at the end; neutral outlines with 7.5% accent tint only on the named result. Stacked bars: outlined parts with light tint, no solid fills, a 2px gap between parts; project the before total and hatch any reduction. Reduction bars: 1.25px neutral before outline, 1.5px accent after outline with 7.5% fill, and a dashed hatched span to the projected baseline.
+- Hatching is drawn at 1:1 pixels, so every hatched span has the same line weight and pitch.
 - Text that sits over marks gets a halo (`paint-order: stroke; stroke: var(--bg); stroke-width: 6px` in SVG) so it stays readable.
 - Never: chart frames, both axis lines, tick marks, rotated labels, smoothed curves, area fills, pill bars, 3D, rainbow series.
 
@@ -106,7 +108,7 @@ Name the single construction relationship in one sentence before drawing — wha
   - Absent / vacated / removed region: `1.25px`, `stroke-dasharray="4 5"`, clipped `12px` 45° diagonal hatch when the vacated span is the claim.
   - Transfer / movement arrow: `1.25px`, `stroke-dasharray="4 5"` with an open 45° arrowhead. Always route elbows orthogonally with rounded corners (`Q`) so every arrowhead enters its target straight vertically or horizontally; diagonal entry into a vertical arrowhead reads as a drawing bug. Never draw an arrow for an unchanged part — projection guides alone show alignment, while arrows mean movement or change.
 - **Dimensions earn their place.** Use split dimension lines with open `<` `>` arrowheads meeting witness lines only when they carry a label across a total or multi-part span. Never draw an unlabeled `<--->` arrow, never add decorative corner/edge registration ticks, and never draw a dimension line across a span already enclosed and labeled by a single box.
-- **Timelines:** one shared horizontal axis, one lane per state or caller, bar length is duration and position is when. Put each lane's outcome at its right end; mark the broken span with a hatched `--worse` region and cleared spans with `4 5` dashed outlines.
+- **Timelines:** one shared axis of stage boxes, one lane per state or caller; every region starts and ends on a stage edge. A state that persists is one outlined run across its stages, lightly tinted in the lane tone (a restrained 1.25px outline for `--worse`). Hatch only the intervals where that state is broken, never the whole run. Cleared intervals are dashed outlines, gray unless they carry the outcome. Label each region inside itself, left-aligned with its stage label, and name events between stages (a `yield`, an `await`) with a labeled projection guide that stays 8px clear of bars and text. Put the outcome in the last region, not in a caption.
 - **Boundaries:** group with a `1px` hairline outline and a top-left label, never a tinted card fill. Always run `python3 scripts/check.py` before `scripts/render.sh`.
 
 ## Layout

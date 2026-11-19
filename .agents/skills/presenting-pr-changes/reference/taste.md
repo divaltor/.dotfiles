@@ -35,8 +35,8 @@ Rules for a calm, neutral look that applies to a still image. Each rule says why
   Why: Linear rebuilt its themes in LCH from three inputs because equal lightness then looks equally light, so the accent and the regression color carry the same weight.
 - **One accent, and it always means the same thing.**
   Why: Apple, Familiarity: things that look the same must behave the same. A reader who learned "blue is after" on one chart reads every chart that way.
-- **Marks use thin outlines and at most 7.5% tint; hatching names a reduction or a broken span.**
-  Why: solid fills overpower the values and hide the projection guides; a hatched region distinguishes removed or broken work from retained work without adding another hue.
+- **Marks use thin outlines, at most 7.5% tint and a subtle 4px radius; hatching names a reduction or a broken interval, and only that interval.**
+  Why: solid fills overpower the values and hide the projection guides; a hatched region distinguishes removed or broken work from retained work without adding another hue. Hatching a whole bar says everything is broken and hides where it broke. Square corners read as unfinished next to the rounded stage boxes and outlines.
 
 ## Type
 
