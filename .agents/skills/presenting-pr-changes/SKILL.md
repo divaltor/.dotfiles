@@ -9,6 +9,8 @@ The reader is a colleague who did not do the work. They see one image in Slack, 
 
 Read [reference/visualization.md](reference/visualization.md) before drawing anything and [reference/taste.md](reference/taste.md) before changing any style. The templates already follow both.
 
+When a reference image is supplied, match its visual construction before choosing a template. Compare the rendered result with the reference, not just the prose rules. For before/after reductions, use outlined bars, baseline projection guides and a dashed hatched reduction span (`type: 'reduction'`); solid ranking bars are not a substitute.
+
 ## 1. Pick the picture
 
 ```
@@ -16,7 +18,7 @@ What does the work change for the reader?
 ├── Moves a measured number (memory, runtime, cost, counts)
 │   → chart, templates/chart.html
 │     ├── parts of a total, before and after     → type: 'stacked'
-│     ├── one value per item, before and after   → type: 'dumbbell'
+│     ├── before/after, one or several items     → type: 'reduction'
 │     └── a ranking or counts across items       → type: 'bars'
 ├── Fixes behaviour about time or order (leak, race, retry, lifetime)
 │   → before/after lanes, templates/timeline.html
@@ -66,6 +68,7 @@ Follow the layer order in reference/visualization.md: claim, data, transform, fo
 The rules and the reason for each are in reference/taste.md. In short:
 
 - Near-white warm canvas, near-black ink, one muted gray for secondary text, one accent hue (`--accent`, blue) for the claim, `--worse` (red) for regressions. Tokens are OKLCH in each template's `:root`.
+- Marks use thin outlines and at most 7.5% tint, not solid fills. Hatch measured reductions or broken spans; do not add hatching to rankings where no change is measured.
 - Inter (variable, optical sizes) for all text: title 34/600, subtitle 19/400, labels 17, ticks and notes 15–16. Geist Mono at 0.94em for identifiers. Both load with `@font-face`. `render.sh` downloads them from the Google Fonts repository into `~/.cache/presenting-pr-changes/fonts` on first run, fills the templates' `{{FONTS}}` placeholder with that path, and stops if either fails to load.
 - **Ligatures off in mono:** `font-feature-settings: 'calt' 0, 'liga' 0, 'dlig' 0`. Never use `font-variant-ligatures`: every `font:` shorthand resets it, and `->` then renders as an arrow, which misquotes the code.
 - **Never:** boxes around charts, outlined badges, uppercase letter-spaced labels, rows of big-number stat cards, gradients, icons, emoji, shadows, or a brand palette.
@@ -84,5 +87,5 @@ Load `emil-unslop-design` and walk every element with its question: what breaks 
 1. Copy the template to `.amp/in/artifacts/<topic>/page.html` in the workspace, so the PNG can be embedded in the reply. Put `/.amp/in/` in the repo's `info/exclude` first.
 2. Run `python3 scripts/check.py .amp/in/artifacts/<topic>/page.html` and fix any errors before rendering.
 3. Run `scripts/render.sh .amp/in/artifacts/<topic>/page.html .amp/in/artifacts/<topic>/out/<name>.png`. It measures the content height, then screenshots at 2160px wide.
-4. Inspect the PNG with `view_media`. Name the checks in the objective: every number in the title is a labeled mark, no text overlaps a mark or gridline, nothing runs past the right edge, `->` shows as two characters, every number matches its source, and no arrow enters a target crookedly.
+4. Inspect the PNG with `view_media`. Name the checks in the objective: every number in the title is a labeled mark, no text overlaps a mark or gridline, nothing runs past the right edge, `->` shows as two characters, every number matches its source, and no arrow enters a target crookedly. With a reference image, also check the outlines, fills, hatching and guide geometry against it; typography alone is not a match.
 5. Embed the PNG in the reply, keep `page.html` next to it, and say how to re-render. Offer one next step, such as a Slack post to go with the image.

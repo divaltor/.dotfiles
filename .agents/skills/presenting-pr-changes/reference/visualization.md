@@ -30,15 +30,15 @@ Most failed charts plot raw data in a default form and then write a title the ch
 - "X is 38% of Y": draw the share as a length (one stacked bar), not two raw counts.
 - "N% finish within X": draw the cumulative share with a rule at N%.
 - Groups of different sizes: plot a rate per unit, and name the denominator in the subtitle.
-- Before and after: plot both values on one shared axis (dumbbell) or the difference, never two charts with separate scales.
+- Before and after: use outlined bars on one zero-based axis, project the before endpoint to the after row and hatch the reduction span. Put its delta below the span when it is too narrow to hold text; never widen it to fit. Repeat the same construction for several items, keeping one scale.
 
 ## Pick the form by the question
 
 | Question | Form | Template |
 | --- | --- | --- |
-| Parts of a total, before and after | one stacked bar per state, the part that changed at the bottom of the stack | `chart.html`, `type: 'stacked'` |
-| One value per item, before and after | dumbbell on a shared axis | `chart.html`, `type: 'dumbbell'` |
-| Ranking or counts (findings per rule, files per team) | horizontal bars sorted by value, one highlighted | `chart.html`, `type: 'bars'` |
+| Parts of a total, before and after | outlined stacked bars, changed part first, hatched reduction to the before total | `chart.html`, `type: 'stacked'` |
+| Before/after reduction | outlined bars with a hatched reduction span and baseline projection | `chart.html`, `type: 'reduction'` |
+| Ranking or counts (findings per rule, files per team) | outlined horizontal bars sorted by value, named result lightly tinted; no delta hatching | `chart.html`, `type: 'bars'` |
 | What held when, in which order (a race, a leak across an await, a retry) | before and after lanes on one shared axis | `timeline.html` |
 | What talks to what, or work moving across a boundary (deferred import, new queue, removed hop) | before and after blueprint diagram, same positions | `diagram.html` |
 | One or two numbers | a sentence in the Slack message, not an image | none |
@@ -51,7 +51,7 @@ Readers judge position best, then length, then angle and area, then color. Put t
 
 ## Scales
 
-- Bars start at zero, because length encodes the value. Dumbbells and lines may start above zero, because only position does; pick round ticks that cover min to max.
+- Bars start at zero, because length encodes the value. Lines may start above zero, because only position does; pick round ticks that cover min to max.
 - Use a log scale past about two orders of magnitude, with human ticks (1, 10, 100, 1k), and say "log scale" in the subtitle.
 - Leave headroom so the largest mark does not touch the edge.
 
@@ -76,9 +76,9 @@ Readers judge position best, then length, then angle and area, then color. Put t
 
 - Title 34px, weight 600; subtitle 19px muted. No eyebrow label above the title.
 - Plot: no frame, no background, no axis lines. Gridlines run only across the value axis, 1px `--line`.
-- Bars: square ends, about 30% gap, value at the end. Dots: 14px. Connecting lines: 3px `--line`.
+- Ranking bars: square ends, about 30% gap, value at the end; neutral outlines with 7.5% accent tint only on the named result. Stacked bars: outlined parts with light tint, no solid fills; project the before total and hatch any reduction. Reduction bars: 1.25px neutral before outline, 1.5px accent after outline with 7.5% fill, 4px corner radius, and a dashed hatched span to the projected baseline.
 - Text that sits over marks gets a halo (`paint-order: stroke; stroke: var(--bg); stroke-width: 6px` in SVG) so it stays readable.
-- Never: chart frames, both axis lines, tick marks, rotated labels, smoothed curves, area fills, rounded or pill bars, 3D, rainbow series.
+- Never: chart frames, both axis lines, tick marks, rotated labels, smoothed curves, area fills, pill bars, 3D, rainbow series.
 
 ## Diagrams
 
