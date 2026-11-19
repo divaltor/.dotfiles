@@ -31,13 +31,14 @@
   .plot { position: relative; margin-top: 44px; }
   .segs, .lane { display: grid; grid-template-columns: var(--lane) 1fr; position: relative; }
   .cols { display: grid; column-gap: 4px; }
-  .seg { height: 44px; border-radius: 6px; background: var(--surface); display: flex; align-items: center; padding: 0 12px; font: 400 16px/1 var(--sans); color: var(--muted); white-space: nowrap; overflow: hidden; }
+  .seg { height: 44px; border-radius: 6px; border: 1px solid var(--line); display: flex; align-items: center; padding: 0 12px; font: 400 16px/1 var(--sans); color: var(--muted); white-space: nowrap; overflow: hidden; }
   .seg.code { font: 450 16px/1 var(--mono); color: var(--ink); }
   .lane { margin-top: 36px; align-items: center; }
   .lane h2 { font: 500 17px/1 var(--sans); }
-  .track { position: relative; height: 12px; }
-  .track::before { content: ''; position: absolute; left: 0; right: 0; top: 5.5px; border-top: 1px dashed var(--context); }
-  .span { position: absolute; top: 0; height: 12px; border-radius: 2px; }
+  .track { position: relative; height: 32px; }
+  .span { position: absolute; top: 0; height: 32px; border-radius: 4px; border: 1.5px solid currentColor; background: color-mix(in oklch, currentColor 7.5%, transparent); overflow: hidden; }
+  .span svg { display: block; width: 100%; height: 100%; }
+  .span.cleared { border: 1.25px dashed currentColor; background: none; }
   .notes { grid-column: 2; display: flex; justify-content: space-between; gap: 24px; margin-top: 12px; font: 400 17px/1.3 var(--sans); }
   .notes span { color: var(--muted); }
   .notes strong { font-weight: 500; white-space: nowrap; }
@@ -45,6 +46,9 @@
 </style>
 </head>
 <body>
+<svg width="0" height="0" aria-hidden="true" style="position:absolute" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 12">
+  <defs><pattern id="timeline-hatch" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="12" stroke="var(--worse)" stroke-width="1.25" stroke-opacity="0.24"/></pattern></defs>
+</svg>
 <main id="page"></main>
 
 <script>
@@ -55,7 +59,7 @@
 //        left: a lowercase fragment on what the bar shows; right: the end result.
 const DATA = {
   source: 'ruff ASYNC119 yield-in-context-manager-in-async-generator',
-  title: 'Team context now ends at every <code>yield</code> instead of leaking into the triggerer',
+  title: 'Team context now ends at every <code>yield</code>',
   sub: 'Where the team <code>ContextVar</code> is set while <code>FtBaseTrigger.run()</code> yields events',
   segments: [
     { label: 'execute()', code: true, width: 20 },
@@ -64,8 +68,8 @@ const DATA = {
     { label: 'closed from another context', width: 31 },
   ],
   lanes: [
-    { name: 'Before', tone: 'worse', spans: [[0, 4]], left: 'team stays set while the triggerer runs', right: '<code>reset()</code> raises <code>ValueError</code>' },
-    { name: 'After', tone: 'accent', spans: [[0, 1], [2, 3]], left: 'team set only while <code>execute()</code> runs', right: 'nothing to reset' },
+    { name: 'before', tone: 'worse', spans: [[0, 4]], left: 'team stays set while the triggerer runs', right: '<code>reset()</code> raises <code>ValueError</code>' },
+    { name: 'after', tone: 'accent', spans: [[0, 1], [2, 3]], left: 'team set only while <code>execute()</code> runs', right: 'nothing to reset' },
   ],
   note: 'A new test that closes the generator from another context fails on the old code and passes on the new.',
 }
@@ -89,9 +93,14 @@ for (const lane of DATA.lanes) {
   const row = el('div', 'lane'), track = el('div', 'track'), color = `var(--${lane.tone})`
   for (const [from, to] of lane.spans) {
     const inset = (from ? 2 : 0) + (to < DATA.segments.length ? 2 : 0)
-    const s = el('div', 'span'); s.style.left = `calc(${at(from)}% + ${from ? 2 : 0}px)`; s.style.width = `calc(${at(to) - at(from)}% - ${inset}px)`; s.style.background = color
+    const s = el('div', 'span'); s.style.left = `calc(${at(from)}% + ${from ? 2 : 0}px)`; s.style.width = `calc(${at(to) - at(from)}% - ${inset}px)`; s.style.color = color
+    if (lane.tone === 'worse') s.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 32" preserveAspectRatio="xMinYMid slice"><rect width="100%" height="100%" fill="url(#timeline-hatch)"/></svg>'
     track.append(s)
   }
+  if (lane !== DATA.lanes[0]) DATA.segments.forEach((_, i) => {
+    if (!DATA.lanes[0].spans.some(([from, to]) => from <= i && i < to) || lane.spans.some(([from, to]) => from <= i && i < to)) return
+    const cleared = el('div', 'span cleared'); cleared.style.left = `calc(${at(i)}% + 2px)`; cleared.style.width = `calc(${at(i + 1) - at(i)}% - 4px)`; cleared.style.color = color; track.append(cleared)
+  })
   const notes = el('div', 'notes', `<span>${lane.left}</span><strong style="color:${color}">${lane.right}</strong>`)
   row.append(el('h2', '', lane.name), track, notes)
   plot.append(row)

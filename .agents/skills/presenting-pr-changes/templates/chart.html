@@ -32,22 +32,20 @@
   .plot { position: relative; margin-top: 40px; font-variant-numeric: tabular-nums; }
   .grid { position: absolute; top: 0; bottom: 32px; left: var(--label); right: var(--end); pointer-events: none; }
   .grid div { position: absolute; top: 0; bottom: 0; border-left: 1px solid var(--line); }
-  .plot.dumbbell { --label: 0px; }
   .group { font: 500 17px/1 var(--sans); padding: 20px 0 10px; position: relative; width: fit-content; background: var(--bg); padding-right: 12px; }
   .group:first-child { padding-top: 0; }
-  .dname { font: 400 17px/1 var(--sans); color: var(--muted); padding-top: 18px; position: relative; width: fit-content; background: var(--bg); padding-right: 12px; }
-  .dname:first-child, .key + .dname { padding-top: 0; }
-  .dname .id { color: var(--ink); }
-  .row { display: grid; grid-template-columns: var(--label) 1fr var(--end); align-items: center; height: 40px; position: relative; }
+  .row { display: grid; grid-template-columns: var(--label) 1fr var(--end); align-items: center; height: 48px; position: relative; }
   .row .name { font: 400 17px/1.2 var(--sans); color: var(--muted); padding-right: 16px; }
   .row .name .id { color: var(--ink); }
   .track { position: relative; height: 100%; }
-  .bar { position: absolute; top: 8px; height: 24px; }
+  .bar { position: absolute; top: 8px; height: 32px; border: 1.25px solid currentColor; }
+  .bar.named { border-width: 1.5px; background: color-mix(in oklch, currentColor 7.5%, transparent); }
+  .vacated { position: absolute; top: 8px; height: 32px; border: 1.25px dashed currentColor; }
+  .vacated svg { display: block; width: 100%; height: 100%; }
+  .projection { position: absolute; top: -8px; height: 8px; border-left: 1px solid color-mix(in oklch, var(--ink) 18%, transparent); }
   .val { position: absolute; top: 50%; transform: translateY(-50%); font: 500 17px/1 var(--sans); white-space: nowrap; background: var(--bg); padding: 4px; }
   .val em { font-style: normal; font-weight: 400; color: var(--muted); margin-left: 6px; }
   .val em.worse { color: var(--worse); }
-  .line { position: absolute; top: 50%; height: 3px; margin-top: -1.5px; background: var(--line); }
-  .pt { position: absolute; top: 50%; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; }
   .key { position: relative; height: 28px; margin-left: var(--label); margin-right: var(--end); font: 500 15px/1 var(--sans); }
   .key span { position: absolute; top: 0; white-space: nowrap; background: var(--bg); padding-right: 6px; }
   .axis { position: relative; height: 32px; margin-left: var(--label); margin-right: var(--end); font: 400 15px/1 var(--sans); color: var(--muted); }
@@ -57,17 +55,33 @@
 </style>
 </head>
 <body>
+<svg width="0" height="0" aria-hidden="true" style="position:absolute" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 12">
+  <defs><pattern id="stacked-hatch" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="12" stroke="var(--accent)" stroke-width="1.25" stroke-opacity="0.22"/></pattern></defs>
+</svg>
 <main id="charts"></main>
 
 <script>
-// Example values: the stacked and dumbbell charts come from a past memory PR, the bars from counting
+// Example values: the reduction and stacked charts come from a past memory PR, the bars from counting
 // DAG files per team in this repo. Replace every value with measured numbers you can point to.
+// reduction: outlined before/after bars on a zero-based axis; repeat rows for several items.
 // stacked: parts of a total per row; bar length encodes size, so the domain starts at 0.
 //          Put the part the claim is about first: only the first part has a common baseline.
-// dumbbell: before and after per row on one axis; only position encodes size, so it may start above 0.
 // bars: one value per item, sorted, value at the bar end, no axis. `highlight` marks what the title names.
-// better: 'lower' (default) or 'higher' decides when a delta or an after dot is drawn in --worse.
+// better: 'lower' (default) or 'higher' decides when a reduction-chart delta is drawn in --worse.
 const DATA = [
+  {
+    type: 'reduction',
+    title: 'Deferring imports cut sampled task-process RSS by 32%',
+    sub: 'Task process RSS after parsing the DAG file in a worker pod',
+    unit: 'MB', domain: [0, 450], ticks: [0, 150, 300, 450],
+    rows: [
+      { name: '40 sampled DAG files, median', before: 339, after: 230 },
+      { name: 'bilayer_prospector_daily_usage_report', id: true, before: 371, after: 194 },
+      { name: 'events_cdc', id: true, before: 340, after: 206 },
+      { name: 'test_node_selector', id: true, before: 361, after: 263 },
+    ],
+    note: 'one parse per file for the sample, medians of five runs for named DAGs; hatched spans show the measured reduction, not work removed from task execution.',
+  },
   {
     type: 'stacked',
     title: 'Both changes together cut task pod memory by 29% to 39%',
@@ -87,20 +101,6 @@ const DATA = [
       ] },
     ],
     note: 'Both run a full GC before PSS is read from <code>smaps_rollup</code>. Without the freeze, repeated runs ranged up to 26 MB higher.',
-  },
-  {
-    type: 'dumbbell',
-    title: 'A typical task process drops from 339 MB to 230 MB, 32% less',
-    sub: 'Task process RSS after parsing the DAG file in a worker pod',
-    unit: 'MB', domain: [150, 450], ticks: [150, 250, 350, 450],
-    series: [{ name: 'before', color: 'var(--context)' }, { name: 'after', color: 'var(--accent)' }],
-    rows: [
-      { name: '40 random DAG files, median', before: 339, after: 230 },
-      { name: 'bilayer_prospector_daily_usage_report', id: true, before: 371, after: 194 },
-      { name: 'events_cdc', id: true, before: 340, after: 206 },
-      { name: 'test_node_selector', id: true, before: 361, after: 263 },
-    ],
-    note: 'Medians of 5 runs for single DAGs, one run per file for the sample.',
   },
   {
     type: 'bars',
@@ -143,51 +143,76 @@ function stackedKey(c, r) {
   return key
 }
 
-function stackedRow(c, r) {
+function stackedRow(c, r, baseline) {
   const row = el('div', 'row'), track = el('div', 'track')
   row.append(el('div', 'name', label(r)), track, el('div'))
   let x = 0
   r.parts.forEach((v, i) => {
-    const b = el('div', 'bar'); b.style.left = pct(c, x) + '%'; b.style.width = `calc(${pct(c, v) - pct(c, 0)}% - 2px)`
-    b.style.background = c.series[i].color; track.append(b); x += v
+    const b = el('div', 'bar' + (r !== baseline && i === 0 ? ' named' : '')); b.style.left = pct(c, x) + '%'; b.style.width = `calc(${pct(c, v) - pct(c, 0)}% - 2px)`
+    b.style.color = r === baseline ? 'var(--context)' : c.series[i].color; track.append(b); x += v
   })
+  const before = baseline.parts.reduce((sum, v) => sum + v, 0)
+  if (x < before) {
+    const span = el('div', 'vacated', '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 32" preserveAspectRatio="xMinYMid slice"><rect width="100%" height="100%" fill="url(#stacked-hatch)"/></svg>')
+    span.style.left = pct(c, x) + '%'; span.style.width = pct(c, before) - pct(c, x) + '%'; span.style.color = 'var(--accent)'; track.append(span)
+  }
+  if (r !== baseline) {
+    const guide = el('div', 'projection'); guide.style.left = pct(c, before) + '%'; track.append(guide)
+  }
   const delta = r.delta ? `<em class="${isWorse(c, r.delta) ? 'worse' : ''}">${signed(r.delta)}</em>` : ''
-  const v = el('div', 'val', `${x} ${c.unit}${delta}`); v.style.left = `calc(${pct(c, x)}% + 8px)`; track.append(v)
+  const v = el('div', 'val', `${x} ${c.unit}${delta}`); v.style.left = `calc(${pct(c, Math.max(x, before))}% + 8px)`; track.append(v)
   return row
-}
-
-function dumbbellKey(c, r) {
-  const key = el('div', 'key')
-  for (const [k, s] of [['before', c.series[0]], ['after', c.series[1]]]) {
-    const span = el('span', '', s.name); span.style.left = pct(c, r[k]) + '%'; span.style.transform = 'translateX(-50%)'; span.style.color = textColor(s.color)
-    key.append(span)
-  }
-  return key
-}
-
-function dumbbellRow(c, r) {
-  const row = el('div', 'row'), track = el('div', 'track')
-  row.append(el('div'), track, el('div'))
-  const d = r.after - r.before, worse = isWorse(c, d)
-  const [lo, hi] = [Math.min(r.before, r.after), Math.max(r.before, r.after)]
-  const line = el('div', 'line'); line.style.left = pct(c, lo) + '%'; line.style.width = pct(c, hi) - pct(c, lo) + '%'; track.append(line)
-  for (const [k, color] of [['before', c.series[0].color], ['after', worse ? 'var(--worse)' : c.series[1].color]]) {
-    const p = el('div', 'pt'); p.style.left = pct(c, r[k]) + '%'; p.style.background = color; track.append(p)
-  }
-  const afterText = `${r.after}<em class="${worse ? 'worse' : ''}">${signed(d)}</em>`
-  const [loText, hiText] = r.after < r.before ? [afterText, r.before] : [r.before, afterText]
-  const a = el('div', 'val', loText); a.style.right = `calc(${100 - pct(c, lo)}% + 12px)`; track.append(a)
-  const b = el('div', 'val', hiText); b.style.left = `calc(${pct(c, hi)}% + 12px)`; track.append(b)
-  return [el('div', 'dname', label(r)), row]
 }
 
 function barsRow(c, r, max) {
   const row = el('div', 'row'), track = el('div', 'track')
   row.append(el('div', 'name', label(r)), track, el('div'))
   const w = (r.value / max) * 100
-  const b = el('div', 'bar'); b.style.left = 0; b.style.width = w + '%'; b.style.background = r.highlight ? 'var(--accent)' : 'var(--context)'; track.append(b)
+  const b = el('div', 'bar' + (r.highlight ? ' named' : '')); b.style.left = 0; b.style.width = w + '%'; b.style.color = r.highlight ? 'var(--accent)' : 'var(--context)'; track.append(b)
   const v = el('div', 'val', r.value); v.style.left = `calc(${w}% + 8px)`; if (r.rest) v.style.color = 'var(--muted)'; track.append(v)
   return row
+}
+
+function reductionChart(c) {
+  if (c.domain[0] !== 0) throw new Error('Reduction bars require a zero-based domain')
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+  const left = 180, width = 620, pitch = 184, height = c.rows.length * pitch + 32
+  const x = value => left + value / c.domain[1] * width
+  const fmt = value => Number(value.toFixed(1)).toLocaleString('en-US')
+  const patternId = 'reduction-hatch-' + document.querySelectorAll('section.chart').length
+  svg.setAttribute('viewBox', `0 0 936 ${height}`)
+  svg.setAttribute('role', 'img')
+  svg.setAttribute('aria-label', c.title)
+  svg.style.cssText = 'display:block;width:100%;height:auto;font-variant-numeric:tabular-nums'
+  let shapes = `<defs><pattern id="${patternId}" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="10" stroke="currentColor" stroke-width="1" opacity="0.22"/></pattern></defs>`
+  const text = (px, py, value, color = 'var(--muted)', anchor = 'start', weight = 400) => `<text x="${px}" y="${py}" fill="${color}" text-anchor="${anchor}" font-size="16" font-weight="${weight}" style="paint-order:stroke;stroke:var(--bg);stroke-width:6px;stroke-linejoin:round">${value}</text>`
+  c.ticks.forEach(tick => {
+    c.rows.forEach((r, i) => {
+      if (tick <= Math.max(r.before, r.after)) shapes += `<line x1="${x(tick)}" x2="${x(tick)}" y1="${i * pitch + 34}" y2="${i * pitch + 138}" stroke="var(--line)" stroke-width="1"/>`
+    })
+    shapes += text(x(tick), height - 8, tick === c.ticks.at(-1) ? `${fmt(tick)} ${c.unit}` : fmt(tick), 'var(--muted)', tick === 0 ? 'start' : 'middle')
+  })
+  c.rows.forEach((r, i) => {
+    const top = i * pitch, beforeY = top + 48, afterY = top + 98, barHeight = 32
+    const delta = Number((r.after - r.before).toFixed(1)), worse = isWorse(c, delta)
+    const color = worse ? 'var(--worse)' : 'var(--accent)'
+    const endpoint = x(Math.max(r.before, r.after)), low = x(Math.min(r.before, r.after))
+    shapes += `<g${r.id ? ' class="id"' : ''}>${text(0, top + 20, r.name, 'var(--ink)', 'start', 500)}</g>`
+    shapes += text(0, beforeY + 22, 'before') + text(0, afterY + 22, 'after', color, 'start', 500)
+    shapes += `<rect x="${left}" y="${beforeY}" width="${x(r.before) - left}" height="${barHeight}" rx="4" fill="none" stroke="var(--ink)" stroke-width="1.25" stroke-opacity="0.45"/>`
+    shapes += `<line x1="${x(r.before)}" x2="${x(r.before)}" y1="${beforeY + barHeight + 8}" y2="${afterY - 8}" stroke="var(--ink)" stroke-opacity="0.18"/>`
+    shapes += `<rect x="${left}" y="${afterY}" width="${x(r.after) - left}" height="${barHeight}" rx="4" fill="${color}" fill-opacity="0.075" stroke="${color}" stroke-width="1.5"/>`
+    if (delta !== 0) {
+      const hatchY = worse ? beforeY : afterY
+      shapes += `<rect x="${low}" y="${hatchY}" width="${endpoint - low}" height="${barHeight}" rx="4" fill="url(#${patternId})" color="${color}" stroke="${color}" stroke-opacity="0.55" stroke-width="1.25" stroke-dasharray="4 5"/>`
+    }
+    shapes += text(endpoint + 16, beforeY + 22, `${fmt(r.before)} ${c.unit}`)
+    shapes += text(endpoint + 16, afterY + 22, `${fmt(r.after)} ${c.unit}`, color, 'start', 500)
+    const percent = (r.after / r.before - 1) * 100
+    shapes += text(endpoint, afterY + 62, `${signed(delta)} ${c.unit} (${percent < 0 ? '−' : '+'}${fmt(Math.abs(percent))}%)`, color, 'end', 500)
+  })
+  svg.innerHTML = shapes
+  return svg
 }
 
 const root = document.getElementById('charts')
@@ -195,16 +220,14 @@ for (const c of DATA) {
   const sec = el('section', 'chart')
   sec.append(el('h1', '', c.title), el('p', 'sub', c.sub))
   const plot = el('div', 'plot ' + c.type)
-  if (c.type === 'stacked') {
+  if (c.type === 'reduction') {
+    plot.append(reductionChart(c))
+  } else if (c.type === 'stacked') {
     c.groups.forEach((g, i) => {
       plot.append(el('div', 'group', g.name))
       if (i === 0) plot.append(stackedKey(c, g.rows[0]))
-      g.rows.forEach(r => plot.append(stackedRow(c, r)))
+      g.rows.forEach(r => plot.append(stackedRow(c, r, g.rows[0])))
     })
-    axis(c, plot)
-  } else if (c.type === 'dumbbell') {
-    plot.append(dumbbellKey(c, c.rows[0]))
-    c.rows.forEach(r => plot.append(...dumbbellRow(c, r)))
     axis(c, plot)
   } else {
     const items = [...c.items.filter(r => !r.rest).sort((a, b) => b.value - a.value), ...c.items.filter(r => r.rest)]

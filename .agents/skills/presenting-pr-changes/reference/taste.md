@@ -35,6 +35,8 @@ Rules for a calm, neutral look that applies to a still image. Each rule says why
   Why: Linear rebuilt its themes in LCH from three inputs because equal lightness then looks equally light, so the accent and the regression color carry the same weight.
 - **One accent, and it always means the same thing.**
   Why: Apple, Familiarity: things that look the same must behave the same. A reader who learned "blue is after" on one chart reads every chart that way.
+- **Marks use thin outlines and at most 7.5% tint; hatching names a reduction or a broken span.**
+  Why: solid fills overpower the values and hide the projection guides; a hatched region distinguishes removed or broken work from retained work without adding another hue.
 
 ## Type
 
@@ -55,7 +57,7 @@ Generated from three inputs: base hue 80 (warm), chroma kept under 0.01 for neut
 | --- | --- | --- |
 | `--bg` | `oklch(99.3% 0.002 80)` | Canvas |
 | `--surface` | `oklch(96.8% 0.003 80)` | Code lines, diagram nodes, timeline segments |
-| `--line` | `oklch(91.5% 0.004 80)` | Gridlines, dumbbell connectors, hairline rules |
+| `--line` | `oklch(91.5% 0.004 80)` | Gridlines, hairline rules |
 | `--context` | `oklch(76% 0.006 80)` | Data marks that are not the point (before, other parts, other bars) |
 | `--muted` | `oklch(47% 0.008 80)` | Secondary text, ticks, notes |
 | `--ink` | `oklch(20% 0.005 80)` | Titles, values, primary text |
