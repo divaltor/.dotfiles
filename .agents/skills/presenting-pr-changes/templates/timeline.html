@@ -29,34 +29,47 @@
   .sub { font: 400 19px/1.45 var(--sans); letter-spacing: -0.011em; color: var(--muted); margin-top: 8px; max-width: 62ch; text-wrap: pretty; }
 
   .plot { position: relative; margin-top: 44px; }
+  .guide { position: absolute; width: 0; border-left: 1px solid color-mix(in oklch, var(--ink) 18%, transparent); }
+  .marks { position: relative; height: 15px; margin: 0 0 10px var(--lane); font: 450 15px/1 var(--mono); color: var(--muted); font-feature-settings: 'calt' 0, 'liga' 0, 'dlig' 0; }
+  .marks span { position: absolute; top: 0; transform: translateX(-50%); white-space: nowrap; }
   .segs, .lane { display: grid; grid-template-columns: var(--lane) 1fr; position: relative; }
   .cols { display: grid; column-gap: 4px; }
   .seg { height: 44px; border-radius: 6px; border: 1px solid var(--line); display: flex; align-items: center; padding: 0 12px; font: 400 16px/1 var(--sans); color: var(--muted); white-space: nowrap; overflow: hidden; }
   .seg.code { font: 450 16px/1 var(--mono); color: var(--ink); }
   .lane { margin-top: 36px; align-items: center; }
   .lane h2 { font: 500 17px/1 var(--sans); }
-  .track { position: relative; height: 32px; }
-  .span { position: absolute; top: 0; height: 32px; border-radius: 4px; border: 1.5px solid currentColor; background: color-mix(in oklch, currentColor 7.5%, transparent); overflow: hidden; }
-  .span svg { display: block; width: 100%; height: 100%; }
-  .span.cleared { border: 1.25px dashed currentColor; background: none; }
-  .notes { grid-column: 2; display: flex; justify-content: space-between; gap: 24px; margin-top: 12px; font: 400 17px/1.3 var(--sans); }
-  .notes span { color: var(--muted); }
-  .notes strong { font-weight: 500; white-space: nowrap; }
+  .track { position: relative; height: 36px; }
+  .region { position: absolute; top: 0; height: 36px; border-radius: 4px; }
+  .run { border: 1.5px solid currentColor; background: color-mix(in oklch, currentColor 7.5%, transparent); overflow: hidden; }
+  .run.worse { border-width: 1.25px; background: color-mix(in oklch, currentColor 4%, transparent); }
+  .run svg { position: absolute; top: 0; display: block; }
+  .cleared { border: 1.25px dashed currentColor; }
+  .label { display: flex; align-items: center; padding: 0 12px; font: 500 16px/1 var(--sans); white-space: nowrap; }
+  .label.quiet { font-weight: 400; }
+  .label.over-hatch { -webkit-text-stroke: 5px var(--bg); paint-order: stroke fill; }
+  .lane-note { grid-column: 2; margin-top: 12px; font: 400 16px/1.3 var(--sans); color: var(--muted); position: relative; }
   .note { font: 400 16px/1.5 var(--sans); color: var(--muted); margin-top: 40px; max-width: 70ch; text-wrap: pretty; }
 </style>
 </head>
 <body>
 <svg width="0" height="0" aria-hidden="true" style="position:absolute" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 12">
-  <defs><pattern id="timeline-hatch" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="12" stroke="var(--worse)" stroke-width="1.25" stroke-opacity="0.24"/></pattern></defs>
+  <defs><pattern id="timeline-hatch" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="10" stroke="var(--worse)" stroke-width="1" stroke-opacity="0.3"/></pattern></defs>
 </svg>
 <main id="page"></main>
 
 <script>
 // Example from a past trigger fix. Replace every value with the facts of your change.
 // segments: the shared axis, left to right, with relative widths. `code: true` sets the label in mono.
-// lanes: one per state (before, after) or per caller. Each span [from, to) covers segment indexes where
-//        the state the title is about holds. tone 'worse' marks the broken state, 'accent' the fixed one.
-//        left: a lowercase fragment on what the bar shows; right: the end result.
+// boundaries: events between segments, such as a yield or an await. `at: i` sits between segment i-1 and i
+//             and draws a labeled projection guide down through the lanes.
+// lanes: one per state (before, after) or per caller. `tone` is 'worse' for the broken lane, 'accent' for
+//        the fixed one. `note`: a lowercase fragment under the lane on what it shows.
+// regions [from, to) cover segment indexes and set what holds there:
+//   'set'     the state holds: outlined and lightly tinted in the lane tone
+//   'broken'  the state holds where it must not: same outline, hatched only over this interval
+//   'cleared' the state does not hold: dashed outline, gray unless `tone` is set (use it for the outcome)
+// Adjacent 'set' and 'broken' regions join into one outlined run, so a state that persists reads as one bar.
+// `label` sits inside its region; the page refuses to render when a label does not fit.
 const DATA = {
   source: 'ruff ASYNC119 yield-in-context-manager-in-async-generator',
   title: 'Team context now ends at every <code>yield</code>',
@@ -67,49 +80,106 @@ const DATA = {
     { label: 'execute()', code: true, width: 20 },
     { label: 'closed from another context', width: 31 },
   ],
+  boundaries: [{ at: 1, label: 'yield' }, { at: 3, label: 'yield' }],
   lanes: [
-    { name: 'before', tone: 'worse', spans: [[0, 4]], left: 'team stays set while the triggerer runs', right: '<code>reset()</code> raises <code>ValueError</code>' },
-    { name: 'after', tone: 'accent', spans: [[0, 1], [2, 3]], left: 'team set only while <code>execute()</code> runs', right: 'nothing to reset' },
+    { name: 'before', tone: 'worse', note: 'team stays set across every <code>yield</code> until the generator closes', regions: [
+      { from: 0, to: 1, state: 'set' },
+      { from: 1, to: 2, state: 'broken', label: 'leaked into the triggerer' },
+      { from: 2, to: 3, state: 'set' },
+      { from: 3, to: 4, state: 'broken', label: '<code>reset()</code> raises <code>ValueError</code>' },
+    ] },
+    { name: 'after', tone: 'accent', note: 'team set only while <code>execute()</code> runs', regions: [
+      { from: 0, to: 1, state: 'set', label: 'team set' },
+      { from: 1, to: 2, state: 'cleared', label: 'cleared at <code>yield</code>' },
+      { from: 2, to: 3, state: 'set', label: 'team set' },
+      { from: 3, to: 4, state: 'cleared', tone: 'accent', label: 'nothing to reset' },
+    ] },
   ],
   note: 'A new test that closes the generator from another context fails on the old code and passes on the new.',
 }
 
 const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e }
-const columns = DATA.segments.map(s => s.width + 'fr').join(' ')
-const total = DATA.segments.reduce((sum, s) => sum + s.width, 0)
-const at = i => (DATA.segments.slice(0, i).reduce((sum, s) => sum + s.width, 0) / total) * 100
 
 const page = document.getElementById('page')
 if (DATA.source) page.append(el('div', 'source', DATA.source))
 page.append(el('h1', '', DATA.title), el('p', 'sub', DATA.sub))
 
-const plot = el('div', 'plot')
-const segs = el('div', 'segs'), cols = el('div', 'cols'); cols.style.gridTemplateColumns = columns
+const plot = el('div', 'plot'), marks = el('div', 'marks')
+if (DATA.boundaries?.length) plot.append(marks)
+const segs = el('div', 'segs'), cols = el('div', 'cols'); cols.style.gridTemplateColumns = DATA.segments.map(s => s.width + 'fr').join(' ')
 DATA.segments.forEach(s => cols.append(el('div', 'seg' + (s.code ? ' code' : ''), s.label)))
 segs.append(el('div'), cols)
 plot.append(segs)
-
-for (const lane of DATA.lanes) {
-  const row = el('div', 'lane'), track = el('div', 'track'), color = `var(--${lane.tone})`
-  for (const [from, to] of lane.spans) {
-    const inset = (from ? 2 : 0) + (to < DATA.segments.length ? 2 : 0)
-    const s = el('div', 'span'); s.style.left = `calc(${at(from)}% + ${from ? 2 : 0}px)`; s.style.width = `calc(${at(to) - at(from)}% - ${inset}px)`; s.style.color = color
-    if (lane.tone === 'worse') s.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 32" preserveAspectRatio="xMinYMid slice"><rect width="100%" height="100%" fill="url(#timeline-hatch)"/></svg>'
-    track.append(s)
-  }
-  if (lane !== DATA.lanes[0]) DATA.segments.forEach((_, i) => {
-    if (!DATA.lanes[0].spans.some(([from, to]) => from <= i && i < to) || lane.spans.some(([from, to]) => from <= i && i < to)) return
-    const cleared = el('div', 'span cleared'); cleared.style.left = `calc(${at(i)}% + 2px)`; cleared.style.width = `calc(${at(i + 1) - at(i)}% - 4px)`; cleared.style.color = color; track.append(cleared)
-  })
-  const notes = el('div', 'notes', `<span>${lane.left}</span><strong style="color:${color}">${lane.right}</strong>`)
-  row.append(el('h2', '', lane.name), track, notes)
+const tracks = DATA.lanes.map(lane => {
+  const row = el('div', 'lane'), track = el('div', 'track'), name = el('h2', '', lane.name)
+  name.style.color = `var(--${lane.tone})`
+  row.append(name, track)
+  if (lane.note) row.append(el('p', 'lane-note', lane.note))
   plot.append(row)
-}
+  return track
+})
 page.append(plot)
 if (DATA.note) page.append(el('p', 'note', DATA.note))
 
+// Positions come from the rendered stage boxes, so every region edge lines up with a stage edge.
+function layout() {
+  const cells = [...cols.children].map(c => c.getBoundingClientRect()), origin = cells[0].left, n = cells.length
+  const left = i => cells[i].left - origin
+  const right = i => cells[i - 1].right - origin
+  const edge = i => (i === 0 ? left(0) : i === n ? right(n) : (right(i) + left(i)) / 2)
+  const place = (e, from, to) => { e.style.left = left(from) + 'px'; e.style.width = right(to) - left(from) + 'px'; return e }
+  const labels = []
+
+  DATA.lanes.forEach((lane, li) => {
+    const track = tracks[li]
+    let run = null
+    for (const r of lane.regions) {
+      if (!(0 <= r.from && r.from < r.to && r.to <= n)) throw new Error(`region [${r.from}, ${r.to}) is outside the segments`)
+      const tone = r.tone ?? (r.state === 'cleared' ? 'context' : lane.tone), color = `var(--${tone})`
+      if (r.state === 'cleared') {
+        run = null
+        const box = place(el('div', 'region cleared'), r.from, r.to); box.style.color = color; track.append(box)
+      } else {
+        if (!run || run.to !== r.from) {
+          run = { from: r.from, box: el('div', `region run ${tone}`) }; run.box.style.color = color; track.append(run.box)
+        }
+        run.to = r.to; place(run.box, run.from, run.to)
+        if (r.state === 'broken') {
+          const border = parseFloat(getComputedStyle(run.box).borderLeftWidth), h = 36 - 2 * border
+          // The hatch starts and ends at the boundary between stages; the run's rounded outline clips it.
+          const x = edge(r.from) - left(run.from) - border, w = edge(r.to) - edge(r.from)
+          run.box.insertAdjacentHTML('beforeend', `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" style="left:${x}px"><rect width="100%" height="100%" fill="url(#timeline-hatch)"/></svg>`)
+        }
+      }
+      if (r.label) {
+        const label = place(el('div', 'region label' + (tone === 'context' ? ' quiet' : '') + (r.state === 'broken' ? ' over-hatch' : ''), `<span>${r.label}</span>`), r.from, r.to)
+        label.style.color = tone === 'context' ? 'var(--muted)' : color
+        track.append(label); labels.push(label)
+      }
+    }
+  })
+
+  // Guides keep 8px clear of every bar and lane note, so they align edges without crossing a contour or text.
+  const top = plot.getBoundingClientRect().top, x0 = cols.getBoundingClientRect().left - plot.getBoundingClientRect().left
+  const stops = [segs, ...plot.querySelectorAll('.track, .lane-note')].map(e => e.getBoundingClientRect())
+  for (const b of DATA.boundaries ?? []) {
+    const m = el('span', '', b.label); m.style.left = edge(b.at) + 'px'; marks.append(m)
+    for (let i = 1; i < stops.length; i++) {
+      if (stops[i].top - stops[i - 1].bottom < 24) continue
+      const g = el('div', 'guide'); g.style.left = x0 + edge(b.at) - 0.5 + 'px'
+      g.style.top = stops[i - 1].bottom - top + 8 + 'px'; g.style.height = stops[i].top - stops[i - 1].bottom - 16 + 'px'
+      plot.prepend(g)
+    }
+  }
+
+  for (const label of labels) {
+    if (label.firstChild.getBoundingClientRect().width + 24 > label.getBoundingClientRect().width) throw new Error(`label "${label.textContent}" does not fit its region`)
+  }
+}
+
 document.fonts.ready.then(() => {
   document.body.dataset.fonts = document.fonts.check('16px "Inter"') && document.fonts.check('16px "Geist Mono"')
+  try { layout() } catch (e) { document.body.dataset.error = e.message; throw e }
   document.body.dataset.height = Math.ceil(document.body.getBoundingClientRect().height)
 })
 </script>
