@@ -20,8 +20,13 @@ What does the work change for the reader?
 │     └── a ranking or counts across items       → type: 'bars'
 ├── Fixes behaviour about time or order (leak, race, retry, lifetime)
 │   → before/after lanes, templates/timeline.html
-├── Changes what talks to what or moves work across a boundary (deferred import, new hop, queue)
-│   → before/after blueprint diagram, templates/diagram.html (rules in reference/visualization.md)
+├── Changes structure, flow, or boundaries
+│   → blueprint diagram, templates/diagram.html (constructions in reference/visualization.md)
+│     ├── work or cost leaves a shared stage     → split / deferral
+│     ├── a hop is added, removed, or bypassed   → routing (before/after)
+│     ├── two scopes or windows intersect        → overlap / boundary
+│     ├── N items batch, stream, or join         → fan-in / batching
+│     └── callers share one schema or contract   → relation / interface
 ├── Sweeps the codebase (lint, upgrade, migration)
 │   → bars of the counts that matter (findings per rule, files per team),
 │     plus a timeline for the one finding that was a real bug
@@ -54,7 +59,7 @@ Follow the layer order in reference/visualization.md: claim, data, transform, fo
 - **Note:** method, run counts and caveats in one or two sentences. A median says how many runs it is a median of.
 - **Source line** (timeline only, optional): one mono line naming the tool that found the problem, such as `ruff ASYNC119 yield-in-context-manager-in-async-generator`.
 
-Both templates build the page from the `DATA` constant at the top. Edit only `DATA` unless the layout breaks.
+`chart.html` and `timeline.html` build the page from the `DATA` constant at the top; edit only `DATA` unless the layout breaks. `diagram.html` edits the inline SVG directly following the construction table in `reference/visualization.md`.
 
 ## 5. Style
 
