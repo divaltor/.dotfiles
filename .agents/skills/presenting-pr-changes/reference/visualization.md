@@ -82,20 +82,32 @@ Readers judge position best, then length, then angle and area, then color. Put t
 
 ## Diagrams
 
-Borrow technical-drawing discipline (from Plotter) while keeping our Apple/Linear tokens and takeaway-first header:
+Use technical-drawing discipline (from Plotter) with our Apple/Linear tokens and takeaway-first header. Never draw metaphorical objects or spot art (gears, locks, clouds, magnifiers): a PR diagram explains code structure, not a marketing concept.
 
-- **One construction relationship, named before drawing.** State it in one sentence: what splits, moves across a boundary, detaches, or aligns. Draw the mechanism, not a labeled box of its name.
-- **Title states the rule or measured effect**, not the subject ("Moving four imports out of DAG parse cuts median RSS from 339 MB to 230 MB", not "Import refactoring").
-- **Semantic stroke hierarchy via opacity and dash**, not thick borders:
-  - Primary / active form: `1.25–1.5px`, `--ink` (0.85) or `--accent` (1.0) with subtle `fill-opacity: 0.075` only on the named result.
-  - Secondary / before form: `1.25px`, `--ink` at `0.45` opacity.
-  - Projection guides: `1px`, `--ink` at `0.16–0.20` opacity, with **8px clearance** from shapes so guides never crash into contours.
-  - Absent / vacated / removed outline: `1.25px`, `stroke-dasharray="4 5"` (optional 45° diagonal hatch at `12px` pitch clipped inside the vacated region).
-  - Transfer / movement arrow: `1.25px`, `stroke-dasharray="4 5"` with a crisp open 45° arrowhead. Route elbows orthogonally with rounded corners (`Q`) so every arrowhead enters its target straight vertically or horizontally, never diagonally.
-- **Dimensions earn their place.** Use split dimension lines with open `<` `>` arrowheads meeting witness lines only for a total or multi-part comparison. Never add a dimension line that repeats a number already written inside the block it spans.
-- **Before and after share the same positions and scale**, so only the changed parts move. Mark added with `+`, removed with `−` and a dashed outline, never color alone.
-- **Timelines:** one shared horizontal axis, one lane per state or caller, bar length is duration and position is when. Put each lane's outcome at its right end; mark the moment that breaks things with one labeled rule or hatched `--worse` region.
-- **Group by boundary** with a hairline outline and a small label at its top left, never a tinted card fill. Run `python3 scripts/check.py` before rendering.
+### Pick the construction
+
+Name the single construction relationship in one sentence before drawing — what splits, moves, intersects, batches, or connects. Every diagram uses one of these five shapes:
+
+| Construction | Use when | Geometry rule |
+| --- | --- | --- |
+| **Split / deferral** | Memory, work, or cost leaves a shared stage for an optional or later stage | One full-width before bar splits along an exact vertical projection guide into retained (`--accent`) + vacated (`4 5` dash + hatch), with transfer arrows to the new owner. |
+| **Routing (before/after)** | A request or pipeline adds a queue/cache/guard or drops a blocking hop | Keep unchanged nodes at identical `x` positions in both rows so the eye sees only the changed hop. Mark added with `+`, removed with `−` and a dashed outline. |
+| **Overlap / boundary** | Permissions, IAM policies, locks, or time windows intersect | Align both scopes on one shared axis; shade (`fill-opacity: 0.075`) or hatch only the intersection region, never the whole bars. |
+| **Fan-in / batching** | Parallel tasks wait on a join, or a large payload streams in fixed chunks | Draw the repeated units at one constant pitch projecting into the barrier or batch size, with one dimension on the chunk or wait bound. |
+| **Relation / interface** | A schema migration, foreign key, or unified adapter joins N callers | Place callers on one edge and the shared contract or key column on the opposite edge; connect only the changed or enforced relation in `--accent`. |
+
+### Drafting rules
+
+- **Stroke hierarchy comes from opacity and dash, never thick borders.** Thick lines turn a schematic into a heavy wireframe.
+  - Active / named result: `1.5px`, `--accent` (`--worse` for broken states), `fill-opacity: 0.075` only on the named result.
+  - Retained neutral node: `1.25px`, `--ink` at `0.85` opacity.
+  - Secondary / before state: `1.25px`, `--ink` at `0.45` opacity.
+  - Projection guides: `1px`, `--ink` at `0.18` opacity. Always leave an **8px clearance** from shapes so guides align edges without crashing into contours.
+  - Absent / vacated / removed region: `1.25px`, `stroke-dasharray="4 5"`, clipped `12px` 45° diagonal hatch when the vacated span is the claim.
+  - Transfer / movement arrow: `1.25px`, `stroke-dasharray="4 5"` with an open 45° arrowhead. Always route elbows orthogonally with rounded corners (`Q`) so every arrowhead enters its target straight vertically or horizontally; diagonal entry into a vertical arrowhead reads as a drawing bug.
+- **Dimensions earn their place.** Use split dimension lines with open `<` `>` arrowheads meeting witness lines only for a total or multi-part comparison. Never draw a dimension line that repeats a value already written inside the single block it spans, because duplicate measurements add clutter without aiding comparison.
+- **Timelines:** one shared horizontal axis, one lane per state or caller, bar length is duration and position is when. Put each lane's outcome at its right end; mark the broken span with a hatched `--worse` region and cleared spans with `4 5` dashed outlines.
+- **Boundaries:** group with a `1px` hairline outline and a top-left label, never a tinted card fill. Always run `python3 scripts/check.py` before `scripts/render.sh`.
 
 ## Layout
 
