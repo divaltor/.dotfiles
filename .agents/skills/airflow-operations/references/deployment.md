@@ -8,10 +8,10 @@ A temporary isolated kubeconfig was used; no deployed resources were changed.
 | Check | Result |
 | --- | --- |
 | `sts get-caller-identity` | Dev `387197786664`; prod `416899846818` |
-| `eks list-clusters` | Airflow on `data-dev-green` / `data-prod-green`, confirmed by live ingress/deployments |
+| `eks list-clusters` | Airflow on `data-dev-blue` / `data-prod-blue` (2026-11-12; dev switched on 2026-11-10, prod on 2026-11-12). Old `data-prod-green` still ACTIVE but its Airflow replicas unavailable at 15:33 Sofia; blue has ready deployments and serves production health checks. |
 | `eks describe-cluster` | Both ACTIVE, private endpoint enabled, public endpoint disabled; all control-plane log types disabled |
 | Core deployments/ingress | Namespace `dev`/`prod`; release label `airflow`; API-server service port 8080; UI hosts match the skill |
-| Deployed images | Dev `data-platform-airflow:26380`; prod `data-platform-airflow:26369`, in their respective account ECR registries |
+| Deployed images | 2026-11-12: dev `data-platform-airflow:26470`; prod blue `data-platform-airflow:26487` (previous green `26474`), in their respective account ECR registries |
 | Worker metadata | `airflow_version=3.3.1`, `kubernetes_executor=True`, container `base`, team namespaces |
 | Scheduler logs | `kubectl logs` succeeded in both environments |
 | PV `logs-airflow` | NFS EFS endpoints and `/airflow_<env>/logs` paths match the skill |
@@ -21,12 +21,19 @@ A temporary isolated kubeconfig was used; no deployed resources were changed.
 | Splunk index names | Read **only** `.data.SPLUNK_INDEX` from `default/doppler-secret-splunk-hec`; no token read or persisted |
 | CloudWatch | Groups/retentions enumerated; RDS groups and prod EKS group as documented; no EKS application-log groups found |
 | HTTP probes | Both Airflow roots returned 200; Splunk search URL returned 303 (sign-in redirect) |
-| IRSA examples | `arn:aws:iam::387197786664:role/eksctl-airflow-application-dataplatform-role-data-dev-green` and prod equivalent in account `416899846818` |
+| IRSA examples | `arn:aws:iam::387197786664:role/eksctl-airflow-application-dataplatform-role-data-dev-blue` (2026-11-12) and prod equivalent in account `416899846818` |
 
 Not verified: authenticated Airflow/Okta login, authenticated Splunk searches or field
 extraction/retention, Grafana access, task-log retention policy, alternate-log handler
 runtime behaviour, recent events in every CloudWatch group. Distinguish verified routing
 configuration from successful end-to-end log ingestion.
+
+### Prod cutover check, 2026-11-12 15:33–15:37 Sofia
+
+- `data-prod-blue`: ACTIVE, Kubernetes 1.37; all 15 nodes Ready (`v1.37.1-eks-8418f54`). Core replicas ready: API 3/3, scheduler 2/2, DAG processor 1/1, triggerer 1/1, statsd 1/1; zero core restarts.
+- Production DNS resolves to the blue ingress ALB. `/api/v2/monitor/health` reports healthy metadatabase, both blue schedulers, triggerer and DAG processor; `airflow db check` succeeds. All four Airflow PVCs Bound. Scheduler logs show new KubernetesExecutor pods and completed DAG runs on blue.
+- Not an all-clear for every DAG: five import errors (four `schedule_interval` incompatibilities in ftlive/identity and a dataplatform test import), duplicate biteam DAG IDs, and two HUI tasks awaiting retry. Whether these predate the cutover was not established.
+- Martech run `martech_rs_to_s3_b2b_contract_licence_admin_events` / `asset_triggered__2026-11-12T13:15:00.610827+00:00_jd8mmvDi` failed at 15:36 Sofia. `watcher_task` attempt 2 reports upstream failure; `check_for_sql_results_data` is failed with no start date or task-log directory. The underlying cause and any migration relationship remain unverified.
 
 ## Revalidate only the relevant fact
 

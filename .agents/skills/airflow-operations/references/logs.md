@@ -105,6 +105,11 @@ aws logs tail /aws/rds/proxy/ft-dw-airflow --since 30m \
   --profile "$AWS_PROFILE" --region "$AWS_REGION"
 ```
 
+Dev RDS does **not** export logs to CloudWatch (`EnabledCloudwatchLogsExports` empty; the dev
+PostgreSQL group's last event is from 2022-09, checked 2026-11-12). For dev database logs use
+`aws rds describe-db-log-files` and `aws rds download-db-log-file-portion --db-instance-identifier
+ft-dw-airflow --log-file-name error/postgresql.log.<YYYY-MM-DD-HH> --starting-token 0`.
+
 This is a fallback command, not a guarantee every group has recent events. No EKS
 Container Insights application-log groups were found for these clusters. EKS control-plane
 logging was **disabled in both**. Prod has an existing `/aws/eks/data-prod-green/cluster`

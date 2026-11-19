@@ -15,6 +15,9 @@ set -U -x PKG_CONFIG_PATH $DEVBOX_PACKAGES_DIR/lib/pkgconfig
 # uv, mise
 fish_add_path "/Users/divaltor/.local/bin"
 
+# Installed Neovim plugins do not need their contributor toolchains activated.
+set -gx MISE_IGNORED_CONFIG_PATHS "$HOME/.local/share/nvim/lazy"
+
 if status is-interactive
     mise activate fish | source
 else

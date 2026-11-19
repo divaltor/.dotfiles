@@ -47,7 +47,7 @@ Never dump pod environments, full pod specs, Secrets, connection URIs, tokens or
 | --- | --- | --- |
 | AWS profile | `FT-Tech-Data-Dev.FT-Engineer` | `FT-Tech-Data-Prod.FT-Engineer` |
 | Account | `387197786664` | `416899846818` |
-| Cluster | `data-dev-green` | `data-prod-green` |
+| Cluster | `data-dev-blue` | `data-prod-blue` |
 | Core namespace / Helm release | `dev` / `airflow` | `prod` / `airflow` |
 | UI (Okta) | https://airflow.dev.dw.in.ft.com | https://airflow.prod.dw.in.ft.com |
 | Splunk index | `restricted_data_dev` | `restricted_data_prod` |
@@ -58,6 +58,8 @@ EKS endpoints are private-only and Airflow ALBs internal: connect to FT network/
 SSO success does not establish network reachability. UI/Okta, AWS SSO, Kubernetes RBAC
 and Splunk access are separate; HTTP 200 on `/` does not prove DAG access.
 
+Cluster names change when a cluster is rebuilt: dev moved to `data-dev-blue` on 2026-11-10; prod moved to `data-prod-blue` (Kubernetes 1.37) on 2026-11-12. On `ResourceNotFoundException`, run `aws eks list-clusters`. During a cutover both colours may still be ACTIVE; identify the serving cluster from ready Airflow deployments and the production hostname's ingress/health response, not the cluster name or ACTIVE status alone.
+
 Use the existing SSO profile. On expiry, ask the user to complete
 `aws sso login --profile "$AWS_PROFILE"`; never read SSO caches or extract credentials.
 If the profile is missing, use the organisation's SSO setup, not an invented SSO URL.
@@ -66,7 +68,7 @@ If the profile is missing, use the organisation's SSO setup, not an invented SSO
 # Example for a confirmed dev investigation; select all values together from the table.
 export AWS_PROFILE=FT-Tech-Data-Dev.FT-Engineer AWS_REGION=eu-west-1
 ENV=dev
-CLUSTER=data-dev-green
+CLUSTER=data-dev-blue
 aws sts get-caller-identity --profile "$AWS_PROFILE"
 ```
 
@@ -95,7 +97,7 @@ Remove only the temporary directory you created when finished.
 
 ## Drift and ownership
 
-Live snapshot **2026-10-28**, not a version pin: task labels reported Airflow **3.3.1**.
+Live snapshot **2026-11-12**, not a version pin: Airflow **3.4.0** (images dev `26470`, prod `26487`).
 Check current images before using Airflow 2/webserver/API-v1 advice. Core deployments:
 `airflow-api-server`, `airflow-scheduler`, `airflow-dag-processor`, `airflow-triggerer`,
 `airflow-statsd`. Revalidate only the disputed fact using [deployment evidence](references/deployment.md).
