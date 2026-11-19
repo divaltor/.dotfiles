@@ -20,9 +20,8 @@ What does the work change for the reader?
 │     └── a ranking or counts across items       → type: 'bars'
 ├── Fixes behaviour about time or order (leak, race, retry, lifetime)
 │   → before/after lanes, templates/timeline.html
-├── Changes what talks to what (a new hop, a removed call, a queue)
-│   → before/after diagram drawn by hand from the diagrams section of
-│     reference/visualization.md, in the timeline template's tokens
+├── Changes what talks to what or moves work across a boundary (deferred import, new hop, queue)
+│   → before/after blueprint diagram, templates/diagram.html (rules in reference/visualization.md)
 ├── Sweeps the codebase (lint, upgrade, migration)
 │   → bars of the counts that matter (findings per rule, files per team),
 │     plus a timeline for the one finding that was a real bug
@@ -78,6 +77,7 @@ Load `emil-unslop-design` and walk every element with its question: what breaks 
 ## 8. Render and check
 
 1. Copy the template to `.amp/in/artifacts/<topic>/page.html` in the workspace, so the PNG can be embedded in the reply. Put `/.amp/in/` in the repo's `info/exclude` first.
-2. Run `scripts/render.sh .amp/in/artifacts/<topic>/page.html .amp/in/artifacts/<topic>/out/<name>.png`. It measures the content height, then screenshots at 2160px wide.
-3. Inspect the PNG with `view_media`. Name the checks in the objective: every number in the title is a labeled mark, no text overlaps a mark or gridline, nothing runs past the right edge, `->` shows as two characters, every number matches its source.
-4. Embed the PNG in the reply, keep `page.html` next to it, and say how to re-render. Offer one next step, such as a Slack post to go with the image.
+2. Run `python3 scripts/check.py .amp/in/artifacts/<topic>/page.html` and fix any errors before rendering.
+3. Run `scripts/render.sh .amp/in/artifacts/<topic>/page.html .amp/in/artifacts/<topic>/out/<name>.png`. It measures the content height, then screenshots at 2160px wide.
+4. Inspect the PNG with `view_media`. Name the checks in the objective: every number in the title is a labeled mark, no text overlaps a mark or gridline, nothing runs past the right edge, `->` shows as two characters, every number matches its source, and no arrow enters a target crookedly.
+5. Embed the PNG in the reply, keep `page.html` next to it, and say how to re-render. Offer one next step, such as a Slack post to go with the image.

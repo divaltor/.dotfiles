@@ -1,0 +1,202 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  @font-face { font-family: 'Inter'; font-weight: 100 900; src: url('file://{{FONTS}}/Inter.ttf'); }
+  @font-face { font-family: 'Geist Mono'; font-weight: 100 900; src: url('file://{{FONTS}}/GeistMono.ttf'); }
+
+  :root {
+    --bg: oklch(99.3% 0.002 80);
+    --surface: oklch(96.8% 0.003 80);
+    --line: oklch(91.5% 0.004 80);
+    --context: oklch(76% 0.006 80);
+    --muted: oklch(47% 0.008 80);
+    --ink: oklch(20% 0.005 80);
+    --accent: oklch(55% 0.19 256);
+    --worse: oklch(55% 0.2 27);
+    --sans: 'Inter', sans-serif;
+    --mono: 'Geist Mono', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1080px; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-optical-sizing: auto;
+    font-synthesis: none;
+    -webkit-font-smoothing: antialiased;
+    padding: 64px 72px 56px;
+  }
+  code {
+    font-family: var(--mono);
+    font-weight: 450;
+    font-size: 0.94em;
+    font-feature-settings: 'calt' 0, 'liga' 0, 'dlig' 0;
+  }
+  .source {
+    font: 450 15px/1 var(--mono);
+    color: var(--muted);
+    margin-bottom: 14px;
+    font-feature-settings: 'calt' 0, 'liga' 0, 'dlig' 0;
+  }
+  h1 {
+    font: 600 34px/1.15 var(--sans);
+    letter-spacing: -0.022em;
+    text-wrap: balance;
+  }
+  .sub {
+    font: 400 19px/1.45 var(--sans);
+    letter-spacing: -0.011em;
+    color: var(--muted);
+    margin-top: 8px;
+    max-width: 64ch;
+    text-wrap: pretty;
+  }
+  .diagram { margin-top: 40px; }
+  .diagram svg { display: block; width: 936px; height: auto; overflow: visible; }
+  .note {
+    font: 400 16px/1.5 var(--sans);
+    color: var(--muted);
+    margin-top: 32px;
+    max-width: 72ch;
+    text-wrap: pretty;
+  }
+  .mono {
+    font-family: var(--mono);
+    font-feature-settings: 'calt' 0, 'liga' 0, 'dlig' 0;
+  }
+  .sans { font-family: var(--sans); }
+  .num { font-variant-numeric: tabular-nums; }
+  .halo {
+    paint-order: stroke;
+    stroke: var(--bg);
+    stroke-width: 6px;
+    stroke-linejoin: round;
+  }
+</style>
+</head>
+<body>
+  <!--
+    Blueprint diagram starter (Plotter drafting grammar + Apple/Linear tokens).
+    Before editing:
+      1. Name the single construction relationship in one sentence (split, deferral, removed hop, boundary).
+      2. Keep Before and After aligned on the same x-coordinates with 8px guide clearances.
+      3. Use split dimension lines with open < > arrowheads only for totals or multi-part comparisons,
+         never to repeat a value already written inside one block.
+      4. Route transfer arrows with dashed shafts (4 5) and rounded orthogonal elbows so every
+         arrowhead enters its target vertically or horizontally, never diagonally.
+      5. Run `python3 scripts/check.py page.html` before `scripts/render.sh`.
+  -->
+  <h1>Moving four imports out of DAG parse cuts median RSS from 339 MB to 230 MB</h1>
+  <p class="sub">Task process memory at DAG parse, before and after deferring heavy imports inside method calls</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 936 452" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <pattern id="hatch-accent" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+          <line x1="0" y1="0" x2="0" y2="12" stroke="oklch(55% 0.19 256)" stroke-width="1.25" stroke-opacity="0.22"/>
+        </pattern>
+        <pattern id="hatch-neutral" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+          <line x1="0" y1="0" x2="0" y2="12" stroke="oklch(20% 0.005 80)" stroke-width="1" stroke-opacity="0.11"/>
+        </pattern>
+        <pattern id="hatch-worse" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+          <line x1="0" y1="0" x2="0" y2="12" stroke="oklch(55% 0.2 27)" stroke-width="1.25" stroke-opacity="0.24"/>
+        </pattern>
+      </defs>
+
+      <!-- Top total dimension (split around centered label, open < > arrowheads) -->
+      <g stroke="oklch(20% 0.005 80)" stroke-width="1.25" stroke-opacity="0.38" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="132" y1="74" x2="132" y2="26"/>
+        <line x1="810" y1="74" x2="810" y2="26"/>
+        <line x1="133" y1="36" x2="386" y2="36"/>
+        <line x1="556" y1="36" x2="809" y2="36"/>
+        <polyline points="139,31.5 133,36 139,40.5"/>
+        <polyline points="803,31.5 809,36 803,40.5"/>
+      </g>
+      <text x="471" y="41" text-anchor="middle" fill="oklch(47% 0.008 80)" class="sans num" font-size="15" font-weight="500">339 MB at DAG parse</text>
+
+      <!-- Outer edge registration ticks -->
+      <g stroke="oklch(20% 0.005 80)" stroke-width="1" stroke-opacity="0.2">
+        <line x1="112" y1="84" x2="122" y2="84"/>
+        <line x1="112" y1="156" x2="122" y2="156"/>
+        <line x1="820" y1="84" x2="830" y2="84"/>
+        <line x1="820" y1="156" x2="830" y2="156"/>
+        <line x1="112" y1="244" x2="122" y2="244"/>
+        <line x1="112" y1="316" x2="122" y2="316"/>
+      </g>
+
+      <!-- Before row -->
+      <text x="0" y="116" fill="oklch(47% 0.008 80)" class="sans" font-size="17" font-weight="500">Before</text>
+      <text x="0" y="138" fill="oklch(47% 0.008 80)" class="sans" font-size="14">every task pod</text>
+
+      <path d="M592 84 H800 A10 10 0 0 1 810 94 V146 A10 10 0 0 1 800 156 H592 Z" fill="url(#hatch-neutral)"/>
+      <rect x="132" y="84" width="678" height="72" rx="10" stroke="oklch(20% 0.005 80)" stroke-width="1.25" stroke-opacity="0.45"/>
+      <line x1="592" y1="84" x2="592" y2="156" stroke="oklch(20% 0.005 80)" stroke-width="1.25" stroke-opacity="0.34"/>
+
+      <text x="362" y="116" text-anchor="middle" fill="oklch(20% 0.005 80)" fill-opacity="0.72" class="sans" font-size="16">Airflow runtime + DAG file</text>
+      <text x="362" y="138" text-anchor="middle" fill="oklch(47% 0.008 80)" class="sans num" font-size="14">230 MB</text>
+
+      <text x="701" y="113" text-anchor="middle" fill="oklch(20% 0.005 80)" fill-opacity="0.88" class="mono" font-size="13.5">pandas · pyarrow</text>
+      <text x="701" y="134" text-anchor="middle" fill="oklch(20% 0.005 80)" fill-opacity="0.88" class="mono" font-size="13.5">BigQuery · k8s client</text>
+
+      <!-- Projection guides (8px clearance from bars) -->
+      <g stroke="oklch(20% 0.005 80)" stroke-width="1" stroke-opacity="0.18">
+        <line x1="132" y1="164" x2="132" y2="236"/>
+        <line x1="592" y1="164" x2="592" y2="236"/>
+        <line x1="810" y1="164" x2="810" y2="236"/>
+      </g>
+
+      <!-- Vertical transfer arrows -->
+      <g stroke="oklch(20% 0.005 80)" stroke-width="1.25" stroke-opacity="0.34">
+        <line x1="362" y1="174" x2="362" y2="226" stroke-dasharray="4 6"/>
+        <polyline points="356,220 362,226 368,220" stroke-linecap="round" stroke-linejoin="round"/>
+      </g>
+      <text x="376" y="205" fill="oklch(47% 0.008 80)" class="sans" font-size="14">unchanged</text>
+
+      <path d="M701 164 V224" stroke="oklch(55% 0.19 256)" stroke-width="1.25" stroke-opacity="0.7" stroke-dasharray="4 6"/>
+      <polyline points="695,218 701,224 707,218" stroke="oklch(55% 0.19 256)" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="716" y="205" fill="oklch(55% 0.19 256)" class="sans" font-size="14" font-weight="500">deferred</text>
+
+      <!-- After row -->
+      <text x="0" y="276" fill="oklch(55% 0.19 256)" class="sans" font-size="17" font-weight="600">After</text>
+      <text x="0" y="298" fill="oklch(47% 0.008 80)" class="sans" font-size="14">every task pod</text>
+
+      <rect x="132" y="244" width="460" height="72" rx="10" fill="oklch(55% 0.19 256 / 0.075)" stroke="oklch(55% 0.19 256)" stroke-width="1.5"/>
+      <text x="362" y="276" text-anchor="middle" fill="oklch(20% 0.005 80)" class="sans" font-size="16" font-weight="500">Airflow runtime + DAG file</text>
+      <text x="362" y="298" text-anchor="middle" fill="oklch(55% 0.19 256)" class="sans num" font-size="15" font-weight="600">230 MB</text>
+
+      <!-- Vacated region (absent dashed outline + accent hatch) -->
+      <rect x="600" y="244" width="210" height="72" rx="10" fill="url(#hatch-accent)" stroke="oklch(55% 0.19 256)" stroke-width="1.25" stroke-opacity="0.55" stroke-dasharray="4 5"/>
+      <text x="705" y="276" text-anchor="middle" fill="oklch(55% 0.19 256)" class="sans num halo" font-size="16" font-weight="600">−109 MB (−32%)</text>
+      <text x="705" y="297" text-anchor="middle" fill="oklch(47% 0.008 80)" class="sans halo" font-size="13.5">vacated at parse</text>
+
+      <!-- Orthogonal rounded-elbow transfer arrows into deferred targets -->
+      <path d="M668 324 V346 Q668 354 660 354 H568 Q560 354 560 362 V371" stroke="oklch(55% 0.19 256)" stroke-width="1.25" stroke-opacity="0.78" stroke-dasharray="4 5"/>
+      <polyline points="555,365.5 560,371.5 565,365.5" stroke="oklch(55% 0.19 256)" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/>
+
+      <path d="M748 324 V346 Q748 354 756 354 H814 Q822 354 822 362 V371" stroke="oklch(55% 0.19 256)" stroke-width="1.25" stroke-opacity="0.78" stroke-dasharray="4 5"/>
+      <polyline points="817,365.5 822,371.5 827,365.5" stroke="oklch(55% 0.19 256)" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/>
+
+      <!-- Target boxes -->
+      <rect x="424" y="378" width="272" height="66" rx="8" stroke="oklch(20% 0.005 80)" stroke-width="1.25" stroke-opacity="0.85"/>
+      <text x="440" y="403" fill="oklch(20% 0.005 80)" class="sans" font-size="15" font-weight="500">Task execute (only if used)</text>
+      <text x="440" y="426" fill="oklch(47% 0.008 80)" class="mono" font-size="13.5">pandas · pyarrow · BigQuery</text>
+
+      <rect x="716" y="378" width="212" height="66" rx="8" stroke="oklch(20% 0.005 80)" stroke-width="1.25" stroke-opacity="0.85"/>
+      <text x="732" y="403" fill="oklch(20% 0.005 80)" class="sans" font-size="15" font-weight="500">Scheduler only</text>
+      <text x="732" y="426" fill="oklch(47% 0.008 80)" class="mono" font-size="13.5">k8s client (is_worker)</text>
+    </svg>
+  </div>
+
+  <p class="note">Medians across 40 randomly sampled DAG files parsed in a worker pod (one run per file). Tasks that call pandas, pyarrow, or BigQuery still load them during execution; <code>WorkerService.is_worker()</code> skips building <code>V1Pod</code> overrides on worker pods.</p>
+
+  <script>
+    document.fonts.ready.then(() => {
+      document.body.dataset.fonts = document.fonts.check('16px "Inter"') && document.fonts.check('16px "Geist Mono"')
+      document.body.dataset.height = Math.ceil(document.body.getBoundingClientRect().height)
+    })
+  </script>
+</body>
+</html>

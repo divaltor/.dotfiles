@@ -40,7 +40,7 @@ Most failed charts plot raw data in a default form and then write a title the ch
 | One value per item, before and after | dumbbell on a shared axis | `chart.html`, `type: 'dumbbell'` |
 | Ranking or counts (findings per rule, files per team) | horizontal bars sorted by value, one highlighted | `chart.html`, `type: 'bars'` |
 | What held when, in which order (a race, a leak across an await, a retry) | before and after lanes on one shared axis | `timeline.html` |
-| What talks to what, and which edge the change adds or removes | before and after diagram, same positions | draw by hand, see Diagrams |
+| What talks to what, or work moving across a boundary (deferred import, new queue, removed hop) | before and after blueprint diagram, same positions | `diagram.html` |
 | One or two numbers | a sentence in the Slack message, not an image | none |
 
 Never let area or angle carry the point: no pies, donuts, bubbles or treemaps. Never use two y axes.
@@ -82,13 +82,20 @@ Readers judge position best, then length, then angle and area, then color. Put t
 
 ## Diagrams
 
-- Draw the mechanism, not its name. A box labeled "cache" says less than a sentence; draw the path through it and the edge that disappears when it is removed.
-- The title states the rule the diagram explains ("Team context now ends at every `yield`"), not its subject ("Trigger context handling").
-- The path the title is about is in `--accent` (or `--worse` for the broken state) at full ink; everything else is `--muted` or `--context`.
-- Timelines: one shared horizontal axis, one lane per state or caller, bar length is duration and position is when. Put each lane's outcome at its right end; mark the moment that breaks things with one labeled rule.
-- Before and after: same scale, same positions, so only the changed parts move. Mark added with `+`, removed with `−` and a dashed outline, always as a glyph next to the name, never color alone.
-- Nodes: a `--surface` box with 6px corners, name in `--ink`, at most one muted subtitle. Edges: 1.5px `--muted` (2px accent for the highlighted path), straight or orthogonal, one small arrowhead, every edge labeled with what it carries.
-- Group by boundary with a hairline outline and a small label at its top left, never a tinted fill.
+Borrow technical-drawing discipline (from Plotter) while keeping our Apple/Linear tokens and takeaway-first header:
+
+- **One construction relationship, named before drawing.** State it in one sentence: what splits, moves across a boundary, detaches, or aligns. Draw the mechanism, not a labeled box of its name.
+- **Title states the rule or measured effect**, not the subject ("Moving four imports out of DAG parse cuts median RSS from 339 MB to 230 MB", not "Import refactoring").
+- **Semantic stroke hierarchy via opacity and dash**, not thick borders:
+  - Primary / active form: `1.25–1.5px`, `--ink` (0.85) or `--accent` (1.0) with subtle `fill-opacity: 0.075` only on the named result.
+  - Secondary / before form: `1.25px`, `--ink` at `0.45` opacity.
+  - Projection guides: `1px`, `--ink` at `0.16–0.20` opacity, with **8px clearance** from shapes so guides never crash into contours.
+  - Absent / vacated / removed outline: `1.25px`, `stroke-dasharray="4 5"` (optional 45° diagonal hatch at `12px` pitch clipped inside the vacated region).
+  - Transfer / movement arrow: `1.25px`, `stroke-dasharray="4 5"` with a crisp open 45° arrowhead. Route elbows orthogonally with rounded corners (`Q`) so every arrowhead enters its target straight vertically or horizontally, never diagonally.
+- **Dimensions earn their place.** Use split dimension lines with open `<` `>` arrowheads meeting witness lines only for a total or multi-part comparison. Never add a dimension line that repeats a number already written inside the block it spans.
+- **Before and after share the same positions and scale**, so only the changed parts move. Mark added with `+`, removed with `−` and a dashed outline, never color alone.
+- **Timelines:** one shared horizontal axis, one lane per state or caller, bar length is duration and position is when. Put each lane's outcome at its right end; mark the moment that breaks things with one labeled rule or hatched `--worse` region.
+- **Group by boundary** with a hairline outline and a small label at its top left, never a tinted card fill. Run `python3 scripts/check.py` before rendering.
 
 ## Layout
 
