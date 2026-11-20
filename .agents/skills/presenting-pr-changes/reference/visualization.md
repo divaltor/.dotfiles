@@ -18,7 +18,7 @@ Images fail far more often because the chart does not show what the title claims
 2. **Data:** the rows the claim rests on, aggregated before they go into `DATA`.
 3. **Transform:** the quantity the claim is about, computed from the rows.
 4. **Form:** the mark that shows that quantity.
-5. **Encoding:** which channel carries it, and which single thing gets color.
+5. **Encoding:** which channel carries it, and whether color highlights one result or distinguishes several stages.
 6. **Scales:** zero or not, linear or log.
 7. **Guides:** only the labels, ticks and notes the reader needs to check the claim.
 
@@ -38,6 +38,7 @@ Most failed charts plot raw data in a default form and then write a title the ch
 | --- | --- | --- |
 | Parts of a total, before and after | outlined stacked bars, changed part first, hatched reduction to the before total | `chart.html`, `type: 'stacked'` |
 | Before/after reduction | outlined bars with a hatched reduction span and baseline projection | `chart.html`, `type: 'reduction'` |
+| Three or more successive stages | separate outlined bars per stage, one shared zero-based scale | `chart.html`, `type: 'grouped'` |
 | Ranking or counts (findings per rule, files per team) | outlined horizontal bars sorted by value, named result lightly tinted; no delta hatching | `chart.html`, `type: 'bars'` |
 | What held when, in which order (a race, a leak across an await, a retry) | before and after lanes on one shared axis of stages, with labeled regions | `timeline.html` |
 | What talks to what, or work moving across a boundary (deferred import, new queue, removed hop) | before and after blueprint diagram, same positions | `diagram.html` |
@@ -47,7 +48,7 @@ Never let area or angle carry the point: no pies, donuts, bubbles or treemaps. N
 
 ## Encode by accuracy
 
-Readers judge position best, then length, then angle and area, then color. Put the compared quantity on position or length, on a common baseline. In a stacked bar only the first part has a common baseline, so put the part the claim is about first. Color picks out the one thing the title names; it never carries a value on its own.
+Readers judge position best, then length, then angle and area, then color. Put the compared quantity on position or length, on a common baseline. In a stacked bar only the first part has a common baseline, so put the part the claim is about first. Never stack successive stage measurements: they are not additive parts. Color highlights the named result or identifies stages; it never carries a value on its own.
 
 ## Scales
 
@@ -66,7 +67,7 @@ Readers judge position best, then length, then angle and area, then color. Put t
 ## Color
 
 1. Draw everything in grays first.
-2. Color only what the title names: one thing in `--accent`. A second named thing gets `--ink`, not a second hue.
+2. Default to one named result in `--accent`. For multiple stages, use gray (`--context`) for the baseline, blue (`--accent`) for the first change and teal (`--stage-next`) for the next; add another distinct hue only when another measured stage requires it. Label stages directly rather than relying on color alone.
 3. One hue means one thing across the whole image: if accent is "after", it is "after" everywhere.
 4. `--worse` appears only when a number got worse or a state is broken. It means bad, never a category.
 5. Never put text on a saturated fill, and never use gradients, glows, tinted backgrounds or colored side borders.
@@ -123,3 +124,4 @@ Name the single construction relationship in one sentence before drawing — wha
 - The title's verb matches the shape: "halved" needs a mark near half, "most" needs a share above 50%.
 - Nothing on the page needs the PR to be understood.
 - The subtitle or note names what the data cannot show.
+- Bottom text explains the measurement source, aggregation, sample or limitation in short sentences. It does not give reader instructions, explain visual mechanics or sacrifice meaning to a word limit.

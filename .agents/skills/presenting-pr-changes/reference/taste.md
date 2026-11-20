@@ -33,8 +33,8 @@ Rules for a calm, neutral look that applies to a still image. Each rule says why
   Why: Linear limited "how much chrome (blue)" went into its neutrals, then moved to "a warmer gray that still feels crisp", warning that too warm turns muddy.
 - **Define colors in a perceptual space (OKLCH) from a few inputs: base, accent, contrast.**
   Why: Linear rebuilt its themes in LCH from three inputs because equal lightness then looks equally light, so the accent and the regression color carry the same weight.
-- **One accent, and it always means the same thing.**
-  Why: Apple, Familiarity: things that look the same must behave the same. A reader who learned "blue is after" on one chart reads every chart that way.
+- **One accent by default; distinct, stable colors when comparing multiple stages.** Gray is the baseline, blue the first changed stage, teal the next. Keep this mapping across every group; reserve red for regressions.
+  Why: Apple, Familiarity: things that look the same must behave the same. Multiple stages need distinct identities, not an arbitrary second highlight or a regression color used as a category.
 - **Marks use thin outlines, at most 7.5% tint and a subtle 4px radius; hatching names a reduction or a broken interval, and only that interval.**
   Why: solid fills overpower the values and hide the projection guides; a hatched region distinguishes removed or broken work from retained work without adding another hue. Hatching a whole bar says everything is broken and hides where it broke. Square corners read as unfinished next to the rounded stage boxes and outlines.
 
@@ -61,5 +61,6 @@ Generated from three inputs: base hue 80 (warm), chroma kept under 0.01 for neut
 | `--context` | `oklch(76% 0.006 80)` | Data marks that are not the point (before, other parts, other bars) |
 | `--muted` | `oklch(47% 0.008 80)` | Secondary text, ticks, notes |
 | `--ink` | `oklch(20% 0.005 80)` | Titles, values, primary text |
-| `--accent` | `oklch(55% 0.19 256)` | The one thing the title names (after, the fixed state) |
+| `--accent` | `oklch(55% 0.19 256)` | Named result or first changed stage |
+| `--stage-next` | `oklch(49% 0.10 185)` | Next stage in a multi-stage chart (teal) |
 | `--worse` | `oklch(55% 0.2 27)` | A number that got worse, a broken state |

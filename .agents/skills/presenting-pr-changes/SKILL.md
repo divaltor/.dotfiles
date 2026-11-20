@@ -19,6 +19,7 @@ What does the work change for the reader?
 │   → chart, templates/chart.html
 │     ├── parts of a total, before and after     → type: 'stacked'
 │     ├── before/after, one or several items     → type: 'reduction'
+│     ├── three or more successive stages       → type: 'grouped'
 │     └── a ranking or counts across items       → type: 'bars'
 ├── Fixes behaviour about time or order (leak, race, retry, lifetime)
 │   → before/after lanes, templates/timeline.html
@@ -57,8 +58,8 @@ Follow the layer order in reference/visualization.md: claim, data, transform, fo
 
 - **Title:** the finding with its numbers, at most 14 words. "Cut task pod memory by 29% to 39%", not "Memory usage". For a timeline, the rule the fix establishes: "Team context now ends at every `yield`".
 - **Subtitle:** the metric and the conditions it was measured under, or what the bar in a timeline marks. One line.
-- **Marks:** every number in the title is a labeled mark. The thing the title names is `--accent`; everything else is gray. `--worse` only for a number that got worse or a broken state.
-- **Note:** method, run counts and caveats in one or two sentences. A median says how many runs it is a median of.
+- **Marks:** every number in the title is a labeled mark. Use one blue accent by default; for multiple stages, use the stable series colors below. `--worse` only for a number that got worse or a broken state.
+- **Note:** explain how the numbers were measured and/or the limitation that affects their interpretation, in one or two short, complete sentences. Name the relevant source, aggregation, sample count or comparison condition; a median says how many runs it represents. Keep enough detail to make the measurement understandable, without a fixed word count. Never give reader instructions or describe chart mechanics here: “Measured from CPU counters using 10-minute rates. Workload differed between windows,” not “Do not add these scopes,” “Hatched bars show reductions,” or “Different windows.”
 - **Source line** (timeline only, optional): one mono line naming the tool that found the problem, such as `ruff ASYNC119 yield-in-context-manager-in-async-generator`.
 
 `chart.html` and `timeline.html` build the page from the `DATA` constant at the top; edit only `DATA` unless the layout breaks. In `timeline.html`, describe each lane as regions over stages (`set`, `broken`, `cleared`) with a label inside each one that matters, and put events such as `yield` in `boundaries`; the page refuses to render a label that does not fit its region. `diagram.html` edits the inline SVG directly following the construction table in `reference/visualization.md`.
@@ -67,7 +68,8 @@ Follow the layer order in reference/visualization.md: claim, data, transform, fo
 
 The rules and the reason for each are in reference/taste.md. In short:
 
-- Near-white warm canvas, near-black ink, one muted gray for secondary text, one accent hue (`--accent`, blue) for the claim, `--worse` (red) for regressions. Tokens are OKLCH in each template's `:root`.
+- Near-white warm canvas, near-black ink, one muted gray for secondary text. Default to `--accent` (blue) for the claim. When comparing multiple stages, use gray (`--context`) for the baseline, blue for the first changed stage and teal (`--stage-next`) for the next. Keep each stage's color consistent across groups and label it directly; use additional distinct hues only when more measured stages require them. Red (`--worse`) means regression, never an arbitrary stage. Tokens are OKLCH in each template's `:root`.
+- Use `type: 'grouped'` for separate stage measurements, with `series: [{name, color}]` and `rows: [{name, values}]` in the same series order. Give all bars one zero-based scale. Reserve `stacked` for additive parts of a total; successive snapshots are not parts to stack.
 - Marks use thin outlines, at most 7.5% tint and a subtle 4px corner radius, not solid fills or square ends. Hatch measured reductions or the broken intervals of a timeline, only those intervals; do not add hatching to rankings where no change is measured.
 - Inter (variable, optical sizes) for all text: title 34/600, subtitle 19/400, labels 17, ticks and notes 15–16. Geist Mono at 0.94em for identifiers. Both load with `@font-face`. `render.sh` downloads them from the Google Fonts repository into `~/.cache/presenting-pr-changes/fonts` on first run, fills the templates' `{{FONTS}}` placeholder with that path, and stops if either fails to load.
 - **Ligatures off in mono:** `font-feature-settings: 'calt' 0, 'liga' 0, 'dlig' 0`. Never use `font-variant-ligatures`: every `font:` shorthand resets it, and `->` then renders as an arrow, which misquotes the code.
@@ -76,7 +78,7 @@ The rules and the reason for each are in reference/taste.md. In short:
 
 ## 6. Text pass
 
-Load `emil-unslop-writing` and run it over every string on the page. On top of it: no em dashes; labels in sentence case; notes as lowercase fragments; repeat one noun for one thing ("team context" everywhere, not "team var" in one place).
+Load `emil-unslop-writing` and run it over every string on the page. On top of it: no em dashes; labels in sentence case; notes as plain sentences, not cryptic fragments; repeat one noun for one thing ("team context" everywhere, not "team var" in one place). Check that the bottom text explains the measurement or its uncertainty, rather than telling readers what to do.
 
 ## 7. Design pass
 

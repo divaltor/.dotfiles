@@ -14,6 +14,7 @@
     --muted: oklch(47% 0.008 80);
     --ink: oklch(20% 0.005 80);
     --accent: oklch(55% 0.19 256);
+    --stage-next: oklch(49% 0.10 185);
     --worse: oklch(55% 0.2 27);
     --sans: 'Inter', sans-serif;
     --mono: 'Geist Mono', monospace;
@@ -67,6 +68,7 @@
 // stacked: parts of a total per row; bar length encodes size, so the domain starts at 0.
 //          Put the part the claim is about first: only the first part has a common baseline.
 // bars: one value per item, sorted, value at the bar end, no axis. `highlight` marks what the title names.
+// grouped: separate measurements per stage; series names and colors match each row's values order.
 // better: 'lower' (default) or 'higher' decides when a reduction-chart delta is drawn in --worse.
 // Each entry is one image. Keep only the entries you need; to render one entry of several, open the page
 // with ?chart=<type> or ?chart=<position from 1>, which keeps the full padded canvas.
@@ -82,7 +84,7 @@ const DATA = [
       { name: 'events_cdc', id: true, before: 340, after: 206 },
       { name: 'test_node_selector', id: true, before: 361, after: 263 },
     ],
-    note: 'one parse per file for the sample, medians of five runs for named DAGs; hatched spans show the measured reduction, not work removed from task execution.',
+    note: 'The sample uses one parse per file; named DAGs use medians of five runs. Measurements cover parsing, not task execution.',
   },
   {
     type: 'stacked',
@@ -103,6 +105,24 @@ const DATA = [
       ] },
     ],
     note: 'Both run a full GC before PSS is read from <code>smaps_rollup</code>. Without the freeze, repeated runs ranged up to 26 MB higher.',
+  },
+  {
+    type: 'grouped',
+    title: 'Memory across the import and bytecode changes',
+    sub: 'Container working set at 5–10 minutes of age, MiB',
+    unit: 'MiB', domain: [0, 900], ticks: [0, 300, 600, 900],
+    series: [
+      { name: 'Before', color: 'var(--context)' },
+      { name: 'After deferred imports', color: 'var(--accent)' },
+      { name: 'After bytecode compilation', color: 'var(--stage-next)' },
+    ],
+    rows: [
+      { name: 'Scheduler · 2 containers per stage', values: [731.9, 677.9, 641.9] },
+      { name: 'API · 3 containers per stage', values: [416.2, 397.1, 409.8] },
+      { name: 'DAG processor · 1 container per stage', values: [784.0, 738.9, 607.8] },
+      { name: 'Triggerer · 1 container per stage', values: [558.6, 555.8, 473.7] },
+    ],
+    note: 'Medians use actual sample ages, first within each container, then across replicas. Each stage covers one rollout with different workloads.',
   },
   {
     type: 'bars',
@@ -175,6 +195,27 @@ function barsRow(c, r, max) {
   return row
 }
 
+function groupedChart(c, plot) {
+  if (c.domain[0] !== 0) throw new Error('Grouped bars require a zero-based domain')
+  c.rows.forEach(r => {
+    if (r.values.length !== c.series.length) throw new Error('Each row needs one value per series')
+    plot.append(el('div', 'group', label(r)))
+    c.series.forEach((series, i) => {
+      const row = el('div', 'row'), track = el('div', 'track')
+      const name = el('div', 'name', series.name)
+      name.style.color = textColor(series.color)
+      const bar = el('div', 'bar named')
+      bar.style.cssText = `left:0;width:${pct(c, r.values[i])}%;color:${series.color}`
+      const value = el('div', 'val', `${r.values[i]} ${c.unit}`)
+      value.style.left = `calc(${pct(c, r.values[i])}% + 8px)`
+      track.append(bar, value)
+      row.append(name, track, el('div'))
+      plot.append(row)
+    })
+  })
+  axis(c, plot)
+}
+
 function reductionChart(c) {
   if (c.domain[0] !== 0) throw new Error('Reduction bars require a zero-based domain')
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
@@ -227,6 +268,8 @@ for (const c of shown) {
   const plot = el('div', 'plot ' + c.type)
   if (c.type === 'reduction') {
     plot.append(reductionChart(c))
+  } else if (c.type === 'grouped') {
+    groupedChart(c, plot)
   } else if (c.type === 'stacked') {
     c.groups.forEach((g, i) => {
       plot.append(el('div', 'group', g.name))
