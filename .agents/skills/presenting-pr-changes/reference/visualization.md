@@ -124,4 +124,4 @@ Name the single construction relationship in one sentence before drawing — wha
 - The title's verb matches the shape: "halved" needs a mark near half, "most" needs a share above 50%.
 - Nothing on the page needs the PR to be understood.
 - The subtitle or note names what the data cannot show.
-- Bottom text explains the measurement source, aggregation, sample or limitation in short sentences. It does not give reader instructions, explain visual mechanics or sacrifice meaning to a word limit.
+- Bottom text repeats nothing the title, subtitle or marks already say. Facts columns state what stayed the same and what it costs, each a colored value plus one sentence; a muted method line covers only conditions the subtitle omits. No reader instructions or chart mechanics.
