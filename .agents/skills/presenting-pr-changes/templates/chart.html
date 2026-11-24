@@ -69,6 +69,7 @@
 //          Put the part the claim is about first: only the first part has a common baseline.
 // bars: one value per item, sorted, value at the bar end, no axis. `highlight` marks what the title names.
 // grouped: separate measurements per stage; series names and colors match each row's values order.
+//          The first series is the baseline; later stages hatch the span back to it and show their change.
 // better: 'lower' (default) or 'higher' decides when a reduction-chart delta is drawn in --worse.
 // Each entry is one image. Keep only the entries you need; to render one entry of several, open the page
 // with ?chart=<type> or ?chart=<position from 1>, which keeps the full padded canvas.
@@ -108,21 +109,20 @@ const DATA = [
   },
   {
     type: 'grouped',
-    title: 'Memory across the import and bytecode changes',
-    sub: 'Container working set at 5–10 minutes of age, MiB',
-    unit: 'MiB', domain: [0, 900], ticks: [0, 300, 600, 900],
+    title: 'Two changes cut mean DAG parse CPU from 1,158 ms to 225 ms',
+    sub: 'CPU of the forked parse process, 300 sampled team DAG files',
+    unit: 'ms', domain: [0, 2000], ticks: [0, 500, 1000, 1500, 2000],
     series: [
-      { name: 'Before', color: 'var(--context)' },
-      { name: 'After deferred imports', color: 'var(--accent)' },
-      { name: 'After bytecode compilation', color: 'var(--stage-next)' },
+      { name: 'before', color: 'var(--context)' },
+      { name: 'after <code>kubernetes.client</code>', color: 'var(--accent)' },
+      { name: 'after all changes', color: 'var(--stage-next)' },
     ],
     rows: [
-      { name: 'Scheduler · 2 containers per stage', values: [731.9, 677.9, 641.9] },
-      { name: 'API · 3 containers per stage', values: [416.2, 397.1, 409.8] },
-      { name: 'DAG processor · 1 container per stage', values: [784.0, 738.9, 607.8] },
-      { name: 'Triggerer · 1 container per stage', values: [558.6, 555.8, 473.7] },
+      { name: 'Mean', values: [1158, 1062, 225] },
+      { name: 'Median', values: [1325, 1246, 192] },
+      { name: '90th percentile', values: [1744, 1594, 394] },
     ],
-    note: 'Medians use actual sample ages, first within each container, then across replicas. Each stage covers one rollout with different workloads.',
+    note: 'One parse per file in a Linux container from the Airflow image, each stage from a fresh parent. All three runs produced the same DAGs and import errors.',
   },
   {
     type: 'bars',
@@ -195,40 +195,73 @@ function barsRow(c, r, max) {
   return row
 }
 
-function groupedChart(c, plot) {
-  if (c.domain[0] !== 0) throw new Error('Grouped bars require a zero-based domain')
-  c.rows.forEach(r => {
-    if (r.values.length !== c.series.length) throw new Error('Each row needs one value per series')
-    plot.append(el('div', 'group', label(r)))
-    c.series.forEach((series, i) => {
-      const row = el('div', 'row'), track = el('div', 'track')
-      const name = el('div', 'name', series.name)
-      name.style.color = textColor(series.color)
-      const bar = el('div', 'bar named')
-      bar.style.cssText = `left:0;width:${pct(c, r.values[i])}%;color:${series.color}`
-      const value = el('div', 'val', `${r.values[i]} ${c.unit}`)
-      value.style.left = `calc(${pct(c, r.values[i])}% + 8px)`
-      track.append(bar, value)
-      row.append(name, track, el('div'))
-      plot.append(row)
-    })
-  })
-  axis(c, plot)
-}
+const fmt = value => Number(value.toFixed(1)).toLocaleString('en-US')
+const text = (px, py, value, color = 'var(--muted)', anchor = 'start', weight = 400, attrs = '') => `<text${attrs} x="${px}" y="${py}" fill="${color}" text-anchor="${anchor}" font-size="16" font-weight="${weight}" style="paint-order:stroke;stroke:var(--bg);stroke-width:6px;stroke-linejoin:round">${value}</text>`
+const svgLabel = html => html.replace(/<code>(.*?)<\/code>/g, '<tspan class="id">$1</tspan>')
 
-function reductionChart(c) {
-  if (c.domain[0] !== 0) throw new Error('Reduction bars require a zero-based domain')
+function svgChart(c, height) {
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
-  const left = 180, width = 620, pitch = 184, height = c.rows.length * pitch + 32
-  const x = value => left + value / c.domain[1] * width
-  const fmt = value => Number(value.toFixed(1)).toLocaleString('en-US')
   const patternId = 'reduction-hatch-' + document.querySelectorAll('section.chart').length
   svg.setAttribute('viewBox', `0 0 936 ${height}`)
   svg.setAttribute('role', 'img')
   svg.setAttribute('aria-label', c.title)
   svg.style.cssText = 'display:block;width:100%;height:auto;font-variant-numeric:tabular-nums'
-  let shapes = `<defs><pattern id="${patternId}" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="10" stroke="currentColor" stroke-width="1" opacity="0.22"/></pattern></defs>`
-  const text = (px, py, value, color = 'var(--muted)', anchor = 'start', weight = 400, attrs = '') => `<text${attrs} x="${px}" y="${py}" fill="${color}" text-anchor="${anchor}" font-size="16" font-weight="${weight}" style="paint-order:stroke;stroke:var(--bg);stroke-width:6px;stroke-linejoin:round">${value}</text>`
+  const defs = `<defs><pattern id="${patternId}" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="10" stroke="currentColor" stroke-width="1" opacity="0.22"/></pattern></defs>`
+  return { svg, defs, hatch: `url(#${patternId})` }
+}
+
+// Same construction as a reduction, one group per row: the first series is the outlined baseline,
+// each later stage hatches the span back to the baseline and states its change from it.
+function groupedChart(c) {
+  if (c.domain[0] !== 0) throw new Error('Grouped bars require a zero-based domain')
+  const left = c.left ?? 240, width = 936 - left - 160, pitch = 50, head = 40, gap = 28
+  const groupHeight = head + c.series.length * pitch - 18 + gap
+  const height = c.rows.length * groupHeight + 32
+  const x = value => left + value / c.domain[1] * width
+  const { svg, defs, hatch } = svgChart(c, height)
+  let shapes = defs
+  c.rows.forEach((r, g) => {
+    if (r.values.length !== c.series.length) throw new Error('Each row needs one value per series')
+    const top = g * groupHeight, base = r.values[0], max = Math.max(...r.values)
+    const last = top + head + (c.series.length - 1) * pitch + 32
+    c.ticks.forEach(tick => {
+      if (tick <= max) shapes += `<line x1="${x(tick)}" x2="${x(tick)}" y1="${top + 30}" y2="${last + 8}" stroke="var(--line)" stroke-width="1"/>`
+    })
+    shapes += `<g${r.id ? ' class="id"' : ''}>${text(0, top + 18, r.name, 'var(--ink)', 'start', 500)}</g>`
+    c.series.forEach((series, i) => {
+      const v = r.values[i], y = top + head + i * pitch, end = x(Math.max(base, v))
+      if (i === 0) {
+        shapes += text(0, y + 22, svgLabel(series.name))
+        shapes += `<rect x="${left}" y="${y}" width="${x(v) - left}" height="32" rx="4" fill="none" stroke="var(--ink)" stroke-width="1.25" stroke-opacity="0.45"/>`
+        shapes += text(end + 16, y + 22, `${fmt(v)} ${c.unit}`)
+        return
+      }
+      const delta = v - base, color = isWorse(c, delta) ? 'var(--worse)' : series.color
+      shapes += `<line x1="${x(base)}" x2="${x(base)}" y1="${y - pitch + 40}" y2="${y - 8}" stroke="var(--ink)" stroke-opacity="0.18"/>`
+      shapes += text(0, y + 22, svgLabel(series.name), color, 'start', 500)
+      shapes += `<rect x="${left}" y="${y}" width="${x(v) - left}" height="32" rx="4" fill="${color}" fill-opacity="0.075" stroke="${color}" stroke-width="1.5"/>`
+      if (delta !== 0) {
+        const low = x(Math.min(base, v))
+        shapes += `<rect x="${low}" y="${y}" width="${end - low}" height="32" rx="4" fill="${hatch}" color="${color}" stroke="${color}" stroke-opacity="0.55" stroke-width="1.25" stroke-dasharray="4 5"/>`
+      }
+      const percent = (v / base - 1) * 100
+      const change = delta === 0 ? '' : `<tspan dx="10" font-weight="400">${percent < 0 ? '−' : '+'}${Math.abs(percent).toFixed(1)}%</tspan>`
+      shapes += text(end + 16, y + 22, `${fmt(v)} ${c.unit}${change}`, color, 'start', 500)
+    })
+  })
+  c.ticks.forEach(tick => {
+    shapes += text(x(tick), height - 8, tick === c.ticks.at(-1) ? `${fmt(tick)} ${c.unit}` : fmt(tick), 'var(--muted)', tick === 0 ? 'start' : 'middle')
+  })
+  svg.innerHTML = shapes
+  return svg
+}
+
+function reductionChart(c) {
+  if (c.domain[0] !== 0) throw new Error('Reduction bars require a zero-based domain')
+  const left = 180, width = 620, pitch = 184, height = c.rows.length * pitch + 32
+  const x = value => left + value / c.domain[1] * width
+  const { svg, defs, hatch } = svgChart(c, height)
+  let shapes = defs
   c.ticks.forEach(tick => {
     c.rows.forEach((r, i) => {
       if (tick <= Math.max(r.before, r.after)) shapes += `<line x1="${x(tick)}" x2="${x(tick)}" y1="${i * pitch + 34}" y2="${i * pitch + 138}" stroke="var(--line)" stroke-width="1"/>`
@@ -247,7 +280,7 @@ function reductionChart(c) {
     shapes += `<rect x="${left}" y="${afterY}" width="${x(r.after) - left}" height="${barHeight}" rx="4" fill="${color}" fill-opacity="0.075" stroke="${color}" stroke-width="1.5"/>`
     if (delta !== 0) {
       const hatchY = worse ? beforeY : afterY
-      shapes += `<rect x="${low}" y="${hatchY}" width="${endpoint - low}" height="${barHeight}" rx="4" fill="url(#${patternId})" color="${color}" stroke="${color}" stroke-opacity="0.55" stroke-width="1.25" stroke-dasharray="4 5"/>`
+      shapes += `<rect x="${low}" y="${hatchY}" width="${endpoint - low}" height="${barHeight}" rx="4" fill="${hatch}" color="${color}" stroke="${color}" stroke-opacity="0.55" stroke-width="1.25" stroke-dasharray="4 5"/>`
     }
     shapes += text(endpoint + 16, beforeY + 22, `${fmt(r.before)} ${c.unit}`)
     shapes += text(endpoint + 16, afterY + 22, `${fmt(r.after)} ${c.unit}`, color, 'start', 500)
@@ -269,7 +302,7 @@ for (const c of shown) {
   if (c.type === 'reduction') {
     plot.append(reductionChart(c))
   } else if (c.type === 'grouped') {
-    groupedChart(c, plot)
+    plot.append(groupedChart(c))
   } else if (c.type === 'stacked') {
     c.groups.forEach((g, i) => {
       plot.append(el('div', 'group', g.name))

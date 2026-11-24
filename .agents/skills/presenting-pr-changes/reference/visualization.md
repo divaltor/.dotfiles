@@ -38,7 +38,7 @@ Most failed charts plot raw data in a default form and then write a title the ch
 | --- | --- | --- |
 | Parts of a total, before and after | outlined stacked bars, changed part first, hatched reduction to the before total | `chart.html`, `type: 'stacked'` |
 | Before/after reduction | outlined bars with a hatched reduction span and baseline projection | `chart.html`, `type: 'reduction'` |
-| Three or more successive stages | separate outlined bars per stage, one shared zero-based scale | `chart.html`, `type: 'grouped'` |
+| Three or more successive stages | unfilled baseline bar, then one reduction-style bar per stage with a hatched span back to the baseline and its change | `chart.html`, `type: 'grouped'` |
 | Ranking or counts (findings per rule, files per team) | outlined horizontal bars sorted by value, named result lightly tinted; no delta hatching | `chart.html`, `type: 'bars'` |
 | What held when, in which order (a race, a leak across an await, a retry) | before and after lanes on one shared axis of stages, with labeled regions | `timeline.html` |
 | What talks to what, or work moving across a boundary (deferred import, new queue, removed hop) | before and after blueprint diagram, same positions | `diagram.html` |
