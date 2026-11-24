@@ -228,7 +228,7 @@ function reductionChart(c) {
   svg.setAttribute('aria-label', c.title)
   svg.style.cssText = 'display:block;width:100%;height:auto;font-variant-numeric:tabular-nums'
   let shapes = `<defs><pattern id="${patternId}" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="10" stroke="currentColor" stroke-width="1" opacity="0.22"/></pattern></defs>`
-  const text = (px, py, value, color = 'var(--muted)', anchor = 'start', weight = 400) => `<text x="${px}" y="${py}" fill="${color}" text-anchor="${anchor}" font-size="16" font-weight="${weight}" style="paint-order:stroke;stroke:var(--bg);stroke-width:6px;stroke-linejoin:round">${value}</text>`
+  const text = (px, py, value, color = 'var(--muted)', anchor = 'start', weight = 400, attrs = '') => `<text${attrs} x="${px}" y="${py}" fill="${color}" text-anchor="${anchor}" font-size="16" font-weight="${weight}" style="paint-order:stroke;stroke:var(--bg);stroke-width:6px;stroke-linejoin:round">${value}</text>`
   c.ticks.forEach(tick => {
     c.rows.forEach((r, i) => {
       if (tick <= Math.max(r.before, r.after)) shapes += `<line x1="${x(tick)}" x2="${x(tick)}" y1="${i * pitch + 34}" y2="${i * pitch + 138}" stroke="var(--line)" stroke-width="1"/>`
@@ -252,7 +252,7 @@ function reductionChart(c) {
     shapes += text(endpoint + 16, beforeY + 22, `${fmt(r.before)} ${c.unit}`)
     shapes += text(endpoint + 16, afterY + 22, `${fmt(r.after)} ${c.unit}`, color, 'start', 500)
     const percent = (r.after / r.before - 1) * 100
-    shapes += text(endpoint, afterY + 62, `${signed(delta)} ${c.unit} (${percent < 0 ? '−' : '+'}${fmt(Math.abs(percent))}%)`, color, 'end', 500)
+    shapes += text(endpoint, afterY + 62, `${delta < 0 ? '−' : '+'}${fmt(Math.abs(delta))} ${c.unit} (${percent < 0 ? '−' : '+'}${fmt(Math.abs(percent))}%)`, color, 'end', 500, ` class="delta" data-left="${left}"`)
   })
   svg.innerHTML = shapes
   return svg
@@ -290,6 +290,12 @@ for (const c of shown) {
 document.fonts.ready.then(() => {
   // Hatch at 1:1 pixels, so every reduction span has the same line weight and pitch.
   document.querySelectorAll('.vacated svg').forEach(s => s.setAttribute('viewBox', `0 0 ${s.clientWidth} ${s.clientHeight}`))
+  // A delta wider than its bar would run into the row labels, so start it at the bar's left edge instead.
+  document.querySelectorAll('text.delta').forEach(t => {
+    if (t.getAttribute('x') - t.getComputedTextLength() >= Number(t.dataset.left)) return
+    t.setAttribute('x', t.dataset.left)
+    t.setAttribute('text-anchor', 'start')
+  })
   document.body.dataset.fonts = document.fonts.check('16px "Inter"') && document.fonts.check('16px "Geist Mono"')
   document.body.dataset.height = Math.ceil(document.body.getBoundingClientRect().height)
 })
