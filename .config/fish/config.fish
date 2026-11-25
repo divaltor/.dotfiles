@@ -13,10 +13,7 @@ end
 set -U -x PKG_CONFIG_PATH $DEVBOX_PACKAGES_DIR/lib/pkgconfig
 
 # uv, mise
-fish_add_path "/Users/divaltor/.local/bin"
-
-# Installed Neovim plugins do not need their contributor toolchains activated.
-set -gx MISE_IGNORED_CONFIG_PATHS "$HOME/.local/share/nvim/lazy"
+fish_add_path "$HOME/.local/bin"
 
 if status is-interactive
     mise activate fish | source
@@ -68,7 +65,7 @@ end
 
 if type -q yt-dlp
     function mp4
-        argparse --strict-longopts --ignore-unknown 'q/quality=' 'h/help' -- $argv
+        argparse --strict-longopts --ignore-unknown 'q/quality=' h/help -- $argv
         or return
 
         if set -q _flag_help
@@ -146,3 +143,11 @@ fish_add_path $HOME/.local/bin
 set -U -x DO_NOT_TRACK 1
 
 set -U -x AMP_DISABLE_AMP_COAUTHOR_TRAILER 1
+
+export CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1
+export DISABLE_TELEMETRY=1
+export DISABLE_ERROR_REPORTING=1
+export CLAUDE_CODE_AUTO_CONNECT_IDE=0
+
+export T3CODE_TELEMETRY_ENABLED=false
+export T3CODE_OTEL_SDK_DISABLED=true
