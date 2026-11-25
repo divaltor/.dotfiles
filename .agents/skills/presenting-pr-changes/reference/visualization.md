@@ -10,7 +10,7 @@ Images fail far more often because the chart does not show what the title claims
 
 - The title is the takeaway sentence, with its numbers.
 - Every number in the title appears on the image as a labeled mark, computed from the data the page holds.
-- The subtitle says what was measured, over what scope, and how the measure could mislead (a single run, a proxy metric, a partial period).
+- The subtitle names the metric and scope. State a qualifying fact only when omitting it would misrepresent the result, such as a sample rather than the full population.
 
 ## Decide each layer in order
 
@@ -123,5 +123,4 @@ Name the single construction relationship in one sentence before drawing — wha
 - Every number in the title is a labeled mark on the image.
 - The title's verb matches the shape: "halved" needs a mark near half, "most" needs a share above 50%.
 - Nothing on the page needs the PR to be understood.
-- The subtitle or note names what the data cannot show.
-- Bottom text repeats nothing the title, subtitle or marks already say. Facts columns state what stayed the same and what it costs, each a colored value plus one sentence; a muted method line covers only conditions the subtitle omits. No reader instructions or chart mechanics.
+- Bottom text adds a mechanism, practical benefit or supporting measurement without repeating the marks. Apply the content-selection rules in SKILL.md; do not fill optional notes or method lines just because the template supports them.

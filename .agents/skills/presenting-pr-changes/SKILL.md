@@ -52,18 +52,19 @@ Measure before you draw. A change that moves a number deserves the number: run t
 
 Never show PR numbers, Jira keys, branch names, commit SHAs, tool versions, file paths, test names or author names. In charts, "dev" and "PR #1635" become "before" and "after".
 
+Keep source systems, collection timestamps, exact comparison windows, rollout times and reproduction commands in supporting evidence, not on the image, unless the user requests them or time is the chart's subject. The image presents the result; the evidence preserves how it was obtained.
+
 ## 4. Write the claim, then build down to it
 
 Follow the layer order in reference/visualization.md: claim, data, transform, form, encoding, scales, guides.
 
 - **Title:** the finding with its numbers, at most 14 words. "Cut task pod memory by 29% to 39%", not "Memory usage". For a timeline, the rule the fix establishes: "Team context now ends at every `yield`".
-- **Subtitle:** the metric and the conditions it was measured under, or what the bar in a timeline marks. One line.
+- **Subtitle:** name the metric and scope, or what the bar in a timeline marks. Include a condition only when omitting it would misrepresent the result, such as a sample rather than the full population. One line.
 - **Marks:** every number in the title is a labeled mark. Use one blue accent by default; for multiple stages, use the stable series colors below. `--worse` only for a number that got worse or a broken state.
 - **Bottom text adds only what the picture does not already say.** Never repeat the metric, unit, sample size, a value on a mark, or a change the marks already show; the title and subtitle already said them. Bottom text answers the questions the bars leave open.
-- **Facts** (charts, `facts: [{label, value, text, color}]`): two or three columns, usually **What stayed the same** (the evidence nothing else changed, such as `0 differences` in DAGs and import errors) and **What it costs** (what the change trades for the win, such as `+286 MiB, +2.1 s` in the parent). `value` is a short measured result in the color of the stage it belongs to, so it reads as part of the chart; `text` is one sentence saying what it means. Skip a column you have no source for; never pad. Never give reader instructions or describe chart mechanics.
-- **Method** (charts, `method`): one muted line on how it was measured that the subtitle does not already say, such as runs per file, environment or isolation.
-- **Note** (timelines, or a chart caveat that fits no column): one or two short sentences on how the numbers were measured or the limitation that affects them, under the same no-repeat rule.
-- **Source line** (timeline only, optional): one mono line naming the tool that found the problem, such as `ruff ASYNC119 yield-in-context-manager-in-async-generator`.
+- **Facts** (charts, `facts: [{label, value, text, color}]`): select supporting measurements that explain the benefit, an unchanged result or a tradeoff. Use up to three columns, not a mandatory checklist. `value` is a short measured result in the color of its stage; `text` is one sentence explaining its practical meaning. Skip a column you have no source for; never pad. Never give reader instructions or describe chart mechanics.
+- **Method** (charts, `method`) and **source line** (timelines): omit by default. Use only when requested or when the measurement technique is itself the subject.
+- **Note:** explain the mechanism and practical benefit in one or two sentences. Qualify a result with the concrete fact that changes its interpretation; do not append generic disclaimers about what was not proved, measured or improved. For example, write "Memory rose by 54 MiB" rather than "No claim of memory savings." Keep actual regressions and tradeoffs visible; remove defensive commentary, not evidence.
 
 `chart.html` and `timeline.html` build the page from the `DATA` constant at the top; edit only `DATA` unless the layout breaks. In `timeline.html`, describe each lane as regions over stages (`set`, `broken`, `cleared`) with a label inside each one that matters, and put events such as `yield` in `boundaries`; the page refuses to render a label that does not fit its region. `diagram.html` edits the inline SVG directly following the construction table in `reference/visualization.md`.
 
@@ -81,7 +82,7 @@ The rules and the reason for each are in reference/taste.md. In short:
 
 ## 6. Text pass
 
-Load `emil-unslop-writing` and run it over every string on the page. On top of it: no em dashes; labels in sentence case; notes as plain sentences, not cryptic fragments; repeat one noun for one thing ("team context" everywhere, not "team var" in one place). Check that the bottom text repeats nothing already on the image and answers a question the bars leave open (what stayed the same, what it costs, how it was measured), rather than telling readers what to do.
+Load `emil-unslop-writing` and run it over every string on the page. On top of it: no em dashes; labels in sentence case; notes as plain sentences, not cryptic fragments; repeat one noun for one thing ("team context" everywhere, not "team var" in one place). Check that bottom text adds a benefit, mechanism or supporting fact rather than repeating the marks, narrating the investigation or defending the claim.
 
 ## 7. Design pass
 
