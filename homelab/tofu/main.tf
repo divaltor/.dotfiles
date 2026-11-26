@@ -497,6 +497,7 @@ resource "proxmox_virtual_environment_container" "kino" {
   lifecycle {
     ignore_changes = [
       operating_system,  # template_file_id mismatch with state
+      mount_point,       # host bind mounts are managed by Ansible without replacing the LXC
       features[0].mount, # managed outside provider
       features[0].fuse,
       features[0].keyctl,

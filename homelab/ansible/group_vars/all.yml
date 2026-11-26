@@ -25,6 +25,10 @@ proxmox_lxc_bind_mounts:
     key: mp1
     volume: /vmdata/qbittorrent
     path: /media/ssd/downloads
+  - vmid: 102
+    key: mp2
+    volume: /vmdata/qbittorrent
+    path: /media/ssd
 
 # The physical BDF can change when PCIe devices are added. Guests use this
 # logical Proxmox mapping; only this host-side mapping needs the current BDF.

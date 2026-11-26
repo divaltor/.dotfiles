@@ -3,7 +3,8 @@
 # LXC: kino (102) — Plex media server + Avahi mDNS
 # ============================================================
 # The container runs Debian with Plex reading ZFS-backed media
-# from the Proxmox host via bind mounts (/media/films, /media/shows).
+# from the Proxmox host via bind mounts (/media/films, /media/shows)
+# and the SSD downloads dataset (/media/ssd).
 # ============================================================
 
 - import_playbook: lxc_bootstrap.yml
