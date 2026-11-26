@@ -9,7 +9,6 @@ age = "latest"
 ansible = "latest"
 ast-grep = "latest"
 bat = "latest"
-claude-code = "latest"
 cloudflared = "latest"
 delta = "latest"
 dust = "latest"
@@ -18,7 +17,6 @@ fd = "latest"
 fzf = "latest"
 gh = "latest"
 go = "latest"
-helix = "latest"
 hyperfine = "latest"
 lazygit = "latest"
 mole = "latest"
@@ -30,8 +28,6 @@ pnpm = "latest"
 rclone = "latest"
 ripgrep = "latest"
 starship = "latest"
-tlrc = "latest"
-uv = "latest"
 yazi = "latest"
 zig = "latest"
 zoxide = "latest"
@@ -44,11 +40,12 @@ zoxide = "latest"
 "conda:git" = "latest"
 "conda:wget" = "latest"
 "conda:pkgconf" = "latest"
-"conda:postgresql" = "latest"  # for psql; conda:libpq ships only pg_config
 "conda:ffmpeg" = "latest"      # lacks rav1e, whisper, vmaf, zscale; use brew:ffmpeg-full for those
 
 # fish: the official signed build from the GitHub release
 "github:fish-shell/fish-shell" = { version = "latest", asset_pattern = "fish-*.app.zip", strip_components = 1, bin_path = "Contents/Resources/base/usr/local/bin" }
+uv = "latest"
+antigravity-cli = "latest"
 
 # Only available as Homebrew bottles; mise installs them without the brew CLI
 [bootstrap.packages]
