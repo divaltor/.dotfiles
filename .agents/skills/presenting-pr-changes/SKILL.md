@@ -5,93 +5,68 @@ description: "Turns a change or a piece of work into one still chart or diagram 
 
 # Presenting work as a picture
 
-The reader is a colleague who did not do the work. They see one image in Slack, Jira or a doc and give it about 30 seconds. One image carries one claim, and the picture carries it: a chart or a diagram, with text only to name what the picture shows. A page of prose with a screenshot of code is a document, not a presentation.
+One static PNG (1080 CSS px at 2x) read in Slack or Jira in 30 seconds. One image carries one claim; text only names what the picture shows.
 
-Read [reference/visualization.md](reference/visualization.md) before drawing anything and [reference/taste.md](reference/taste.md) before changing any style. The templates already follow both.
-
-When a reference image is supplied, match its visual construction before choosing a template. Compare the rendered result with the reference, not just the prose rules. For before/after reductions, use outlined bars, baseline projection guides and a dashed hatched reduction span (`type: 'reduction'`); solid ranking bars are not a substitute.
+Read [reference/visualization.md](reference/visualization.md) only when choosing a data transform or authoring a custom `diagram.html`. Read [reference/taste.md](reference/taste.md) only when changing CSS tokens or custom SVG styling. For standard charts and timelines, edit only `DATA` in the template; the templates already encode the tokens, typography, and layout.
 
 ## 1. Pick the picture
 
 ```
 What does the work change for the reader?
-├── Moves a measured number (memory, runtime, cost, counts)
-│   → chart, templates/chart.html
-│     ├── parts of a total, before and after     → type: 'stacked'
-│     ├── before/after, one or several items     → type: 'reduction'
-│     ├── three or more successive stages       → type: 'grouped'
-│     └── a ranking or counts across items       → type: 'bars'
+├── Moves a measured number (memory, CPU, latency, cost, counts)
+│   → templates/chart.html (edit DATA only)
+│     ├── before/after across 1..N items             → type: 'reduction'
+│     ├── step-by-step attribution (PR stack/budget) → type: 'waterfall'
+│     ├── parts of a total, before and after         → type: 'stacked'
+│     ├── 3+ successive stages (long labels)         → type: 'grouped'
+│     ├── 3+ successive stages (short labels)        → type: 'columns'
+│     ├── trace over time / spikes / headroom        → type: 'timeseries' (+ optional envelope)
+│     └── ranking or counts across items             → type: 'bars'
 ├── Fixes behaviour about time or order (leak, race, retry, lifetime)
-│   → before/after lanes, templates/timeline.html
+│   → templates/timeline.html (edit DATA only)
 ├── Changes structure, flow, or boundaries
-│   → blueprint diagram, templates/diagram.html (constructions in reference/visualization.md)
-│     ├── work or cost leaves a shared stage     → split / deferral
-│     ├── a hop is added, removed, or bypassed   → routing (before/after)
-│     ├── two scopes or windows intersect        → overlap / boundary
-│     ├── N items batch, stream, or join         → fan-in / batching
-│     └── callers share one schema or contract   → relation / interface
+│   → templates/diagram.html (5 constructions in reference/visualization.md)
 ├── Sweeps the codebase (lint, upgrade, migration)
-│   → bars of the counts that matter (findings per rule, files per team),
-│     plus a timeline for the one finding that was a real bug
+│   → type: 'bars' for the counts + timeline.html for the one real bug
 ├── Fixes a wrong value with no number to measure
-│   → no image: one sentence in the message says it better
+│   → no image: write one sentence in the message
 └── Several unrelated changes
     → one image each, at most 3
 ```
 
-Measure before you draw. A change that moves a number deserves the number: run the benchmark, count the files, time the parse. A chart of a real measurement persuades where a paragraph does not.
+When a reference image is supplied, match its visual construction (outlines, fills, hatching, guides) before choosing a template; typography alone is not a match.
 
-## 2. Gather facts
+## 2. Gather verified facts and drop bookkeeping
 
-- Read the PR body, the diff (`git diff <base>...<head>`) and any measurement output.
-- Every claim needs a source you can point to: a diff hunk, a test run, a command output. Before writing "X caused Y", re-read the code path and confirm Y happens on it. If you can't trace it, cut the claim.
-- Numbers are copied, never re-rounded. Compute deltas and percentages from the values on the page, so a reader can check them.
-- Code appears only as identifiers in labels (`execute()`, `smaps_rollup`) or as one exact line from the diff. Never a code block of the before and after.
+- Measure before drawing. Every number and causal claim needs a source you can point to (diff hunk, command output, test run). If you cannot trace "X caused Y" in code, cut the claim.
+- Copy measured numbers verbatim; compute deltas and percentages from the values on the page so a reader can check them.
+- Never show PR numbers, Jira keys, branch names, commit SHAs, tool versions, file paths, test names, or author names. Rename "dev" and "PR #1635" to `before` and `after`.
+- Omit collection timestamps, comparison windows, rollout times, and repro commands unless time is the chart's subject or the user asked for them.
+- Code appears only as inline identifiers (`execute()`, `smaps_rollup`) or one exact diff line. Never show before/after code blocks.
 
-## 3. Leave out bookkeeping
+## 3. Fill `DATA` from the claim down
 
-Never show PR numbers, Jira keys, branch names, commit SHAs, tool versions, file paths, test names or author names. In charts, "dev" and "PR #1635" become "before" and "after".
+- **Kind (`kind`, optional):** set `'cpu'`, `'memory'`, `'io'`, `'latency'`, `'throughput'`, `'cost'`, `'cluster'`, or `{ icon, label, color }` to show an unboxed 16px hairline glyph above the title. Omit when no domain category helps.
+- **Title:** the finding with its numbers, at most 14 words (`Cut task pod memory by 29% to 39%`, not `Memory usage`). Every number in the title must appear as a labeled mark.
+- **Subtitle:** one line naming the metric and scope. Add a qualifier only if omitting it would mislead (e.g. sample vs full population).
+- **Marks:** baseline bars use `--base-fill` (`oklch(95.4% 0.004 85)`); the primary claim uses `--accent` (blue), the next stage `--stage-next` (teal), and regressions or broken states `--worse` (red). Never use `--worse` as an arbitrary category.
+- **Bottom text adds only what the marks leave open.** Never repeat the metric, unit, sample size, or a delta the marks already display.
+  - `facts` (optional, up to 3 columns `{ label, value, text, color }`): supporting measurements (what stayed unchanged, what it costs). Skip columns without a source; never pad.
+  - `note` (optional, 1-2 sentences): mechanism, practical benefit, or concrete regression (`Memory rose by 54 MiB`, never defensive disclaimers like `No claim of memory savings`).
+  - `method` / `source`: omit by default; include only when requested or when the method is the subject.
 
-Keep source systems, collection timestamps, exact comparison windows, rollout times and reproduction commands in supporting evidence, not on the image, unless the user requests them or time is the chart's subject. The image presents the result; the evidence preserves how it was obtained.
+## 4. Text and design gate
 
-## 4. Write the claim, then build down to it
+Run this checklist over every string and element before rendering:
 
-Follow the layer order in reference/visualization.md: claim, data, transform, form, encoding, scales, guides.
+- **No slop copy:** zero em dashes, zero hedged filler (`crucial`, `leverage`, `significantly`, `not just`), sentence case on all labels, one consistent noun per concept, real minus (`−`, `\u2212`).
+- **Earn every pixel:** ask "what breaks if this is gone?" and delete decoration, legends replaceable by direct labels, and redundant bottom prose.
+- **Hard bans (enforced by `check.py`):** no boxes around charts, no pill chips/badges, no uppercase letter-spaced labels, no shadows, no gradients, no `font-variant-ligatures` (use `font-feature-settings: 'calt' 0, 'liga' 0, 'dlig' 0` so `->` never ligatures).
 
-- **Title:** the finding with its numbers, at most 14 words. "Cut task pod memory by 29% to 39%", not "Memory usage". For a timeline, the rule the fix establishes: "Team context now ends at every `yield`".
-- **Subtitle:** name the metric and scope, or what the bar in a timeline marks. Include a condition only when omitting it would misrepresent the result, such as a sample rather than the full population. One line.
-- **Marks:** every number in the title is a labeled mark. Use one blue accent by default; for multiple stages, use the stable series colors below. `--worse` only for a number that got worse or a broken state.
-- **Bottom text adds only what the picture does not already say.** Never repeat the metric, unit, sample size, a value on a mark, or a change the marks already show; the title and subtitle already said them. Bottom text answers the questions the bars leave open.
-- **Facts** (charts, `facts: [{label, value, text, color}]`): select supporting measurements that explain the benefit, an unchanged result or a tradeoff. Use up to three columns, not a mandatory checklist. `value` is a short measured result in the color of its stage; `text` is one sentence explaining its practical meaning. Skip a column you have no source for; never pad. Never give reader instructions or describe chart mechanics.
-- **Method** (charts, `method`) and **source line** (timelines): omit by default. Use only when requested or when the measurement technique is itself the subject.
-- **Note:** explain the mechanism and practical benefit in one or two sentences. Qualify a result with the concrete fact that changes its interpretation; do not append generic disclaimers about what was not proved, measured or improved. For example, write "Memory rose by 54 MiB" rather than "No claim of memory savings." Keep actual regressions and tradeoffs visible; remove defensive commentary, not evidence.
+## 5. Check, render, and inspect
 
-`chart.html` and `timeline.html` build the page from the `DATA` constant at the top; edit only `DATA` unless the layout breaks. In `timeline.html`, describe each lane as regions over stages (`set`, `broken`, `cleared`) with a label inside each one that matters, and put events such as `yield` in `boundaries`; the page refuses to render a label that does not fit its region. `diagram.html` edits the inline SVG directly following the construction table in `reference/visualization.md`.
-
-## 5. Style
-
-The rules and the reason for each are in reference/taste.md. In short:
-
-- Near-white warm canvas, near-black ink, one muted gray for secondary text. Default to `--accent` (blue) for the claim. When comparing multiple stages, use gray (`--context`) for the baseline, blue for the first changed stage and teal (`--stage-next`) for the next. Keep each stage's color consistent across groups and label it directly; use additional distinct hues only when more measured stages require them. Red (`--worse`) means regression, never an arbitrary stage. Tokens are OKLCH in each template's `:root`.
-- Use `type: 'grouped'` for separate stage measurements, with `series: [{name, color}]` and `rows: [{name, values}]` in the same series order. The first series is the baseline: an unfilled neutral outline, like the before bar of a reduction. Every later stage gets the reduction construction against it: tinted outline in its stage color, a dashed hatched span back to the baseline endpoint, and its value with the change from baseline (`1,062 ms −8.3%`). Give all bars one zero-based scale. Reserve `stacked` for additive parts of a total; successive snapshots are not parts to stack.
-- Marks use thin outlines, at most 7.5% tint and a subtle 4px corner radius, not solid fills or square ends. Hatch measured reductions or the broken intervals of a timeline, only those intervals; do not add hatching to rankings where no change is measured.
-- Inter (variable, optical sizes) for all text: title 34/600, subtitle 19/400, labels 17, ticks and notes 15–16. Geist Mono at 0.94em for identifiers. Both load with `@font-face`. `render.sh` downloads them from the Google Fonts repository into `~/.cache/presenting-pr-changes/fonts` on first run, fills the templates' `{{FONTS}}` placeholder with that path, and stops if either fails to load.
-- **Ligatures off in mono:** `font-feature-settings: 'calt' 0, 'liga' 0, 'dlig' 0`. Never use `font-variant-ligatures`: every `font:` shorthand resets it, and `->` then renders as an arrow, which misquotes the code.
-- **Never:** boxes around charts, outlined badges, uppercase letter-spaced labels, rows of big-number stat cards, gradients, icons, emoji, shadows, or a brand palette.
-- **Canvas:** 1080 CSS px wide at device scale 2. The height follows the content.
-
-## 6. Text pass
-
-Load `emil-unslop-writing` and run it over every string on the page. On top of it: no em dashes; labels in sentence case; notes as plain sentences, not cryptic fragments; repeat one noun for one thing ("team context" everywhere, not "team var" in one place). Check that bottom text adds a benefit, mechanism or supporting fact rather than repeating the marks, narrating the investigation or defending the claim.
-
-## 7. Design pass
-
-Load `emil-unslop-design` and walk every element with its question: what breaks if this is gone? Delete what survives on decoration alone, then walk again.
-
-## 8. Render and check
-
-1. Copy the template to `.amp/in/artifacts/<topic>/page.html` in the workspace, so the PNG can be embedded in the reply. Put `/.amp/in/` in the repo's `info/exclude` first.
-2. Run `pr-present check .amp/in/artifacts/<topic>/page.html` (or `python3 scripts/check.py ...`) and fix any errors before rendering.
-3. Run `pr-present render .amp/in/artifacts/<topic>/page.html .amp/in/artifacts/<topic>/out/<name>.png` (or `scripts/render.sh ...`). It measures the content height, then screenshots the whole page at 2160px wide, padding included. When `chart.html` still holds several charts, render each one on its own padded canvas with a query: `pr-present render '.amp/in/artifacts/<topic>/page.html?chart=stacked' out/stacked.png` (`?chart=` takes a type or a position from 1). Never deliver an element screenshot, such as agent-browser `screenshot .chart` or a DevTools node capture: it drops the page padding and the image runs to its edges.
-4. Inspect the PNG with `view_media`. Name the checks in the objective: the canvas keeps its margins on all four sides, every number in the title is a labeled mark, no text overlaps a mark or gridline, nothing runs past the right edge, `->` shows as two characters, every number matches its source, and no arrow enters a target crookedly. With a reference image, also check the outlines, fills, hatching and guide geometry against it; typography alone is not a match.
-5. Embed the PNG in the reply, keep `page.html` next to it, and say how to re-render. Offer one next step, such as a Slack post to go with the image.
+1. Copy the template to `.amp/in/artifacts/<topic>/page.html` (ensure `/.amp/in/` is in `.git/info/exclude`), keeping only the entries needed in `DATA`.
+2. Run `pr-present check .amp/in/artifacts/<topic>/page.html` (or `python3 scripts/check.py ...`) and fix every error.
+3. Run `pr-present render .amp/in/artifacts/<topic>/page.html .amp/in/artifacts/<topic>/out/<name>.png` (or `scripts/render.sh ...`). Pass `?chart=<type>` or `?chart=<index>` when rendering one chart from a multi-chart page. Never take a DOM element screenshot; it drops canvas padding.
+4. Inspect the rendered PNG visually: margins intact on all four sides, every title number present as a mark, zero label overlap or edge clipping, `->` renders as two characters, and every arrow in diagrams enters its target orthogonally.
+5. Embed the PNG in the reply, keep `page.html` beside it, and note how to re-render.

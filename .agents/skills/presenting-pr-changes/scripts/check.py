@@ -97,7 +97,9 @@ def check_html(path: Path) -> tuple[list[str], list[str]]:
     if "\u2014" in text:
         warnings.append("Em dash (—) found; SKILL.md prefers no em dashes")
 
-    svgs = re.findall(r"<svg\b[^>]*>.*?</svg>", text, flags=re.DOTALL)
+    # Strip <script> blocks before scanning static inline SVGs so JS template literals don't trip XML parsing.
+    static_html = re.sub(r"<script\b[^>]*>.*?</script>", "", text, flags=re.DOTALL)
+    svgs = re.findall(r"<svg\b[^>]*>.*?</svg>", static_html, flags=re.DOTALL)
     for i, svg in enumerate(svgs, start=1):
         svg_errors, svg_warnings = check_svg(svg, i)
         errors.extend(svg_errors)

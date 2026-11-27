@@ -1,66 +1,47 @@
 # Taste: Apple and Linear
 
-Rules for a calm, neutral look that applies to a still image. Each rule says why, so it can be applied to cases it does not name.
+Visual rules for a calm still image. Every rule carries its why so it generalizes to custom diagrams and edge cases.
 
-## Attention
+## Attention and hierarchy
 
-- **Supporting elements recede; only the claim is at full strength.** Ticks, gridlines, legends and notes are muted and small; the title, the highlighted marks and their values are ink.
-  Why: Linear, "Don't compete for attention you haven't earned". Its sidebar was dimmed so the work area wins; a chart's chrome is the sidebar.
-- **Every element must survive "what breaks if this is gone?".**
-  Why: Apple, Purpose. Every element spends the reader's attention, and an image read in 30 seconds has none to spare.
-- **Simplicity, not minimalism.** Add the label, unit or baseline the reader needs to check the claim, even if the page gets busier.
-  Why: Apple, Simplicity. "Sometimes adding context simplifies"; a bare chart that hides its unit looks clean and fails.
+- **Supporting chrome recedes; only the claim is at full strength.** Ticks, gridlines, and notes use `--muted` and smaller type; titles, highlighted marks, and values use `--ink` or `--accent`.
+  Why: an image read in 30 seconds in Slack cannot split attention between axes and the finding.
+- **Build hierarchy from lightness first, then size, then weight.** Two neutral text levels (`--ink`, `--muted`), weight `600` only on the title; `--muted` still clears 4.5:1 contrast.
+  Why: dark-on-light contrast holds up when Slack scales the PNG down.
+- **Structure is felt, not seen.** Use whitespace and shared left edges first, hairline rules (`--line`) second, surfaces (`--surface`) only for real containers like code lines. Never box a chart.
+  Why: borders multiply noise and compete with data marks.
+- **Unboxed metric glyphs only.** When tagging a metric domain (`CPU`, `Memory`, `I/O`, `Latency`, `Cost`), use an unboxed 16px 1.35px-stroke glyph + sentence-case label above the title, never a bordered pill or uppercase eyebrow.
+  Why: pills read as interactive buttons on a static image; uppercase eyebrows shout over the claim.
 
-## Hierarchy
+## Color and marks
 
-- **Build hierarchy from lightness first, then size, then weight.** Two text colors (`--ink`, `--muted`), four sizes, and weight 600 only for the title.
-  Why: Linear worked in "opacities of black and white" to set hierarchy, and Apple builds hierarchy from weight, size and leading as one set, not size alone.
-- **Content gets more contrast, not less.** Body text and values are near-black on near-white; muted text still passes 4.5:1.
-  Why: Linear's redesign made text "darker in light mode" because content stands out from chrome by contrast, and the image is often viewed scaled down in Slack.
+- **Warm near-white canvas (`oklch(98.2% 0.005 90)`, `#faf9f5`).** Slightly warmer than pure white without turning into tinted paper.
+  Why: matches light reading surfaces (Amp, docs, Slack) and avoids harsh glare while keeping neutral grays crisp.
+- **Equal perceptual weight in OKLCH.** One accent (`--accent` blue) by default; add `--stage-next` (teal) for a second measured stage. Reserve `--worse` (red) strictly for regressions or broken states.
+  Why: equal lightness in OKLCH gives blue, teal, and red equal visual weight; reusing red as a category breaks semantic trust.
+- **Grounded baselines, light-tinted claims.** Baseline (`before`) bars fill with `--base-fill` (`oklch(95.4% 0.004 85)`) and a `1.25px` `0.4`-opacity ink outline; changed bars use a `1.5px` stroke and `8%` tint. Every bar uses a `4px` corner radius.
+  Why: hollow transparent baselines read unfinished on `#faf9f5`, while heavy solid fills overpower direct value labels and hide projection guides.
+- **Hatch only removed or broken spans at 1:1 pixels.** Never hatch rankings or healthy runs.
+  Why: hatching isolates vacated work or broken intervals without introducing another hue.
 
-## Structure
+## Typography
 
-- **Structure should be felt, not seen.** Use space and alignment before rules, rules before boxes, and never a box around a chart.
-  Why: Linear, "Structure should be felt not seen": borders had "quietly proliferated" and were removed or softened.
-- **Align every label, mark and value on a few shared edges.**
-  Why: Linear aligned sidebar labels and icons both ways: "you won't see it at once, but you'll feel it". Apple, Craft: every spacing and alignment value is a choice you can defend.
-- **Place a label next to the mark it names.** Direct labels over legends; values at bar ends.
-  Why: Apple, Grouping and mapping. Proximity implies relationship; if a mark needs a legend lookup, the mapping is weak.
-
-## Color
-
-- **Neutral and timeless: grays with almost no chroma, slightly warm.** The canvas is near-white, never tinted paper or a brand color.
-  Why: Linear limited "how much chrome (blue)" went into its neutrals, then moved to "a warmer gray that still feels crisp", warning that too warm turns muddy.
-- **Define colors in a perceptual space (OKLCH) from a few inputs: base, accent, contrast.**
-  Why: Linear rebuilt its themes in LCH from three inputs because equal lightness then looks equally light, so the accent and the regression color carry the same weight.
-- **One accent by default; distinct, stable colors when comparing multiple stages.** Gray is the baseline, blue the first changed stage, teal the next. Keep this mapping across every group; reserve red for regressions.
-  Why: Apple, Familiarity: things that look the same must behave the same. Multiple stages need distinct identities, not an arbitrary second highlight or a regression color used as a category.
-- **Marks use thin outlines, at most 7.5% tint and a subtle 4px radius; hatching names a reduction or a broken interval, and only that interval.**
-  Why: solid fills overpower the values and hide the projection guides; a hatched region distinguishes removed or broken work from retained work without adding another hue. Hatching a whole bar says everything is broken and hides where it broke. Square corners read as unfinished next to the rounded stage boxes and outlines.
-
-## Type
-
-- **One sans with optical sizes, one mono drawn on the same proportions.** Inter's variable `opsz` axis switches to its Display cut at headline sizes. Geist Mono (x-height 0.530 of the em against Inter's 0.546) sets inline at `0.94em`, so its x-height sits just under Inter's; matching it exactly makes the wider mono glyphs read larger than the text around them.
-  Why: Linear uses "Inter Display to add more expression to our headings" and regular Inter for the rest. Apple: default to a face with optical sizing and tracking tables. Faces that disagree on x-height and width, such as IBM Plex Sans with narrow Ioskeley Mono, read as an accident.
-- **Tracking follows size.** About `-0.022em` on the 34px title, `-0.011em` at 19px, `0` at 17px and below.
-  Why: Apple, *Details of UI Typography*: large type reads too loose at its default fit; small type needs its default spacing.
-- **Leading follows size inversely.** About `1.15` on titles, `1.45` on notes.
-  Why: Apple: tight on large headings, looser on body copy.
-- **Digits are tabular wherever they line up, and minus is a real `−`.**
-  Why: columns of values only compare at a glance when the digits align.
+- **Inter (variable `opsz`) + Geist Mono at `0.94em`.** Tracking scales with size (`-0.022em` at 34px, `-0.011em` at 19px, `0` at 17px and below); leading scales inversely (`1.15` title, `1.45` body/notes).
+  Why: Geist Mono's x-height (`0.530`) is wider than Inter (`0.546`); `0.94em` stops inline identifiers from reading oversized.
+- **Tabular numerals everywhere digits align; real minus `−` (`\u2212`); mono ligatures off.** Always set `font-feature-settings: 'calt' 0, 'liga' 0, 'dlig' 0` (never `font-variant-ligatures`, which `font:` shorthands reset).
+  Why: columns compare cleanly only with tabular digits, and ligatures turn `->` into an arrow that misquotes code.
 
 ## Tokens
 
-Generated from three inputs: base hue 80 (warm), chroma kept under 0.01 for neutrals, accent hue 256.
-
 | Token | Value | Use |
 | --- | --- | --- |
-| `--bg` | `oklch(99.3% 0.002 80)` | Canvas |
-| `--surface` | `oklch(96.8% 0.003 80)` | Code lines, diagram nodes, timeline segments |
-| `--line` | `oklch(91.5% 0.004 80)` | Gridlines, hairline rules |
-| `--context` | `oklch(76% 0.006 80)` | Data marks that are not the point (before, other parts, other bars) |
-| `--muted` | `oklch(47% 0.008 80)` | Secondary text, ticks, notes |
-| `--ink` | `oklch(20% 0.005 80)` | Titles, values, primary text |
-| `--accent` | `oklch(55% 0.19 256)` | Named result or first changed stage |
-| `--stage-next` | `oklch(49% 0.10 185)` | Next stage in a multi-stage chart (teal) |
-| `--worse` | `oklch(55% 0.2 27)` | A number that got worse, a broken state |
+| `--bg` | `oklch(98.2% 0.005 90)` | Canvas (`#faf9f5`) |
+| `--surface` | `oklch(95.2% 0.005 85)` | Code lines, diagram nodes, timeline segments |
+| `--base-fill` | `oklch(95.4% 0.004 85)` | Baseline (`before`) bars and requested envelopes |
+| `--line` | `oklch(90.2% 0.006 85)` | Gridlines and hairline dividers |
+| `--context` | `oklch(74% 0.007 85)` | Secondary marks and quiet traces |
+| `--muted` | `oklch(46% 0.008 80)` | Subtitles, ticks, notes, metric labels |
+| `--ink` | `oklch(20% 0.005 80)` | Titles, primary labels, values |
+| `--accent` | `oklch(55% 0.19 256)` | Primary result or first changed stage |
+| `--stage-next` | `oklch(49% 0.10 185)` | Second measured stage (teal) |
+| `--worse` | `oklch(55% 0.2 27)` | Regression or broken state only |

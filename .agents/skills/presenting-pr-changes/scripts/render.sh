@@ -23,8 +23,10 @@ fetch Inter.ttf "$gf/inter/Inter%5Bopsz,wght%5D.ttf"
 fetch GeistMono.ttf "$gf/geistmono/GeistMono%5Bwght%5D.ttf"
 
 # Templates reference fonts as file://{{FONTS}}/...; fill in the cache path on a throwaway copy.
+# Isolate Chrome's user-data-dir per invocation so concurrent renders never collide on profile locks.
 page="$(dirname "$src")/.render-$$.html"
-trap 'rm -f "$page"' EXIT
+profile="$(mktemp -d "${TMPDIR:-/tmp}/pr-present-chrome.XXXXXX")"
+trap 'rm -rf "$page" "$profile"' EXIT
 sed "s|{{FONTS}}|$fonts_dir|g" "$src" > "$page"
 mkdir -p "$(dirname "$2")"
 out="$(cd "$(dirname "$2")" && pwd)/$(basename "$2")"
@@ -33,6 +35,7 @@ scale="${4:-2}"
 chrome="${CHROME_PATH:-/Applications/Google Chrome.app/Contents/MacOS/Google Chrome}"
 
 dom="$("$chrome" --headless=new --disable-gpu --allow-file-access-from-files \
+  --user-data-dir="$profile" \
   --window-size="$width,4000" --virtual-time-budget=3000 --dump-dom "file://$page$query" 2>/dev/null)"
 height="$(printf '%s' "$dom" | sed -n 's/.*data-height="\([0-9]*\)".*/\1/p' | head -1)"
 fonts="$(printf '%s' "$dom" | sed -n 's/.*data-fonts="\([a-z]*\)".*/\1/p' | head -1)"
@@ -42,6 +45,7 @@ error="$(printf '%s' "$dom" | sed -n 's/.*data-error="\([^"]*\)".*/\1/p' | head 
 [ "$fonts" = "true" ] || { echo "Inter or Geist Mono did not load" >&2; exit 1; }
 
 "$chrome" --headless=new --disable-gpu --hide-scrollbars --allow-file-access-from-files \
+  --user-data-dir="$profile" \
   --window-size="$width,$height" --force-device-scale-factor="$scale" \
   --screenshot="$out" "file://$page$query" >/dev/null 2>&1
 echo "$out $((width * scale))x$((height * scale))"

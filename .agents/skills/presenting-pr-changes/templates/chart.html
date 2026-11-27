@@ -7,11 +7,12 @@
   @font-face { font-family: 'Geist Mono'; font-weight: 100 900; src: url('file://{{FONTS}}/GeistMono.ttf'); }
 
   :root {
-    --bg: oklch(99.3% 0.002 80);
-    --surface: oklch(96.8% 0.003 80);
-    --line: oklch(91.5% 0.004 80);
-    --context: oklch(76% 0.006 80);
-    --muted: oklch(47% 0.008 80);
+    --bg: oklch(98.2% 0.005 90);
+    --surface: oklch(95.2% 0.005 85);
+    --base-fill: oklch(95.4% 0.004 85);
+    --line: oklch(90.2% 0.006 85);
+    --context: oklch(74% 0.007 85);
+    --muted: oklch(46% 0.008 80);
     --ink: oklch(20% 0.005 80);
     --accent: oklch(55% 0.19 256);
     --stage-next: oklch(49% 0.10 185);
@@ -23,10 +24,12 @@
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { width: 1080px; }
-  body { background: var(--bg); color: var(--ink); font-family: var(--sans); font-optical-sizing: auto; font-synthesis: none; -webkit-font-smoothing: antialiased; padding: 64px 72px 56px; }
+  body { background: var(--bg); color: var(--ink); font-family: var(--sans); font-optical-sizing: auto; font-synthesis: none; -webkit-font-smoothing: antialiased; padding: 58px 72px 54px; }
   code, .id { font-family: var(--mono); font-weight: 450; font-size: 0.94em; font-feature-settings: 'calt' 0, 'liga' 0, 'dlig' 0; }
 
   .chart + .chart { margin-top: 80px; padding-top: 64px; border-top: 1px solid var(--line); }
+  .kind { display: inline-flex; align-items: center; gap: 8px; font: 500 14.5px/1 var(--sans); color: var(--muted); margin-bottom: 14px; }
+  .kind svg { display: block; color: var(--accent); flex: none; }
   h1 { font: 600 34px/1.15 var(--sans); letter-spacing: -0.022em; text-wrap: balance; }
   .sub { font: 400 19px/1.45 var(--sans); letter-spacing: -0.011em; color: var(--muted); margin-top: 8px; text-wrap: pretty; }
 
@@ -39,8 +42,8 @@
   .row .name { font: 400 17px/1.2 var(--sans); color: var(--muted); padding-right: 16px; }
   .row .name .id { color: var(--ink); }
   .track { position: relative; height: 100%; }
-  .bar { position: absolute; top: 8px; height: 32px; border-radius: 4px; border: 1.25px solid currentColor; }
-  .bar.named { border-width: 1.5px; background: color-mix(in oklch, currentColor 7.5%, transparent); }
+  .bar { position: absolute; top: 8px; height: 32px; border-radius: 4px; border: 1.25px solid currentColor; background: var(--base-fill); }
+  .bar.named { border-width: 1.5px; background: color-mix(in oklch, currentColor 8%, transparent); }
   .vacated { position: absolute; top: 8px; height: 32px; border-radius: 4px; border: 1.25px dashed currentColor; overflow: hidden; }
   .vacated svg { display: block; width: 100%; height: 100%; }
   .projection { position: absolute; top: -8px; height: 8px; border-left: 1px solid color-mix(in oklch, var(--ink) 18%, transparent); }
@@ -52,11 +55,36 @@
   .axis { position: relative; height: 32px; margin-left: var(--label); margin-right: var(--end); font: 400 15px/1 var(--sans); color: var(--muted); }
   .axis span { position: absolute; top: 12px; transform: translateX(-50%); white-space: nowrap; }
   .axis span:first-child { transform: none; }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 24px; margin-bottom: 24px; font: 400 15px/1 var(--sans); color: var(--muted); }
+  .legend span { display: inline-flex; align-items: center; gap: 8px; }
+  .sw { width: 14px; height: 12px; border-radius: 3px; display: inline-block; flex: none; }
+
+  .ts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 44px; }
+  .ts-grid.single { grid-template-columns: 1fr; }
+  .panel-head { font: 500 16px/1.2 var(--sans); color: var(--ink); margin-bottom: 10px; }
+
+  .headroom { margin-top: 34px; padding-top: 26px; border-top: 1px solid var(--line); }
+  .env-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 16px; }
+  .env-head b { font: 500 16px/1.2 var(--sans); color: var(--ink); }
+  .env-key { display: flex; gap: 18px; font: 400 14px/1 var(--sans); color: var(--muted); }
+  .env-key .sw { width: 12px; height: 10px; border-radius: 2.5px; vertical-align: -1px; margin-right: 6px; }
+  .env-rows { display: flex; flex-direction: column; gap: 14px; font-variant-numeric: tabular-nums; }
+  .env-row { display: grid; grid-template-columns: 96px 1fr 224px; align-items: center; gap: 20px; }
+  .env-name { font: 500 16px/1.2 var(--sans); color: var(--ink); }
+  .env-bar { position: relative; height: 32px; border: 1.25px dashed var(--context); border-radius: 4px; }
+  .env-req { position: absolute; top: 3px; bottom: 3px; left: 3px; border: 1.25px solid oklch(20% 0.005 80 / 0.4); background: var(--base-fill); border-radius: 3px; }
+  .env-used { position: absolute; top: 5px; bottom: 5px; left: 5px; border: 1.5px solid var(--accent); background: oklch(55% 0.19 256 / 0.1); border-radius: 2.5px; }
+  .env-idle { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font: 400 14px/1 var(--sans); color: var(--muted); }
+  .env-stat { font: 400 15px/1.2 var(--sans); color: var(--muted); text-align: right; }
+  .env-stat b { color: var(--accent); font-weight: 500; }
+  .env-stat em { font-style: normal; color: var(--ink); font-weight: 500; }
+
   .note { font: 400 16px/1.5 var(--sans); color: var(--muted); margin-top: 24px; max-width: 70ch; text-wrap: pretty; }
-  .facts { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; column-gap: 40px; margin-top: 40px; font: 400 16px/1.45 var(--sans); }
+  .facts { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; column-gap: 40px; margin-top: 36px; font: 400 16px/1.45 var(--sans); }
   .facts h3 { font: 400 15px/1.4 var(--sans); color: var(--muted); }
   .facts strong { display: block; font: 500 22px/1.3 var(--sans); letter-spacing: -0.011em; margin-top: 6px; font-variant-numeric: tabular-nums; }
-  .facts p { margin-top: 4px; text-wrap: pretty; }
+  .facts p { margin-top: 4px; color: var(--muted); text-wrap: pretty; }
   .method { font: 400 15px/1.5 var(--sans); color: var(--muted); margin-top: 24px; max-width: 70ch; text-wrap: pretty; }
 </style>
 </head>
@@ -67,23 +95,24 @@
 <main id="charts"></main>
 
 <script>
-// Example values: the reduction and stacked charts come from a past memory PR, the bars from counting
-// DAG files per team in this repo. Replace every value with measured numbers you can point to.
-// reduction: outlined before/after bars on a zero-based axis; repeat rows for several items.
-// stacked: parts of a total per row; bar length encodes size, so the domain starts at 0.
-//          Put the part the claim is about first: only the first part has a common baseline.
-// bars: one value per item, sorted, value at the bar end, no axis. `highlight` marks what the title names.
-// grouped: separate measurements per stage; series names and colors match each row's values order.
-//          The first series is the baseline; later stages hatch the span back to it and show their change.
-// facts: optional columns under the chart, [{label, value, text, color}]: usually what stayed the same and what it costs.
-//        value is a short number or result in the color of the stage it belongs to; text says why in one sentence.
-// method: optional muted line on how it was measured. Neither repeats what the title, subtitle or marks already say.
-// better: 'lower' (default) or 'higher' decides when a reduction-chart delta is drawn in --worse.
-// Each entry is one image. Keep only the entries you need; to render one entry of several, open the page
-// with ?chart=<type> or ?chart=<position from 1>, which keeps the full padded canvas.
+// Edit only DATA unless the layout breaks. Open with ?chart=<type> or ?chart=<1-based index> to render one entry.
+// Types:
+//   reduction:  horizontal before/after bars with hatched reduction span (zero-based)
+//   stacked:    additive parts of a total, before and after; put the claimed part first
+//   grouped:    horizontal 3+ successive stages, each hatched back to baseline
+//   columns:    vertical 3+ successive stages (same data shape as grouped; alternative to horizontal bars)
+//   waterfall:  step-by-step attribution from baseline through savings/regressions to final value
+//   timeseries: 1 or 2 synchronized line traces with dashed event rules, direct labels, and optional capacity envelope
+//   bars:       horizontal ranking or counts, sorted descending; `highlight` marks the claimed rows
+// Optional fields on any chart:
+//   kind:       metric glyph above title: 'cpu'|'memory'|'io'|'latency'|'throughput'|'cost'|'cluster'
+//               or { icon, label, color }
+//   facts:      up to 3 columns [{ label, value, text, color }]
+//   note, method
 const DATA = [
   {
     type: 'reduction',
+    kind: 'memory',
     title: 'Deferring imports cut sampled task-process RSS by 32%',
     sub: 'Task process RSS after parsing the DAG file in a worker pod',
     unit: 'MB', domain: [0, 450], ticks: [0, 150, 300, 450],
@@ -97,6 +126,7 @@ const DATA = [
   },
   {
     type: 'stacked',
+    kind: 'memory',
     title: 'Both changes together cut task pod memory by 29% to 39%',
     sub: 'Pod memory (PSS of the task and supervisor processes), prod image, prod DAG config',
     unit: 'MB', domain: [0, 500], ticks: [0, 250, 500],
@@ -117,6 +147,7 @@ const DATA = [
   },
   {
     type: 'grouped',
+    kind: { icon: 'cpu', label: 'CPU', color: 'var(--stage-next)' },
     title: 'Two changes cut mean DAG parse CPU from 1,158 ms to 225 ms',
     sub: 'CPU of the forked parse process, 300 sampled team DAG files',
     unit: 'ms', domain: [0, 2000], ticks: [0, 500, 1000, 1500, 2000],
@@ -132,9 +163,80 @@ const DATA = [
     ],
     facts: [
       { label: 'What stayed the same', value: '0 differences', color: 'var(--stage-next)', text: 'Every file produced the same DAGs and import errors in all three runs.' },
-      { label: 'What it costs', value: '+286 MiB, +2.1 s', color: 'var(--stage-next)', text: 'Paid once, by the parent process that now pre-imports the library.' },
+      { label: 'What it costs', value: '+286 MiB, +2.1 s', color: 'var(--ink)', text: 'Paid once, by the parent process that now pre-imports the library.' },
     ],
-    method: 'One parse per file and stage, in a Linux container from the Airflow image. Each stage started from a fresh parent.',
+  },
+  {
+    type: 'columns',
+    kind: { icon: 'cpu', label: 'CPU', color: 'var(--stage-next)' },
+    title: 'Two changes cut mean DAG parse CPU from 1,158 ms to 225 ms',
+    sub: 'CPU of the forked parse process across 300 sampled team DAG files',
+    unit: 'ms', domain: [0, 2000], ticks: [0, 500, 1000, 1500, 2000],
+    series: [
+      { name: 'before', color: 'var(--context)' },
+      { name: 'after <code>kubernetes.client</code>', color: 'var(--accent)' },
+      { name: 'after all changes', color: 'var(--stage-next)' },
+    ],
+    rows: [
+      { name: 'Mean', values: [1158, 1062, 225] },
+      { name: 'Median', values: [1325, 1246, 192] },
+      { name: '90th percentile', values: [1744, 1594, 394] },
+    ],
+    facts: [
+      { label: 'What stayed the same', value: '0 differences', color: 'var(--stage-next)', text: 'Every file produced the same DAGs and import errors in all three runs.' },
+      { label: 'What it costs', value: '+286 MiB, +2.1 s', color: 'var(--ink)', text: 'Paid once by the parent process that pre-imports the library.' },
+    ],
+  },
+  {
+    type: 'waterfall',
+    kind: 'memory',
+    title: 'Three changes cut task pod memory from 409 MB to 251 MB',
+    sub: '<code>events_cdc</code> pod PSS across the PR stack (task and supervisor)',
+    unit: 'MB', domain: [0, 450], ticks: [0, 100, 200, 300, 400],
+    steps: [
+      { label: 'before', kind: 'base', from: 0, to: 409 },
+      { label: 'defer imports', kind: 'save', from: 409, to: 300 },
+      { label: 'skip k8s client', kind: 'save', from: 300, to: 265 },
+      { label: 'gc.freeze()', mono: true, kind: 'save', from: 265, to: 243 },
+      { label: 'lazy index', kind: 'worse', from: 243, to: 251 },
+      { label: 'after', kind: 'after', from: 0, to: 251 },
+    ],
+    note: 'Read from <code>smaps_rollup</code> after a full GC. Lazy index adds 8 MB once per worker process.',
+  },
+  {
+    type: 'timeseries',
+    kind: { icon: 'cluster', label: 'Cluster \u00b7 CPU & Memory' },
+    title: '02:00 burst hits 7.2 cores while cluster stays under 11% used',
+    sub: '24-hour namespace CPU and memory traces with peak cluster allocation',
+    panels: [
+      {
+        title: 'CPU by namespace', maxY: 8, ticks: [0, 4, 8], unit: 'c',
+        xTicks: [[0, '20:00'], [4, '02:00'], [8, '08:00'], [12, '14:00']],
+        events: [{ at: 4, label: '02:00' }],
+        series: [
+          { data: [0.1,0.2,0.1,0.2,0.1,0.2,0.2,0.1,0.8,2.4,0.3,0.2,0.2,0.1,0.5], color: 'var(--context)', width: 1.35, label: 'biteam', dx: 6, dy: 14, anchor: 'start' },
+          { data: [3.3,3.4,3.3,3.2,3.4,3.3,3.3,3.2,3.3,3.4,3.4,3.4,3.5,3.4,3.3], color: 'var(--stage-next)', width: 1.65, steadyLabel: 'prod 3.3c' },
+          { data: [0.1,0.2,0.1,0.2,7.2,2.1,0.4,2.8,0.4,0.2,0.1,0.2,0.1,0.1,0.2], color: 'var(--accent)', width: 1.9, highlight: true, peakLabel: 'dataplatform 7.2c' },
+        ],
+      },
+      {
+        title: 'Memory by namespace', maxY: 45, ticks: [0, 15, 30, 45], unit: 'G',
+        xTicks: [[0, '20:00'], [4, '02:00'], [8, '08:00'], [12, '14:00']],
+        events: [{ at: 4, label: '02:00' }],
+        series: [
+          { data: [1.5,1.8,1.4,1.6,1.8,2.1,2.0,3.2,15.0,8.2,2.4,2.1,1.8,1.6,1.9], color: 'var(--context)', width: 1.35, label: 'biteam' },
+          { data: [10.6,10.5,10.6,10.6,10.7,10.6,10.5,10.6,10.6,10.7,10.6,10.6,10.6,10.6,10.6], color: 'var(--stage-next)', width: 1.65, steadyLabel: 'prod 10.6 GiB' },
+          { data: [2.2,2.8,2.4,3.0,42.0,14.5,6.2,19.0,5.4,4.2,3.1,2.5,2.8,2.4,2.6], color: 'var(--accent)', width: 1.9, highlight: true, peakLabel: 'dataplatform 42 GiB' },
+        ],
+      },
+    ],
+    envelope: {
+      title: 'Cluster envelope',
+      rows: [
+        { name: 'CPU', used: 11.1, requested: 39, allocatable: 100, unit: 'cores' },
+        { name: 'Memory', used: 58, requested: 62, allocatable: 550, unit: 'GiB' },
+      ],
+    },
   },
   {
     type: 'bars',
@@ -151,12 +253,46 @@ const DATA = [
   },
 ]
 
+const KIND_ICONS = {
+  cpu: { label: 'CPU', paths: '<path d="M1.5 8.5h3l1.75-4.75L9 12.25l1.75-3.75h3.75" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>' },
+  memory: { label: 'Memory', paths: '<rect x="3" y="3" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.35"/><rect x="5.75" y="5.75" width="4.5" height="4.5" rx="0.75" stroke="currentColor" stroke-width="1.2"/><path d="M6 1v2M10 1v2M6 13v2M10 13v2M1 6h2M1 10h2M13 6h2M13 10h2" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/>' },
+  io: { label: 'I/O', paths: '<path d="M3 5.5h10m0 0L10.5 3M13 5.5L10.5 8M13 10.5H3m0 0L5.5 8M3 10.5L5.5 13" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round"/>' },
+  latency: { label: 'Latency', paths: '<circle cx="8" cy="8.5" r="5.5" stroke="currentColor" stroke-width="1.35"/><path d="M8 5.5v3.25l2.25 1.25M6.25 1.75h3.5" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round"/>' },
+  throughput: { label: 'Throughput', paths: '<rect x="2.5" y="9" width="2.5" height="4.5" rx="0.75" stroke="currentColor" stroke-width="1.3"/><rect x="6.75" y="6" width="2.5" height="7.5" rx="0.75" stroke="currentColor" stroke-width="1.3"/><rect x="11" y="3" width="2.5" height="10.5" rx="0.75" stroke="currentColor" stroke-width="1.3"/>' },
+  cost: { label: 'Cost', paths: '<circle cx="8" cy="8" r="5.75" stroke="currentColor" stroke-width="1.35"/><path d="M8 4.75v6.5M9.75 6.25c0-.7-.78-1.2-1.75-1.2s-1.75.5-1.75 1.2c0 1.4 3.5.7 3.5 2.4 0 .75-.78 1.25-1.75 1.25s-1.75-.5-1.75-1.25" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/>' },
+  cluster: { label: 'Cluster', paths: '<rect x="2" y="2.5" width="12" height="4.5" rx="1.25" stroke="currentColor" stroke-width="1.3"/><rect x="2" y="9" width="12" height="4.5" rx="1.25" stroke="currentColor" stroke-width="1.3"/><circle cx="4.5" cy="4.75" r="0.8" fill="currentColor"/><circle cx="4.5" cy="11.25" r="0.8" fill="currentColor"/>' },
+}
+
 const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e }
 const pct = (c, v) => ((v - c.domain[0]) / (c.domain[1] - c.domain[0])) * 100
-const signed = d => (d < 0 ? '\u2212' + -d : '+' + d)
+const signed = d => (d < 0 ? '\u2212' + fmt(Math.abs(d)) : '+' + fmt(d))
 const isWorse = (c, d) => (c.better === 'higher' ? d < 0 : d > 0)
 const label = r => (r.id ? `<span class="id">${r.name}</span>` : r.name)
 const textColor = color => (color === 'var(--context)' ? 'var(--muted)' : color)
+const fmt = value => Number(Number(value).toFixed(1)).toLocaleString('en-US')
+const text = (px, py, value, color = 'var(--muted)', anchor = 'start', weight = 400, attrs = '') =>
+  `<text${attrs} x="${px}" y="${py}" fill="${color}" text-anchor="${anchor}" font-size="16" font-weight="${weight}" style="paint-order:stroke;stroke:var(--bg);stroke-width:6px;stroke-linejoin:round">${value}</text>`
+const svgLabel = html => html.replace(/<code>(.*?)<\/code>/g, '<tspan class="id">$1</tspan>')
+const tickPadLeft = (ticks, unit) => {
+  const longest = Math.max(...ticks.map((t, i) => (i === ticks.length - 1 ? `${fmt(t)} ${unit}` : fmt(t)).length))
+  return Math.max(56, Math.ceil(longest * 9.5 + 18))
+}
+
+function kindBadge(kind) {
+  const cfg = typeof kind === 'string' ? { icon: kind } : kind
+  const spec = KIND_ICONS[cfg.icon]
+  const div = el('div', 'kind')
+  if (spec) {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+    svg.setAttribute('width', '16'); svg.setAttribute('height', '16')
+    svg.setAttribute('viewBox', '0 0 16 16'); svg.setAttribute('fill', 'none'); svg.setAttribute('aria-hidden', 'true')
+    if (cfg.color) svg.style.color = cfg.color
+    svg.innerHTML = spec.paths
+    div.append(svg)
+  }
+  div.append(el('span', '', cfg.label ?? spec?.label ?? cfg.icon))
+  return div
+}
 
 function axis(c, plot) {
   const grid = el('div', 'grid'), ax = el('div', 'axis')
@@ -207,23 +343,18 @@ function barsRow(c, r, max) {
   return row
 }
 
-const fmt = value => Number(value.toFixed(1)).toLocaleString('en-US')
-const text = (px, py, value, color = 'var(--muted)', anchor = 'start', weight = 400, attrs = '') => `<text${attrs} x="${px}" y="${py}" fill="${color}" text-anchor="${anchor}" font-size="16" font-weight="${weight}" style="paint-order:stroke;stroke:var(--bg);stroke-width:6px;stroke-linejoin:round">${value}</text>`
-const svgLabel = html => html.replace(/<code>(.*?)<\/code>/g, '<tspan class="id">$1</tspan>')
-
-function svgChart(c, height) {
+let hatchCounter = 0
+function svgChart(c, height, width = 936, hatchStroke = 'currentColor') {
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
-  const patternId = 'reduction-hatch-' + document.querySelectorAll('section.chart').length
-  svg.setAttribute('viewBox', `0 0 936 ${height}`)
+  const patternId = 'hatch-' + (++hatchCounter)
+  svg.setAttribute('viewBox', `0 0 ${width} ${height}`)
   svg.setAttribute('role', 'img')
   svg.setAttribute('aria-label', c.title)
   svg.style.cssText = 'display:block;width:100%;height:auto;font-variant-numeric:tabular-nums'
-  const defs = `<defs><pattern id="${patternId}" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="10" stroke="currentColor" stroke-width="1" opacity="0.22"/></pattern></defs>`
+  const defs = `<defs><pattern id="${patternId}" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="10" stroke="${hatchStroke}" stroke-width="1" opacity="0.22"/></pattern></defs>`
   return { svg, defs, hatch: `url(#${patternId})` }
 }
 
-// Same construction as a reduction, one group per row: the first series is the outlined baseline,
-// each later stage hatches the span back to the baseline and states its change from it.
 function groupedChart(c) {
   if (c.domain[0] !== 0) throw new Error('Grouped bars require a zero-based domain')
   const left = c.left ?? 240, width = 936 - left - 160, pitch = 50, head = 40, gap = 28
@@ -244,20 +375,20 @@ function groupedChart(c) {
       const v = r.values[i], y = top + head + i * pitch, end = x(Math.max(base, v))
       if (i === 0) {
         shapes += text(0, y + 22, svgLabel(series.name))
-        shapes += `<rect x="${left}" y="${y}" width="${x(v) - left}" height="32" rx="4" fill="none" stroke="var(--ink)" stroke-width="1.25" stroke-opacity="0.45"/>`
+        shapes += `<rect x="${left}" y="${y}" width="${x(v) - left}" height="32" rx="4" fill="var(--base-fill)" stroke="var(--ink)" stroke-width="1.25" stroke-opacity="0.4"/>`
         shapes += text(end + 16, y + 22, `${fmt(v)} ${c.unit}`)
         return
       }
       const delta = v - base, color = isWorse(c, delta) ? 'var(--worse)' : series.color
       shapes += `<line x1="${x(base)}" x2="${x(base)}" y1="${y - pitch + 40}" y2="${y - 8}" stroke="var(--ink)" stroke-opacity="0.18"/>`
       shapes += text(0, y + 22, svgLabel(series.name), color, 'start', 500)
-      shapes += `<rect x="${left}" y="${y}" width="${x(v) - left}" height="32" rx="4" fill="${color}" fill-opacity="0.075" stroke="${color}" stroke-width="1.5"/>`
+      shapes += `<rect x="${left}" y="${y}" width="${x(v) - left}" height="32" rx="4" fill="${color}" fill-opacity="0.08" stroke="${color}" stroke-width="1.5"/>`
       if (delta !== 0) {
         const low = x(Math.min(base, v))
         shapes += `<rect x="${low}" y="${y}" width="${end - low}" height="32" rx="4" fill="${hatch}" color="${color}" stroke="${color}" stroke-opacity="0.55" stroke-width="1.25" stroke-dasharray="4 5"/>`
       }
       const percent = (v / base - 1) * 100
-      const change = delta === 0 ? '' : `<tspan dx="10" font-weight="400">${percent < 0 ? '−' : '+'}${Math.abs(percent).toFixed(1)}%</tspan>`
+      const change = delta === 0 ? '' : `<tspan dx="10" font-weight="400">${percent < 0 ? '\u2212' : '+'}${Math.abs(percent).toFixed(1)}%</tspan>`
       shapes += text(end + 16, y + 22, `${fmt(v)} ${c.unit}${change}`, color, 'start', 500)
     })
   })
@@ -266,6 +397,230 @@ function groupedChart(c) {
   })
   svg.innerHTML = shapes
   return svg
+}
+
+function columnsChart(c) {
+  if (c.domain[0] !== 0) throw new Error('Columns require a zero-based domain')
+  const wrap = document.createElement('div')
+  const legend = el('div', 'legend')
+  c.series.forEach((s, i) => {
+    const sw = i === 0
+      ? 'background:var(--base-fill);border:1.25px solid oklch(20% 0.005 80 / 0.4)'
+      : `background:color-mix(in oklch, ${s.color} 8%, transparent);border:1.5px solid ${s.color}`
+    const item = el('span', '', `<i class="sw" style="${sw}"></i>${s.name}`)
+    if (i > 0) item.style.color = s.color
+    legend.append(item)
+  })
+  wrap.append(legend)
+
+  const W = 936, H = 356, padL = tickPadLeft(c.ticks, c.unit), padR = 12, padT = 26, padB = 42
+  const plotW = W - padL - padR, plotH = H - padT - padB
+  const yOf = v => padT + plotH * (1 - v / c.domain[1])
+  const groupW = plotW / c.rows.length
+  const nSeries = c.series.length
+  const barGap = 10
+  const barW = Math.min(76, Math.floor((groupW - 44 - (nSeries - 1) * barGap) / nSeries))
+  const finalColor = c.series.at(-1).color
+  const { svg, defs, hatch } = svgChart(c, H, W, finalColor)
+  let shapes = defs
+
+  c.ticks.forEach((t, i) => {
+    const y = yOf(t)
+    shapes += `<line x1="${padL}" y1="${y}" x2="${W - padR}" y2="${y}" stroke="${t === 0 ? 'var(--context)' : 'var(--line)'}" stroke-width="1"/>`
+    const lbl = i === c.ticks.length - 1 ? `${fmt(t)} ${c.unit}` : fmt(t)
+    shapes += `<text x="${padL - 12}" y="${y + 5}" text-anchor="end" fill="var(--muted)" font-size="15">${lbl}</text>`
+  })
+
+  c.rows.forEach((g, gi) => {
+    const center = padL + groupW * (gi + 0.5)
+    const totalW = nSeries * barW + (nSeries - 1) * barGap
+    const startX = center - totalW / 2
+    const base = g.values[0], yBase = yOf(base)
+
+    shapes += `<line x1="${startX + barW + 6}" y1="${yBase}" x2="${startX + totalW}" y2="${yBase}" stroke="var(--ink)" stroke-opacity="0.18" stroke-width="1"/>`
+
+    g.values.forEach((v, si) => {
+      const x = startX + si * (barW + barGap), y = yOf(v), h = yOf(0) - y
+      const delta = v - base
+      const color = si === 0 ? 'var(--muted)' : (isWorse(c, delta) ? 'var(--worse)' : c.series[si].color)
+
+      if (si === nSeries - 1 && delta !== 0 && !isWorse(c, delta)) {
+        const pctChange = Math.round((v / base - 1) * 100)
+        shapes += `<rect x="${x}" y="${yBase}" width="${barW}" height="${Math.max(4, y - yBase - 4)}" rx="4" fill="${hatch}" stroke="${color}" stroke-opacity="0.55" stroke-width="1.25" stroke-dasharray="4 5"/>`
+        shapes += `<text x="${x + barW / 2}" y="${(yBase + y) / 2 + 5}" text-anchor="middle" fill="${color}" font-size="15" font-weight="500" style="paint-order:stroke;stroke:var(--bg);stroke-width:6px;stroke-linejoin:round">\u2212${Math.abs(pctChange)}%</text>`
+      }
+
+      if (si === 0) {
+        shapes += `<rect x="${x}" y="${y}" width="${barW}" height="${h}" rx="4" fill="var(--base-fill)" stroke="var(--ink)" stroke-width="1.25" stroke-opacity="0.4"/>`
+      } else {
+        shapes += `<rect x="${x}" y="${y}" width="${barW}" height="${h}" rx="4" fill="${color}" fill-opacity="0.08" stroke="${color}" stroke-width="1.5"/>`
+      }
+
+      const valY = h >= 42 ? y + 23 : (h >= 24 ? y + h / 2 + 5 : y - 9)
+      shapes += `<text x="${x + barW / 2}" y="${valY}" text-anchor="middle" fill="${color}" font-size="15" font-weight="500">${fmt(v)}</text>`
+    })
+
+    shapes += `<text${g.id ? ' class="id"' : ''} x="${center}" y="${H - 10}" text-anchor="middle" fill="var(--ink)" font-size="16" font-weight="500">${g.name}</text>`
+  })
+
+  svg.innerHTML = shapes
+  wrap.append(svg)
+  return wrap
+}
+
+function waterfallChart(c) {
+  if (c.domain[0] !== 0) throw new Error('Waterfall requires a zero-based domain')
+  const W = 936, H = 364, padL = tickPadLeft(c.ticks, c.unit), padR = 8, padT = 36, padB = 46
+  const plotW = W - padL - padR, plotH = H - padT - padB
+  const yOf = v => padT + plotH * (1 - v / c.domain[1])
+  const colW = plotW / c.steps.length
+  const barW = Math.min(108, Math.floor(colW - 36))
+  const { svg, defs, hatch } = svgChart(c, H, W, 'var(--accent)')
+  let shapes = defs
+
+  c.ticks.forEach((t, i) => {
+    const y = yOf(t)
+    shapes += `<line x1="${padL}" y1="${y}" x2="${W - padR}" y2="${y}" stroke="${t === 0 ? 'var(--context)' : 'var(--line)'}" stroke-width="1"/>`
+    shapes += `<text x="${padL - 12}" y="${y + 5}" text-anchor="end" fill="var(--muted)" font-size="15">${i === c.ticks.length - 1 ? `${fmt(t)} ${c.unit}` : fmt(t)}</text>`
+  })
+
+  for (let i = 0; i < c.steps.length - 1; i++) {
+    const x1 = padL + colW * (i + 0.5) + barW / 2 + 4
+    const x2 = padL + colW * (i + 1.5) - barW / 2 - 4
+    const y = yOf(c.steps[i].to)
+    shapes += `<line x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" stroke="var(--ink)" stroke-opacity="0.18" stroke-width="1"/>`
+  }
+
+  const first = c.steps[0], last = c.steps.at(-1)
+  if (first.kind === 'base' && last.kind === 'after' && last.to < first.to) {
+    const yBefore = yOf(first.to), yAfter = yOf(last.to)
+    const cx = padL + colW * (c.steps.length - 0.5), x = cx - barW / 2
+    shapes += `<rect x="${x}" y="${yBefore}" width="${barW}" height="${Math.max(4, yAfter - yBefore - 4)}" rx="4" fill="${hatch}" stroke="var(--accent)" stroke-opacity="0.55" stroke-width="1.25" stroke-dasharray="4 5"/>`
+    shapes += `<text x="${cx}" y="${(yBefore + yAfter) / 2 + 5}" text-anchor="middle" fill="var(--accent)" font-size="15" font-weight="500" style="paint-order:stroke;stroke:var(--bg);stroke-width:6px;stroke-linejoin:round">\u2212${fmt(first.to - last.to)} ${c.unit}</text>`
+  }
+
+  c.steps.forEach((st, i) => {
+    const cx = padL + colW * (i + 0.5), x = cx - barW / 2
+    const yTop = yOf(Math.max(st.from, st.to)), yBot = yOf(Math.min(st.from, st.to))
+    const h = Math.max(8, yBot - yTop)
+    const diff = st.to - st.from
+    const valText = st.text ?? (st.kind === 'base' || st.kind === 'after' ? `${fmt(st.to)} ${c.unit}` : signed(diff))
+
+    if (st.kind === 'base') {
+      shapes += `<rect x="${x}" y="${yTop}" width="${barW}" height="${h}" rx="4" fill="var(--base-fill)" stroke="var(--ink)" stroke-width="1.25" stroke-opacity="0.4"/>`
+      shapes += `<text x="${cx}" y="${yTop - 10}" text-anchor="middle" fill="var(--muted)" font-size="16" font-weight="500">${valText}</text>`
+    } else if (st.kind === 'save') {
+      shapes += `<rect x="${x}" y="${yTop}" width="${barW}" height="${h}" rx="4" fill="${hatch}" stroke="var(--accent)" stroke-opacity="0.65" stroke-width="1.25" stroke-dasharray="4 5"/>`
+      shapes += `<text x="${cx}" y="${yTop - 10}" text-anchor="middle" fill="var(--accent)" font-size="16" font-weight="500">${valText}</text>`
+    } else if (st.kind === 'worse') {
+      shapes += `<rect x="${x}" y="${yTop}" width="${barW}" height="${h}" rx="4" fill="var(--worse)" fill-opacity="0.08" stroke="var(--worse)" stroke-width="1.5"/>`
+      shapes += `<text x="${cx}" y="${yBot + 22}" text-anchor="middle" fill="var(--worse)" font-size="16" font-weight="500">${valText}</text>`
+    } else {
+      shapes += `<rect x="${x}" y="${yTop}" width="${barW}" height="${h}" rx="4" fill="var(--accent)" fill-opacity="0.08" stroke="var(--accent)" stroke-width="1.5"/>`
+      const valY = h >= 42 ? yTop + 28 : yTop + h / 2 + 5
+      shapes += `<text x="${cx}" y="${valY}" text-anchor="middle" fill="var(--accent)" font-size="16" font-weight="600">${valText}</text>`
+    }
+
+    const labelFill = st.kind === 'after' ? 'var(--accent)' : (st.kind === 'worse' ? 'var(--worse)' : 'var(--ink)')
+    shapes += `<text${st.mono ? ' class="id"' : ''} x="${cx}" y="${H - 12}" text-anchor="middle" fill="${labelFill}" font-size="15.5" font-weight="${st.kind === 'after' ? 500 : 400}">${st.label}</text>`
+  })
+
+  svg.innerHTML = shapes
+  return svg
+}
+
+function timeseriesChart(c) {
+  const wrap = document.createElement('div')
+  const grid = el('div', 'ts-grid' + (c.panels.length === 1 ? ' single' : ''))
+
+  c.panels.forEach(p => {
+    const col = document.createElement('div')
+    if (p.title) col.append(el('div', 'panel-head', p.title))
+    const W = c.panels.length === 1 ? 936 : 446, H = 224
+    const padL = Math.max(44, tickPadLeft(p.ticks, p.unit) - 10), padR = 8, padT = 18, padB = 28
+    const pw = W - padL - padR, ph = H - padT - padB
+    const n = Math.max(...p.series.map(s => s.data.length))
+    const xOf = i => padL + (i / Math.max(1, n - 1)) * pw
+    const yOf = v => padT + ph * (1 - v / p.maxY)
+
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+    svg.setAttribute('viewBox', `0 0 ${W} ${H}`)
+    svg.style.cssText = 'display:block;width:100%;height:auto;font-variant-numeric:tabular-nums'
+    let s = ''
+
+    p.ticks.forEach((t, idx) => {
+      const y = yOf(t)
+      s += `<line x1="${padL}" y1="${y}" x2="${W - padR}" y2="${y}" stroke="${t === 0 ? 'var(--context)' : 'var(--line)'}" stroke-width="1"/>`
+      s += `<text x="${padL - 8}" y="${y + 4}" text-anchor="end" fill="var(--muted)" font-size="13">${idx === p.ticks.length - 1 ? `${fmt(t)}${p.unit}` : fmt(t)}</text>`
+    })
+
+    ;(p.events ?? []).forEach(ev => {
+      const xe = xOf(ev.at)
+      s += `<line x1="${xe}" y1="${padT - 2}" x2="${xe}" y2="${padT + ph}" stroke="var(--ink)" stroke-opacity="0.28" stroke-width="1" stroke-dasharray="3 3"/>`
+      s += `<text x="${xe - 6}" y="${padT + 10}" text-anchor="end" fill="var(--muted)" class="id" font-size="12">${ev.label}</text>`
+    })
+
+    ;(p.xTicks ?? []).forEach(([idx, lbl]) => {
+      const anchor = idx === 0 ? 'start' : (idx === n - 1 ? 'end' : 'middle')
+      s += `<text x="${xOf(idx)}" y="${H - 6}" text-anchor="${anchor}" fill="var(--muted)" font-size="12.5">${lbl}</text>`
+    })
+
+    p.series.forEach(ser => {
+      const pts = ser.data.map((v, i) => `${xOf(i).toFixed(1)},${yOf(v).toFixed(1)}`).join(' ')
+      s += `<polyline points="${pts}" fill="none" stroke="${ser.color}" stroke-width="${ser.width ?? 1.6}" stroke-linejoin="round" stroke-linecap="round"/>`
+    })
+
+    p.series.forEach(ser => {
+      if (ser.peakLabel) {
+        const peakVal = Math.max(...ser.data), peakIdx = ser.data.indexOf(peakVal)
+        const px = xOf(peakIdx), py = yOf(peakVal)
+        s += `<circle cx="${px}" cy="${py}" r="3.5" fill="var(--bg)" stroke="${ser.color}" stroke-width="2"/>`
+        s += `<text x="${px + (ser.dx ?? 8)}" y="${py + (ser.dy ?? 4)}" text-anchor="${ser.anchor ?? 'start'}" fill="${ser.color}" class="id" font-size="12.5" font-weight="500" style="paint-order:stroke;stroke:var(--bg);stroke-width:5px;stroke-linejoin:round">${ser.peakLabel}</text>`
+      } else if (ser.steadyLabel) {
+        const ly = yOf(ser.data.at(-1))
+        s += `<text x="${W - padR - 2}" y="${ly + (ser.dy ?? -8)}" text-anchor="end" fill="${ser.color}" class="id" font-size="12" font-weight="500" style="paint-order:stroke;stroke:var(--bg);stroke-width:5px">${ser.steadyLabel}</text>`
+      } else if (ser.label) {
+        const peakVal = Math.max(...ser.data), peakIdx = ser.data.indexOf(peakVal)
+        s += `<text x="${xOf(peakIdx) + (ser.dx ?? 0)}" y="${yOf(peakVal) + (ser.dy ?? -7)}" text-anchor="${ser.anchor ?? 'middle'}" fill="${textColor(ser.color)}" class="id" font-size="12" style="paint-order:stroke;stroke:var(--bg);stroke-width:5px">${ser.label}</text>`
+      }
+    })
+
+    svg.innerHTML = s
+    col.append(svg)
+    grid.append(col)
+  })
+  wrap.append(grid)
+
+  if (c.envelope?.rows?.length) {
+    const env = el('div', 'headroom')
+    env.innerHTML = `
+      <div class="env-head">
+        <b>${c.envelope.title ?? 'Capacity envelope'}</b>
+        <div class="env-key">
+          <span style="color:var(--accent)"><i class="sw" style="background:oklch(55% 0.19 256 / 0.1);border:1.5px solid var(--accent)"></i>peak used</span>
+          <span><i class="sw" style="background:var(--base-fill);border:1.25px solid oklch(20% 0.005 80 / 0.4)"></i>peak requested</span>
+          <span><i class="sw" style="border:1.25px dashed var(--context)"></i>allocatable</span>
+        </div>
+      </div>`
+    const rows = el('div', 'env-rows')
+    c.envelope.rows.forEach(r => {
+      const reqPct = (r.requested / r.allocatable) * 100
+      const usedPct = (r.used / r.allocatable) * 100
+      const idlePct = Math.round((1 - r.requested / r.allocatable) * 100)
+      const row = el('div', 'env-row', `
+        <div class="env-name">${r.name}</div>
+        <div class="env-bar">
+          <div class="env-req" style="width:${reqPct}%"></div>
+          <div class="env-used" style="width:${usedPct}%"></div>
+          <span class="env-idle">${idlePct}% unrequested</span>
+        </div>
+        <div class="env-stat"><b>${fmt(r.used)}</b> \u00b7 <em>${fmt(r.requested)}</em> / ${fmt(r.allocatable)} ${r.unit}</div>`)
+      rows.append(row)
+    })
+    env.append(rows)
+    wrap.append(env)
+  }
+  return wrap
 }
 
 function reductionChart(c) {
@@ -287,9 +642,9 @@ function reductionChart(c) {
     const endpoint = x(Math.max(r.before, r.after)), low = x(Math.min(r.before, r.after))
     shapes += `<g${r.id ? ' class="id"' : ''}>${text(0, top + 20, r.name, 'var(--ink)', 'start', 500)}</g>`
     shapes += text(0, beforeY + 22, 'before') + text(0, afterY + 22, 'after', color, 'start', 500)
-    shapes += `<rect x="${left}" y="${beforeY}" width="${x(r.before) - left}" height="${barHeight}" rx="4" fill="none" stroke="var(--ink)" stroke-width="1.25" stroke-opacity="0.45"/>`
+    shapes += `<rect x="${left}" y="${beforeY}" width="${x(r.before) - left}" height="${barHeight}" rx="4" fill="var(--base-fill)" stroke="var(--ink)" stroke-width="1.25" stroke-opacity="0.4"/>`
     shapes += `<line x1="${x(r.before)}" x2="${x(r.before)}" y1="${beforeY + barHeight + 8}" y2="${afterY - 8}" stroke="var(--ink)" stroke-opacity="0.18"/>`
-    shapes += `<rect x="${left}" y="${afterY}" width="${x(r.after) - left}" height="${barHeight}" rx="4" fill="${color}" fill-opacity="0.075" stroke="${color}" stroke-width="1.5"/>`
+    shapes += `<rect x="${left}" y="${afterY}" width="${x(r.after) - left}" height="${barHeight}" rx="4" fill="${color}" fill-opacity="0.08" stroke="${color}" stroke-width="1.5"/>`
     if (delta !== 0) {
       const hatchY = worse ? beforeY : afterY
       shapes += `<rect x="${low}" y="${hatchY}" width="${endpoint - low}" height="${barHeight}" rx="4" fill="${hatch}" color="${color}" stroke="${color}" stroke-opacity="0.55" stroke-width="1.25" stroke-dasharray="4 5"/>`
@@ -297,7 +652,7 @@ function reductionChart(c) {
     shapes += text(endpoint + 16, beforeY + 22, `${fmt(r.before)} ${c.unit}`)
     shapes += text(endpoint + 16, afterY + 22, `${fmt(r.after)} ${c.unit}`, color, 'start', 500)
     const percent = (r.after / r.before - 1) * 100
-    shapes += text(endpoint, afterY + 62, `${delta < 0 ? '−' : '+'}${fmt(Math.abs(delta))} ${c.unit} (${percent < 0 ? '−' : '+'}${fmt(Math.abs(percent))}%)`, color, 'end', 500, ` class="delta" data-left="${left}"`)
+    shapes += text(endpoint, afterY + 62, `${delta < 0 ? '\u2212' : '+'}${fmt(Math.abs(delta))} ${c.unit} (${percent < 0 ? '\u2212' : '+'}${fmt(Math.abs(percent))}%)`, color, 'end', 500, ` class="delta" data-left="${left}"`)
   })
   svg.innerHTML = shapes
   return svg
@@ -309,12 +664,19 @@ if (!shown.length) throw new Error(`no chart matches ?chart=${only}`)
 const root = document.getElementById('charts')
 for (const c of shown) {
   const sec = el('section', 'chart')
+  if (c.kind) sec.append(kindBadge(c.kind))
   sec.append(el('h1', '', c.title), el('p', 'sub', c.sub))
   const plot = el('div', 'plot ' + c.type)
   if (c.type === 'reduction') {
     plot.append(reductionChart(c))
   } else if (c.type === 'grouped') {
     plot.append(groupedChart(c))
+  } else if (c.type === 'columns') {
+    plot.append(columnsChart(c))
+  } else if (c.type === 'waterfall') {
+    plot.append(waterfallChart(c))
+  } else if (c.type === 'timeseries') {
+    plot.append(timeseriesChart(c))
   } else if (c.type === 'stacked') {
     c.groups.forEach((g, i) => {
       plot.append(el('div', 'group', g.name))
@@ -343,9 +705,7 @@ for (const c of shown) {
 }
 
 document.fonts.ready.then(() => {
-  // Hatch at 1:1 pixels, so every reduction span has the same line weight and pitch.
   document.querySelectorAll('.vacated svg').forEach(s => s.setAttribute('viewBox', `0 0 ${s.clientWidth} ${s.clientHeight}`))
-  // A delta wider than its bar would run into the row labels, so start it at the bar's left edge instead.
   document.querySelectorAll('text.delta').forEach(t => {
     if (t.getAttribute('x') - t.getComputedTextLength() >= Number(t.dataset.left)) return
     t.setAttribute('x', t.dataset.left)
