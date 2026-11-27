@@ -91,16 +91,18 @@
 // Optional fields on any chart:
 //   kind:       metric glyph above title: 'cpu'|'memory'|'io'|'latency'|'throughput'|'cost'|'cluster'
 //               or { icon, label, color }
-//   theme:      accent preset ('default' | 'ft'), also settable via ?theme=ft in the URL
-//   colors:     accent-only overrides { accent, 'stage-next', worse } (canvas/neutrals stay locked)
+//   colors:     accent overrides { accent, 'stage-next', worse } (canvas/neutrals stay locked)
+//               `accent` accepts a named alias ('ft'|'peach'|'purple'|'crimson'|'green'|'teal') or any CSS color;
+//               also passable via URL (?accent=ft, ?accent=purple, ?accent=%237c3aed, ?stage-next=..., ?worse=...)
 //   facts:      up to 3 columns [{ label, value, text, color }]
 //   note, method
-const THEMES = {
-  ft: {
-    accent: 'oklch(57% 0.14 44)',
-    'stage-next': '#0d7680',
-    worse: '#990f3d',
-  },
+const ACCENTS = {
+  ft: { accent: 'oklch(57% 0.14 44)', 'stage-next': '#0d7680', worse: '#990f3d' },
+  peach: { accent: 'oklch(57% 0.14 44)' },
+  purple: { accent: 'oklch(53% 0.18 300)' },
+  crimson: { accent: 'oklch(50% 0.19 18)' },
+  green: { accent: 'oklch(48% 0.12 152)' },
+  teal: { accent: 'oklch(49% 0.10 185)' },
 }
 const DATA = [
   {
@@ -781,27 +783,31 @@ function reductionChart(c) {
   return svg
 }
 
-const ACCENT_KEYS = new Set(['accent', 'stage-next', 'worse'])
-function applyTokens(target, themeName, colors) {
-  const tokens = { ...(THEMES[themeName] ?? {}), ...(colors ?? {}) }
-  for (const [k, v] of Object.entries(tokens)) {
-    const name = k.replace(/^--/, '')
-    if (ACCENT_KEYS.has(name)) target.style.setProperty('--' + name, v)
+const ACCENT_KEYS = ['accent', 'stage-next', 'worse']
+function applyColors(target, colors) {
+  if (!colors) return
+  const preset = typeof colors.accent === 'string' ? ACCENTS[colors.accent.toLowerCase()] : null
+  const merged = { ...(preset ?? {}), ...colors }
+  if (preset) merged.accent = preset.accent
+  for (const key of ACCENT_KEYS) {
+    if (merged[key]) target.style.setProperty('--' + key, merged[key])
   }
 }
 
 const params = new URLSearchParams(location.search)
 const only = params.get('chart')
-const urlTheme = params.get('theme')
+const urlColors = Object.fromEntries(ACCENT_KEYS.map(k => [k, params.get(k)]).filter(([, v]) => v))
+const hasUrlColors = Object.keys(urlColors).length > 0
 const shown = only == null ? DATA : DATA.filter((c, i) => c.type === only || String(i + 1) === only)
 if (!shown.length) throw new Error(`no chart matches ?chart=${only}`)
-const pageTheme = urlTheme ?? (shown.length === 1 ? shown[0].theme : null)
-const pageColors = shown.length === 1 ? shown[0].colors : null
-if (pageTheme || pageColors) applyTokens(document.documentElement, pageTheme, pageColors)
+const chartColors = c => (c.accent || c.colors ? { ...(c.accent ? { accent: c.accent } : {}), ...(c.colors ?? {}) } : null)
+if (hasUrlColors || shown.length === 1) {
+  applyColors(document.documentElement, { ...(shown.length === 1 ? chartColors(shown[0]) : {}), ...urlColors })
+}
 const root = document.getElementById('charts')
 for (const c of shown) {
   const sec = el('section', 'chart')
-  if (!urlTheme && (c.theme || c.colors) && shown.length > 1) applyTokens(sec, c.theme, c.colors)
+  if (!hasUrlColors && shown.length > 1) applyColors(sec, chartColors(c))
   if (c.kind) sec.append(kindBadge(c.kind))
   sec.append(el('h1', '', c.title), el('p', 'sub', c.sub))
   const plot = el('div', 'plot ' + c.type)

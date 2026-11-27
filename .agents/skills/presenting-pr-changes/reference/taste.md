@@ -46,8 +46,8 @@ Visual rules for a calm still image. Every rule carries its why so it generalize
 | `--stage-next` | `oklch(49% 0.10 185)` | Second measured stage (teal) |
 | `--worse` | `oklch(55% 0.2 27)` | Regression or broken state only |
 
-### Accent overrides (`?theme=` or `DATA.colors`)
+### Accent overrides (`?accent=` or `DATA.colors`)
 
-Keep the default `#faf9f5` canvas and neutral grays locked across every theme; optional color changes swap only accent tokens (`--accent`, `--stage-next`, `--worse`) via `?theme=ft`, `theme: 'ft'`, or `colors: { accent, 'stage-next', worse }`:
+Keep the default `#faf9f5` canvas and neutral grays locked across every run; optional color changes swap only accent tokens (`--accent`, `--stage-next`, `--worse`) via URL (`?accent=ft`, `?accent=purple`, `?accent=%237c3aed`) or `DATA.colors`:
 
-- **`ft` (FT peach accents on `#faf9f5`):** `--accent: oklch(57% 0.14 44)` (warm FT peach/terracotta), `--stage-next: #0d7680` (FT teal), `--worse: #990f3d` (FT claret).
+- **Built-in aliases (tuned to `L ≈ 48–57%` for readable text on `#faf9f5`):** `ft` (`oklch(57% 0.14 44)` peach + `#0d7680` teal + `#990f3d` claret), `peach`, `purple` (`oklch(53% 0.18 300)`), `crimson` (`oklch(50% 0.19 18)`), `green` (`oklch(48% 0.12 152)`), `teal` (`oklch(49% 0.10 185)`). Any raw CSS color also works directly.

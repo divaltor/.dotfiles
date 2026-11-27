@@ -178,15 +178,22 @@
   <p class="note">Medians across 40 randomly sampled DAG files parsed in a worker pod (one run per file). Tasks that call pandas, pyarrow, or BigQuery still load them during execution; <code>WorkerService.is_worker()</code> skips building <code>V1Pod</code> overrides on worker pods.</p>
 
   <script>
-    const THEMES = {
+    const ACCENTS = {
       ft: { accent: 'oklch(57% 0.14 44)', worse: '#990f3d' },
+      peach: { accent: 'oklch(57% 0.14 44)' },
+      purple: { accent: 'oklch(53% 0.18 300)' },
+      crimson: { accent: 'oklch(50% 0.19 18)' },
+      green: { accent: 'oklch(48% 0.12 152)' },
+      teal: { accent: 'oklch(49% 0.10 185)' },
     }
-    const ACCENT_KEYS = new Set(['accent', 'worse'])
-    const THEME = new URLSearchParams(location.search).get('theme') // or set 'ft' or custom accent tokens below
-    const COLORS = {}
-    for (const [k, v] of Object.entries({ ...(THEMES[THEME] ?? {}), ...COLORS })) {
-      const name = k.replace(/^--/, '')
-      if (ACCENT_KEYS.has(name)) document.documentElement.style.setProperty('--' + name, v)
+    const ACCENT_KEYS = ['accent', 'worse']
+    const COLORS = {} // e.g. { accent: 'ft' } or { accent: '#7c3aed' }
+    const params = new URLSearchParams(location.search)
+    const rawColors = { ...COLORS, ...Object.fromEntries(ACCENT_KEYS.map(k => [k, params.get(k)]).filter(([, v]) => v)) }
+    const preset = typeof rawColors.accent === 'string' ? ACCENTS[rawColors.accent.toLowerCase()] : null
+    const resolved = { ...(preset ?? {}), ...rawColors, ...(preset ? { accent: preset.accent } : {}) }
+    for (const key of ACCENT_KEYS) {
+      if (resolved[key]) document.documentElement.style.setProperty('--' + key, resolved[key])
     }
     document.fonts.ready.then(() => {
       document.body.dataset.fonts = document.fonts.check('16px "Inter"') && document.fonts.check('16px "Geist Mono"')

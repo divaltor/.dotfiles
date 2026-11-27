@@ -99,14 +99,25 @@ const DATA = {
   note: 'A new test that closes the generator from another context fails on the old code and passes on the new.',
 }
 
-const THEMES = {
+const ACCENTS = {
   ft: { accent: 'oklch(57% 0.14 44)', worse: '#990f3d' },
+  peach: { accent: 'oklch(57% 0.14 44)' },
+  purple: { accent: 'oklch(53% 0.18 300)' },
+  crimson: { accent: 'oklch(50% 0.19 18)' },
+  green: { accent: 'oklch(48% 0.12 152)' },
+  teal: { accent: 'oklch(49% 0.10 185)' },
 }
-const ACCENT_KEYS = new Set(['accent', 'worse'])
-const themeTokens = { ...(THEMES[new URLSearchParams(location.search).get('theme') ?? DATA.theme] ?? {}), ...(DATA.colors ?? {}) }
-for (const [k, v] of Object.entries(themeTokens)) {
-  const name = k.replace(/^--/, '')
-  if (ACCENT_KEYS.has(name)) document.documentElement.style.setProperty('--' + name, v)
+const ACCENT_KEYS = ['accent', 'worse']
+const params = new URLSearchParams(location.search)
+const rawColors = {
+  ...(DATA.accent ? { accent: DATA.accent } : {}),
+  ...(DATA.colors ?? {}),
+  ...Object.fromEntries(ACCENT_KEYS.map(k => [k, params.get(k)]).filter(([, v]) => v)),
+}
+const preset = typeof rawColors.accent === 'string' ? ACCENTS[rawColors.accent.toLowerCase()] : null
+const resolved = { ...(preset ?? {}), ...rawColors, ...(preset ? { accent: preset.accent } : {}) }
+for (const key of ACCENT_KEYS) {
+  if (resolved[key]) document.documentElement.style.setProperty('--' + key, resolved[key])
 }
 
 const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e }

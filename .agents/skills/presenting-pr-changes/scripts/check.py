@@ -13,7 +13,55 @@ Catches structural and style faults before Chrome renders the PNG:
 import re
 import sys
 import xml.etree.ElementTree as ET
+from html.parser import HTMLParser
 from pathlib import Path
+
+
+def extract_static_svgs(html: str) -> list[str]:
+    """Return top-level static <svg>...</svg> blocks outside <script> using stdlib HTMLParser."""
+    starts = [0]
+    for line in html.splitlines(keepends=True):
+        starts.append(starts[-1] + len(line))
+
+    def offset(pos: tuple[int, int]) -> int:
+        line, col = pos
+        return starts[line - 1] + col
+
+    svgs: list[str] = []
+
+    class SvgLocator(HTMLParser):
+        def __init__(self) -> None:
+            super().__init__(convert_charrefs=False)
+            self.in_script = False
+            self.svg_depth = 0
+            self.svg_start: int | None = None
+
+        def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+            if tag == "script":
+                self.in_script = True
+            elif tag == "svg" and not self.in_script:
+                if self.svg_depth == 0:
+                    self.svg_start = offset(self.getpos())
+                self.svg_depth += 1
+
+        def handle_endtag(self, tag: str) -> None:
+            if tag == "script":
+                self.in_script = False
+            elif tag == "svg" and not self.in_script and self.svg_depth > 0:
+                self.svg_depth -= 1
+                if self.svg_depth == 0 and self.svg_start is not None:
+                    end = html.find(">", offset(self.getpos()))
+                    svgs.append(html[self.svg_start : len(html) if end == -1 else end + 1])
+                    self.svg_start = None
+
+        def handle_startendtag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+            if tag == "svg" and not self.in_script and self.svg_depth == 0:
+                svgs.append(self.get_starttag_text() or "")
+
+    parser = SvgLocator()
+    parser.feed(html)
+    parser.close()
+    return svgs
 
 
 def local(tag: str) -> str:
@@ -97,10 +145,7 @@ def check_html(path: Path) -> tuple[list[str], list[str]]:
     if "\u2014" in text:
         warnings.append("Em dash (—) found; SKILL.md prefers no em dashes")
 
-    # Strip <script> blocks before scanning static inline SVGs so JS template literals don't trip XML parsing.
-    static_html = re.sub(r"<script\b[^>]*>.*?</script>", "", text, flags=re.DOTALL)
-    svgs = re.findall(r"<svg\b[^>]*>.*?</svg>", static_html, flags=re.DOTALL)
-    for i, svg in enumerate(svgs, start=1):
+    for i, svg in enumerate(extract_static_svgs(text), start=1):
         svg_errors, svg_warnings = check_svg(svg, i)
         errors.extend(svg_errors)
         warnings.extend(svg_warnings)
