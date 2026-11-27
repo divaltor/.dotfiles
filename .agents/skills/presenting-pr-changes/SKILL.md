@@ -17,7 +17,7 @@ What does the work change for the reader?
 │   → templates/chart.html (edit DATA only)
 │     ├── before/after across 1..N items             → type: 'reduction'
 │     ├── step-by-step attribution (PR stack/budget) → type: 'waterfall'
-│     ├── parts of a total, before and after         → type: 'stacked'
+│     ├── parts of a total, before and after         → type: 'stacked' (`orientation: 'horizontal' | 'vertical'`)
 │     ├── 3+ successive stages (long labels)         → type: 'grouped'
 │     ├── 3+ successive stages (short labels)        → type: 'columns'
 │     ├── trace over time / spikes / headroom        → type: 'timeseries' (+ optional envelope)
@@ -49,7 +49,8 @@ When a reference image is supplied, match its visual construction (outlines, fil
 - **Kind (`kind`, optional):** set `'cpu'`, `'memory'`, `'io'`, `'latency'`, `'throughput'`, `'cost'`, `'cluster'`, or `{ icon, label, color }` to show an unboxed 16px hairline glyph above the title. Omit when no domain category helps.
 - **Title:** the finding with its numbers, at most 14 words (`Cut task pod memory by 29% to 39%`, not `Memory usage`). Every number in the title must appear as a labeled mark.
 - **Subtitle:** one line naming the metric and scope. Add a qualifier only if omitting it would mislead (e.g. sample vs full population).
-- **Marks:** baseline bars use `--base-fill` (`oklch(95.4% 0.004 85)`); the primary claim uses `--accent` (blue), the next stage `--stage-next` (teal), and regressions or broken states `--worse` (red). Never use `--worse` as an arbitrary category.
+- **Marks:** baseline bars use `--base-fill`; the primary claim uses `--accent` (blue), the next stage `--stage-next` (teal), and regressions or broken states `--worse` (red). Never use `--worse` as an arbitrary category.
+- **Colors (`theme` / `colors`, optional):** default blue/teal/red accents need no config. When the user asks for another accent (for example FT peach), pass `?theme=ft` to `render.sh`, set `theme: 'ft'` in `DATA`, or pass `colors: { accent, 'stage-next', worse }`; only accent tokens change, never the `#faf9f5` canvas or neutral grays.
 - **Bottom text adds only what the marks leave open.** Never repeat the metric, unit, sample size, or a delta the marks already display.
   - `facts` (optional, up to 3 columns `{ label, value, text, color }`): supporting measurements (what stayed unchanged, what it costs). Skip columns without a source; never pad.
   - `note` (optional, 1-2 sentences): mechanism, practical benefit, or concrete regression (`Memory rose by 54 MiB`, never defensive disclaimers like `No claim of memory savings`).

@@ -99,6 +99,16 @@ const DATA = {
   note: 'A new test that closes the generator from another context fails on the old code and passes on the new.',
 }
 
+const THEMES = {
+  ft: { accent: 'oklch(57% 0.14 44)', worse: '#990f3d' },
+}
+const ACCENT_KEYS = new Set(['accent', 'worse'])
+const themeTokens = { ...(THEMES[new URLSearchParams(location.search).get('theme') ?? DATA.theme] ?? {}), ...(DATA.colors ?? {}) }
+for (const [k, v] of Object.entries(themeTokens)) {
+  const name = k.replace(/^--/, '')
+  if (ACCENT_KEYS.has(name)) document.documentElement.style.setProperty('--' + name, v)
+}
+
 const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e }
 
 const page = document.getElementById('page')
