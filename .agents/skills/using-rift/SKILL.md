@@ -38,7 +38,7 @@ Check each command's exit status before continuing. Capture the returned path in
 - Default to `--no-hooks` because repository `.rift.toml` hooks execute commands. Enable hooks only after reading them and confirming their effects are within the task's authorization.
 - Run subsequent commands with the returned workspace as their explicit working directory. Start agents and editors there; do not let their automatic worktree options create a second checkout.
 - Inspect the new checkout's HEAD and Git status against the recorded source state. Create a task branch there before making branch-based commits. Do not commit inherited edits as part of the task.
-- Check that interpreters and build tools resolve inside the new workspace. CoW does not rewrite absolute paths embedded in virtualenvs, caches, or symlinks; recreate affected environments locally instead of running tools that still target the source.
+- Check that interpreters and build tools resolve inside the new workspace. CoW does not rewrite absolute paths embedded in virtualenvs, caches, or symlinks; recreate affected environments locally instead of running tools that still target the source. For Python/`uv` workspaces with a copied `.venv`, run `uv pip install --no-deps -e .` (or recreate `.venv` with `uv sync --frozen` when `.venv/bin` shebangs or `.pth` files point back to the source checkout).
 
 ## Return work and clean up
 
